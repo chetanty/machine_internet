@@ -1,0 +1,142 @@
+{
+  "raw_schema": {
+    "base_url": "http://localhost:9000",
+    "title": "Demo Store",
+    "description": "A simple store API with items and orders.",
+    "version": "1.0.0",
+    "discovery_method": "openapi",
+    "auth_schemes": [],
+    "endpoints": [
+      {
+        "path": "/items",
+        "method": "GET",
+        "summary": "List all items",
+        "description": "",
+        "parameters": [
+          {
+            "name": "min_price",
+            "location": "query",
+            "required": false,
+            "type": "number",
+            "description": "Filter by minimum price"
+          }
+        ],
+        "tags": [
+          "items"
+        ]
+      },
+      {
+        "path": "/items/{item_id}",
+        "method": "GET",
+        "summary": "Get item by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "item_id",
+            "location": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "tags": [
+          "items"
+        ]
+      },
+      {
+        "path": "/items",
+        "method": "POST",
+        "summary": "Create a new item",
+        "description": "",
+        "parameters": [
+          {
+            "name": "name",
+            "location": "body",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "price",
+            "location": "body",
+            "required": true,
+            "type": "number",
+            "description": ""
+          },
+          {
+            "name": "stock",
+            "location": "body",
+            "required": false,
+            "type": "integer",
+            "description": ""
+          }
+        ],
+        "tags": [
+          "items"
+        ]
+      },
+      {
+        "path": "/orders",
+        "method": "GET",
+        "summary": "List all orders",
+        "description": "",
+        "parameters": [],
+        "tags": [
+          "orders"
+        ]
+      },
+      {
+        "path": "/orders/{order_id}",
+        "method": "GET",
+        "summary": "Get order by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "order_id",
+            "location": "path",
+            "required": true,
+            "type": "string",
+            "description": ""
+          }
+        ],
+        "tags": [
+          "orders"
+        ]
+      },
+      {
+        "path": "/orders",
+        "method": "POST",
+        "summary": "Place an order",
+        "description": "",
+        "parameters": [
+          {
+            "name": "item_id",
+            "location": "body",
+            "required": true,
+            "type": "string",
+            "description": ""
+          },
+          {
+            "name": "quantity",
+            "location": "body",
+            "required": true,
+            "type": "integer",
+            "description": ""
+          }
+        ],
+        "tags": [
+          "orders"
+        ]
+      }
+    ]
+  },
+  "ground_truth_tools": [
+    "list_items",
+    "get_item",
+    "create_item",
+    "list_orders",
+    "get_order",
+    "place_order"
+  ],
+  "notes": "Canonical 6-tool set for a simple store CRUD API."
+}

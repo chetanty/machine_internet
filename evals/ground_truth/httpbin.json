@@ -1,0 +1,1536 @@
+{
+  "raw_schema": {
+    "base_url": "http://httpbin.org/",
+    "title": "httpbin.org",
+    "description": "A simple HTTP Request & Response Service.<br/> <br/> <b>Run locally: </b> <code>$ docker run -p 80:80 kennethreitz/httpbin</code>",
+    "version": "0.9.2",
+    "endpoints": [
+      {
+        "path": "/absolute-redirect/{n}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Absolutely 302 Redirects n times.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "n",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Redirects"
+        ]
+      },
+      {
+        "path": "/anything",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns anything passed in request data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Anything"
+        ]
+      },
+      {
+        "path": "/anything",
+        "method": "POST",
+        "operation_id": null,
+        "summary": "Returns anything passed in request data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Anything"
+        ]
+      },
+      {
+        "path": "/anything",
+        "method": "PUT",
+        "operation_id": null,
+        "summary": "Returns anything passed in request data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Anything"
+        ]
+      },
+      {
+        "path": "/anything",
+        "method": "PATCH",
+        "operation_id": null,
+        "summary": "Returns anything passed in request data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Anything"
+        ]
+      },
+      {
+        "path": "/anything",
+        "method": "DELETE",
+        "operation_id": null,
+        "summary": "Returns anything passed in request data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Anything"
+        ]
+      },
+      {
+        "path": "/anything/{anything}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns anything passed in request data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Anything"
+        ]
+      },
+      {
+        "path": "/anything/{anything}",
+        "method": "POST",
+        "operation_id": null,
+        "summary": "Returns anything passed in request data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Anything"
+        ]
+      },
+      {
+        "path": "/anything/{anything}",
+        "method": "PUT",
+        "operation_id": null,
+        "summary": "Returns anything passed in request data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Anything"
+        ]
+      },
+      {
+        "path": "/anything/{anything}",
+        "method": "PATCH",
+        "operation_id": null,
+        "summary": "Returns anything passed in request data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Anything"
+        ]
+      },
+      {
+        "path": "/anything/{anything}",
+        "method": "DELETE",
+        "operation_id": null,
+        "summary": "Returns anything passed in request data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Anything"
+        ]
+      },
+      {
+        "path": "/base64/{value}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Decodes base64url-encoded string.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "value",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/basic-auth/{user}/{passwd}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Prompts the user for authorization using HTTP Basic Auth.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "user",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "passwd",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Auth"
+        ]
+      },
+      {
+        "path": "/bearer",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Prompts the user for authorization using bearer authentication.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "Authorization",
+            "location": "header",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Auth"
+        ]
+      },
+      {
+        "path": "/brotli",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns Brotli-encoded data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response formats"
+        ]
+      },
+      {
+        "path": "/bytes/{n}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns n random bytes generated with given seed",
+        "description": "",
+        "parameters": [
+          {
+            "name": "n",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/cache",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a 304 if an If-Modified-Since header or If-None-Match is present. Returns the same as a GET otherwise.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "If-Modified-Since",
+            "location": "header",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "If-None-Match",
+            "location": "header",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response inspection"
+        ]
+      },
+      {
+        "path": "/cache/{value}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Sets a Cache-Control header for n seconds.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "value",
+            "location": "path",
+            "required": false,
+            "type": "integer",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response inspection"
+        ]
+      },
+      {
+        "path": "/cookies",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns cookie data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Cookies"
+        ]
+      },
+      {
+        "path": "/cookies/delete",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Deletes cookie(s) as provided by the query string and redirects to cookie list.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "freeform",
+            "location": "query",
+            "required": false,
+            "type": "object",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Cookies"
+        ]
+      },
+      {
+        "path": "/cookies/set",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Sets cookie(s) as provided by the query string and redirects to cookie list.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "freeform",
+            "location": "query",
+            "required": false,
+            "type": "object",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Cookies"
+        ]
+      },
+      {
+        "path": "/cookies/set/{name}/{value}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Sets a cookie and redirects to cookie list.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "name",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "value",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Cookies"
+        ]
+      },
+      {
+        "path": "/deflate",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns Deflate-encoded data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response formats"
+        ]
+      },
+      {
+        "path": "/delay/{delay}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a delayed response (max of 10 seconds).",
+        "description": "",
+        "parameters": [
+          {
+            "name": "delay",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/delay/{delay}",
+        "method": "POST",
+        "operation_id": null,
+        "summary": "Returns a delayed response (max of 10 seconds).",
+        "description": "",
+        "parameters": [
+          {
+            "name": "delay",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/delay/{delay}",
+        "method": "PUT",
+        "operation_id": null,
+        "summary": "Returns a delayed response (max of 10 seconds).",
+        "description": "",
+        "parameters": [
+          {
+            "name": "delay",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/delay/{delay}",
+        "method": "PATCH",
+        "operation_id": null,
+        "summary": "Returns a delayed response (max of 10 seconds).",
+        "description": "",
+        "parameters": [
+          {
+            "name": "delay",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/delay/{delay}",
+        "method": "DELETE",
+        "operation_id": null,
+        "summary": "Returns a delayed response (max of 10 seconds).",
+        "description": "",
+        "parameters": [
+          {
+            "name": "delay",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/delete",
+        "method": "DELETE",
+        "operation_id": null,
+        "summary": "The request's DELETE parameters.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "HTTP Methods"
+        ]
+      },
+      {
+        "path": "/deny",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns page denied by robots.txt rules.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response formats"
+        ]
+      },
+      {
+        "path": "/digest-auth/{qop}/{user}/{passwd}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Prompts the user for authorization using Digest Auth.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "qop",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "auth or auth-int",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "user",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "passwd",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Auth"
+        ]
+      },
+      {
+        "path": "/digest-auth/{qop}/{user}/{passwd}/{algorithm}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Prompts the user for authorization using Digest Auth + Algorithm.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "qop",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "auth or auth-int",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "user",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "passwd",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "algorithm",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "MD5, SHA-256, SHA-512",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Auth"
+        ]
+      },
+      {
+        "path": "/digest-auth/{qop}/{user}/{passwd}/{algorithm}/{stale_after}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Prompts the user for authorization using Digest Auth + Algorithm.",
+        "description": "allow settings the stale_after argument.\n",
+        "parameters": [
+          {
+            "name": "qop",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "auth or auth-int",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "user",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "passwd",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "algorithm",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "MD5, SHA-256, SHA-512",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "stale_after",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Auth"
+        ]
+      },
+      {
+        "path": "/drip",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Drips data over a duration after an optional initial delay.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "duration",
+            "location": "query",
+            "required": false,
+            "type": "number",
+            "description": "The amount of time (in seconds) over which to drip each byte",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "numbytes",
+            "location": "query",
+            "required": false,
+            "type": "integer",
+            "description": "The number of bytes to respond with",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "code",
+            "location": "query",
+            "required": false,
+            "type": "integer",
+            "description": "The response code that will be returned",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "delay",
+            "location": "query",
+            "required": false,
+            "type": "number",
+            "description": "The amount of time (in seconds) to delay before responding",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/encoding/utf8",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a UTF-8 encoded body.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response formats"
+        ]
+      },
+      {
+        "path": "/etag/{etag}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Assumes the resource has the given etag and responds to If-None-Match and If-Match headers appropriately.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "If-None-Match",
+            "location": "header",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "If-Match",
+            "location": "header",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response inspection"
+        ]
+      },
+      {
+        "path": "/get",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "The request's query parameters.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "HTTP Methods"
+        ]
+      },
+      {
+        "path": "/gzip",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns GZip-encoded data.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response formats"
+        ]
+      },
+      {
+        "path": "/headers",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Return the incoming request's HTTP headers.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Request inspection"
+        ]
+      },
+      {
+        "path": "/hidden-basic-auth/{user}/{passwd}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Prompts the user for authorization using HTTP Basic Auth.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "user",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "passwd",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Auth"
+        ]
+      },
+      {
+        "path": "/html",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a simple HTML document.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response formats"
+        ]
+      },
+      {
+        "path": "/image",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a simple image of the type suggest by the Accept header.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Images"
+        ]
+      },
+      {
+        "path": "/image/jpeg",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a simple JPEG image.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Images"
+        ]
+      },
+      {
+        "path": "/image/png",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a simple PNG image.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Images"
+        ]
+      },
+      {
+        "path": "/image/svg",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a simple SVG image.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Images"
+        ]
+      },
+      {
+        "path": "/image/webp",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a simple WEBP image.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Images"
+        ]
+      },
+      {
+        "path": "/ip",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns the requester's IP Address.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Request inspection"
+        ]
+      },
+      {
+        "path": "/json",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a simple JSON document.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response formats"
+        ]
+      },
+      {
+        "path": "/links/{n}/{offset}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Generate a page containing n links to other pages which do the same.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "n",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "offset",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/patch",
+        "method": "PATCH",
+        "operation_id": null,
+        "summary": "The request's PATCH parameters.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "HTTP Methods"
+        ]
+      },
+      {
+        "path": "/post",
+        "method": "POST",
+        "operation_id": null,
+        "summary": "The request's POST parameters.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "HTTP Methods"
+        ]
+      },
+      {
+        "path": "/put",
+        "method": "PUT",
+        "operation_id": null,
+        "summary": "The request's PUT parameters.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "HTTP Methods"
+        ]
+      },
+      {
+        "path": "/range/{numbytes}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Streams n random bytes generated with given seed, at given chunk size per packet.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "numbytes",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/redirect-to",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "302/3XX Redirects to the given URL.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "url",
+            "location": "query",
+            "required": true,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "status_code",
+            "location": "query",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Redirects"
+        ]
+      },
+      {
+        "path": "/redirect-to",
+        "method": "POST",
+        "operation_id": null,
+        "summary": "302/3XX Redirects to the given URL.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "url",
+            "location": "query",
+            "required": true,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "status_code",
+            "location": "query",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Redirects"
+        ]
+      },
+      {
+        "path": "/redirect-to",
+        "method": "PUT",
+        "operation_id": null,
+        "summary": "302/3XX Redirects to the given URL.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "url",
+            "location": "query",
+            "required": true,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          },
+          {
+            "name": "status_code",
+            "location": "query",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Redirects"
+        ]
+      },
+      {
+        "path": "/redirect-to",
+        "method": "PATCH",
+        "operation_id": null,
+        "summary": "302/3XX Redirects to the given URL.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Redirects"
+        ]
+      },
+      {
+        "path": "/redirect-to",
+        "method": "DELETE",
+        "operation_id": null,
+        "summary": "302/3XX Redirects to the given URL.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Redirects"
+        ]
+      },
+      {
+        "path": "/redirect/{n}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "302 Redirects n times.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "n",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Redirects"
+        ]
+      },
+      {
+        "path": "/relative-redirect/{n}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Relatively 302 Redirects n times.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "n",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Redirects"
+        ]
+      },
+      {
+        "path": "/response-headers",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a set of response headers from the query string.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "freeform",
+            "location": "query",
+            "required": false,
+            "type": "object",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response inspection"
+        ]
+      },
+      {
+        "path": "/response-headers",
+        "method": "POST",
+        "operation_id": null,
+        "summary": "Returns a set of response headers from the query string.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "freeform",
+            "location": "query",
+            "required": false,
+            "type": "object",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response inspection"
+        ]
+      },
+      {
+        "path": "/robots.txt",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns some robots.txt rules.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response formats"
+        ]
+      },
+      {
+        "path": "/status/{codes}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Return status code or random status code if more than one are given",
+        "description": "",
+        "parameters": [
+          {
+            "name": "codes",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Status codes"
+        ]
+      },
+      {
+        "path": "/status/{codes}",
+        "method": "POST",
+        "operation_id": null,
+        "summary": "Return status code or random status code if more than one are given",
+        "description": "",
+        "parameters": [
+          {
+            "name": "codes",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Status codes"
+        ]
+      },
+      {
+        "path": "/status/{codes}",
+        "method": "PUT",
+        "operation_id": null,
+        "summary": "Return status code or random status code if more than one are given",
+        "description": "",
+        "parameters": [
+          {
+            "name": "codes",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Status codes"
+        ]
+      },
+      {
+        "path": "/status/{codes}",
+        "method": "PATCH",
+        "operation_id": null,
+        "summary": "Return status code or random status code if more than one are given",
+        "description": "",
+        "parameters": [
+          {
+            "name": "codes",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Status codes"
+        ]
+      },
+      {
+        "path": "/status/{codes}",
+        "method": "DELETE",
+        "operation_id": null,
+        "summary": "Return status code or random status code if more than one are given",
+        "description": "",
+        "parameters": [
+          {
+            "name": "codes",
+            "location": "path",
+            "required": false,
+            "type": "string",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Status codes"
+        ]
+      },
+      {
+        "path": "/stream-bytes/{n}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Streams n random bytes generated with given seed, at given chunk size per packet.",
+        "description": "",
+        "parameters": [
+          {
+            "name": "n",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/stream/{n}",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Stream n JSON responses",
+        "description": "",
+        "parameters": [
+          {
+            "name": "n",
+            "location": "path",
+            "required": false,
+            "type": "int",
+            "description": "",
+            "enum": null,
+            "default": null
+          }
+        ],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/user-agent",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Return the incoming requests's User-Agent header.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Request inspection"
+        ]
+      },
+      {
+        "path": "/uuid",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Return a UUID4.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Dynamic data"
+        ]
+      },
+      {
+        "path": "/xml",
+        "method": "GET",
+        "operation_id": null,
+        "summary": "Returns a simple XML document.",
+        "description": "",
+        "parameters": [],
+        "request_body_schema": null,
+        "response_schema": null,
+        "tags": [
+          "Response formats"
+        ]
+      }
+    ],
+    "auth_schemes": [],
+    "discovery_method": "openapi"
+  },
+  "ground_truth_tools": [
+    "echo_request",
+    "get_request_info",
+    "get_headers",
+    "test_auth",
+    "manage_cookies",
+    "test_redirects",
+    "get_status_code",
+    "test_caching",
+    "get_compressed_response",
+    "get_random_bytes",
+    "get_delayed_response",
+    "stream_response",
+    "inspect_ip"
+  ],
+  "notes": "73 endpoints; ideal condensation covers request inspection, auth testing, caching, streaming, and utility tools in 10-15 tools."
+}

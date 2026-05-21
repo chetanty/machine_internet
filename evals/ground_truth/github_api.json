@@ -1,0 +1,86 @@
+{
+  "raw_schema": {
+    "base_url": "https://api.github.com",
+    "title": "GitHub REST API",
+    "description": "The GitHub REST API lets you create calls for data you need to integrate with GitHub.",
+    "version": "1.1.4",
+    "discovery_method": "openapi",
+    "auth_schemes": ["bearer"],
+    "endpoints": [
+      {"path": "/repos/{owner}/{repo}", "method": "GET", "summary": "Get a repository", "parameters": [
+        {"name": "owner", "location": "path", "required": true, "type": "string", "description": "The account owner"},
+        {"name": "repo", "location": "path", "required": true, "type": "string", "description": "The repo name"}
+      ]},
+      {"path": "/repos/{owner}/{repo}/issues", "method": "GET", "summary": "List repository issues", "parameters": [
+        {"name": "owner", "location": "path", "required": true, "type": "string"},
+        {"name": "repo", "location": "path", "required": true, "type": "string"},
+        {"name": "state", "location": "query", "required": false, "type": "string", "enum": ["open", "closed", "all"]},
+        {"name": "per_page", "location": "query", "required": false, "type": "integer"},
+        {"name": "page", "location": "query", "required": false, "type": "integer"}
+      ]},
+      {"path": "/repos/{owner}/{repo}/issues", "method": "POST", "summary": "Create an issue", "parameters": [
+        {"name": "owner", "location": "path", "required": true, "type": "string"},
+        {"name": "repo", "location": "path", "required": true, "type": "string"},
+        {"name": "title", "location": "body", "required": true, "type": "string"},
+        {"name": "body", "location": "body", "required": false, "type": "string"},
+        {"name": "labels", "location": "body", "required": false, "type": "array[string]"}
+      ]},
+      {"path": "/repos/{owner}/{repo}/issues/{issue_number}", "method": "GET", "summary": "Get an issue", "parameters": [
+        {"name": "owner", "location": "path", "required": true, "type": "string"},
+        {"name": "repo", "location": "path", "required": true, "type": "string"},
+        {"name": "issue_number", "location": "path", "required": true, "type": "integer"}
+      ]},
+      {"path": "/repos/{owner}/{repo}/issues/{issue_number}", "method": "PATCH", "summary": "Update an issue", "parameters": [
+        {"name": "owner", "location": "path", "required": true, "type": "string"},
+        {"name": "repo", "location": "path", "required": true, "type": "string"},
+        {"name": "issue_number", "location": "path", "required": true, "type": "integer"},
+        {"name": "title", "location": "body", "required": false, "type": "string"},
+        {"name": "state", "location": "body", "required": false, "type": "string"}
+      ]},
+      {"path": "/repos/{owner}/{repo}/pulls", "method": "GET", "summary": "List pull requests", "parameters": [
+        {"name": "owner", "location": "path", "required": true, "type": "string"},
+        {"name": "repo", "location": "path", "required": true, "type": "string"},
+        {"name": "state", "location": "query", "required": false, "type": "string"}
+      ]},
+      {"path": "/repos/{owner}/{repo}/pulls", "method": "POST", "summary": "Create a pull request", "parameters": [
+        {"name": "owner", "location": "path", "required": true, "type": "string"},
+        {"name": "repo", "location": "path", "required": true, "type": "string"},
+        {"name": "title", "location": "body", "required": true, "type": "string"},
+        {"name": "head", "location": "body", "required": true, "type": "string"},
+        {"name": "base", "location": "body", "required": true, "type": "string"}
+      ]},
+      {"path": "/search/repositories", "method": "GET", "summary": "Search repositories", "parameters": [
+        {"name": "q", "location": "query", "required": true, "type": "string"},
+        {"name": "sort", "location": "query", "required": false, "type": "string"},
+        {"name": "per_page", "location": "query", "required": false, "type": "integer"}
+      ]},
+      {"path": "/user", "method": "GET", "summary": "Get the authenticated user", "parameters": []},
+      {"path": "/users/{username}", "method": "GET", "summary": "Get a user", "parameters": [
+        {"name": "username", "location": "path", "required": true, "type": "string"}
+      ]},
+      {"path": "/repos/{owner}/{repo}/contents/{path}", "method": "GET", "summary": "Get repository content", "parameters": [
+        {"name": "owner", "location": "path", "required": true, "type": "string"},
+        {"name": "repo", "location": "path", "required": true, "type": "string"},
+        {"name": "path", "location": "path", "required": true, "type": "string"}
+      ]},
+      {"path": "/repos/{owner}/{repo}/commits", "method": "GET", "summary": "List commits", "parameters": [
+        {"name": "owner", "location": "path", "required": true, "type": "string"},
+        {"name": "repo", "location": "path", "required": true, "type": "string"},
+        {"name": "per_page", "location": "query", "required": false, "type": "integer"}
+      ]}
+    ]
+  },
+  "ground_truth_tools": [
+    "get_repo",
+    "list_issues",
+    "create_issue",
+    "get_issue",
+    "update_issue",
+    "list_pull_requests",
+    "create_pull_request",
+    "search_repos",
+    "get_user",
+    "get_file_contents",
+    "list_commits"
+  ]
+}
