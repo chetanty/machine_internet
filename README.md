@@ -1,30 +1,52 @@
 # Machine Internet UAA
 
-> Automatically wrap any internet service as a hosted MCP endpoint any AI agent can call.
+Point it at any URL. Get an MCP server any AI agent can call.
 
-**Live:** https://machineinternet-production.up.railway.app
-
----
-
-## Original Plan
-
-The spec called for a system with three stages:
-
-**1. Discovery** — point it at a URL, it figures out the API surface automatically. Two paths:
-- **Path A:** probe for a public OpenAPI/Swagger spec at standard locations. Fast, deterministic, zero LLM cost.
-- **Path B:** if no spec exists, launch a headless Playwright browser, observe the page's XHR/fetch traffic while interacting with it, and use an LLM to infer a schema from what the network captured. This is the differentiator — it handles services that have no spec at all.
-
-**2. Semantic Condensation** — take the raw discovered schema (potentially hundreds of endpoints) and collapse it into 10–15 clean, agent-friendly tools using an LLM. A 400-endpoint CRM becomes `get_customer`, `create_deal`, `log_interaction`. Quality enforced by an eval suite with ground-truth schemas.
-
-**3. MCP Serving** — package the result as a hosted SSE-based MCP server. Any agent framework plugs in immediately and makes real calls against the real service through the clean interface.
-
-**Planned stack:** Claude API, Python backend, Next.js dashboard, AWS ECS Fargate, PostgreSQL + pgvector schema registry, Docker, Terraform.
+**Live dashboard:** https://machineinternet-production.up.railway.app
 
 ---
 
-## What We Actually Built
+## What it does
 
-The full pipeline works end-to-end, locally, with several adaptations from the original plan.
+Most APIs on the internet are not accessible to AI agents. They have no MCP interface, no agent SDK, often no documentation at all. Machine Internet UAA fixes this automatically.
+
+Give it a URL. It discovers the API surface, collapses hundreds of endpoints into 10-15 clean agent-friendly tools, and starts an MCP server on a local port. Plug that URL into Claude, Cursor, or any MCP client and the agent can call the real API immediately.
+
+It handles two cases:
+
+- **APIs with an OpenAPI spec** (GitHub, Stripe, any modern REST API): fetches and parses the spec automatically, no configuration needed.
+- **APIs with no spec** (internal tools, legacy services, SPAs): launches a headless browser, records the XHR traffic the page makes, and uses an LLM to infer the schema from what it captured.
+
+## Quickstart
+
+```bash
+# install
+pip install -r requirements.txt
+playwright install chromium
+cp .env.example .env  # add your GEMINI_API_KEY or OPENAI_API_KEY
+
+# wrap an API
+python discover.py --url https://api.github.com \
+  --spec https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json \
+  --tags repos,issues
+
+# serve it
+python serve.py --schema schemas/github_v3_rest_api.json --port 8100
+```
+
+Then add `http://localhost:8100/mcp` to your Claude MCP config. Done.
+
+For APIs with no spec, use `--traffic` to switch to browser-based discovery:
+
+```bash
+python discover.py --url https://hn.algolia.com --traffic
+```
+
+The dashboard at `http://localhost:7000` lets you wrap, start, and stop services from a browser UI without touching the terminal.
+
+---
+
+## How it works
 
 ### Architecture
 
@@ -72,16 +94,15 @@ dashboard.py  (port 7000)
       MCP URL footer, hero wrap bar
 ```
 
-### Key Adaptations from Original Spec
+### Stack
 
-| Original | Actual | Reason |
-|---|---|---|
-| Claude API | **Gemini 2.5 Flash + OpenAI fallback** | Access and cost |
-| Next.js dashboard | **FastAPI + Vanilla JS** (single file) | No Node.js dependency |
-| AWS ECS Fargate | **Railway** (Docker, deployed) | Simpler, no AWS setup needed |
-| PostgreSQL + pgvector | **JSON files** in `schemas/` | No database needed for local operation |
-| Docker Compose | **venv** (local) + **Dockerfile** (Railway) | Simpler on Windows locally |
-| Terraform | Not built | Railway handles infrastructure |
+| Component | Implementation |
+|---|---|
+| LLM | Gemini 2.5 Flash primary, OpenAI fallback |
+| Dashboard | FastAPI + vanilla JS, single file, no Node.js needed |
+| Deployment | Railway (Docker) |
+| Schema storage | JSON files in `schemas/` |
+| Local runtime | Python venv (Windows/Mac/Linux) |
 
 ---
 
