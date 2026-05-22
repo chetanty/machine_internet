@@ -156,8 +156,8 @@ def start_server(req: StartReq):
         raise HTTPException(400, f"Port {port} already in use by dashboard")
     proc = subprocess.Popen(
         [PYTHON, str(BASE / "serve.py"), "--schema", str(schema_path), "--port", str(port)],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=sys.stdout,
+        stderr=sys.stderr,
         stdin=subprocess.DEVNULL,
     )
     _servers[port] = {"process": proc, "schema_file": req.schema_file}
