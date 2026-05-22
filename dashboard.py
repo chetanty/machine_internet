@@ -208,7 +208,7 @@ async def discover_stream(request: Request, req: DiscoverReq):
                 await asyncio.wait_for(proc.wait(), timeout=5)
             except Exception:
                 pass
-        yield f"data: {json.dumps({'done': True, 'exit_code': proc.returncode or 1})}\n\n"
+        yield f"data: {json.dumps({'done': True, 'exit_code': proc.returncode if proc.returncode is not None else 1})}\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
