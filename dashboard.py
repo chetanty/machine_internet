@@ -4,8 +4,11 @@ import asyncio
 import base64
 import json
 import os
+import sys
 from pathlib import Path
 from typing import Any
+
+PYTHON = sys.executable
 
 import uvicorn
 from contextlib import asynccontextmanager
@@ -192,11 +195,20 @@ async def discover_stream(request: Request, req: DiscoverReq):
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.STDOUT,
         )
-        async for raw in proc.stdout:
-            line = raw.decode("utf-8", errors="replace").rstrip()
-            yield f"data: {json.dumps({'line': line})}\n\n"
-        await proc.wait()
-        yield f"data: {json.dumps({'done': True, 'exit_code': proc.returncode})}\n\n"
+        try:
+            async with asyncio.timeout(120):
+                async for raw in proc.stdout:
+                    line = raw.decode("utf-8", errors="replace").rstrip()
+                    yield f"data: {json.dumps({'line': line})}\n\n"
+        except TimeoutError:
+            proc.kill()
+            yield f"data: {json.dumps({'line': '[FAIL] Discovery timed out after 120s'})}\n\n"
+        finally:
+            try:
+                await asyncio.wait_for(proc.wait(), timeout=5)
+            except Exception:
+                pass
+        yield f"data: {json.dumps({'done': True, 'exit_code': proc.returncode or 1})}\n\n"
 
     return StreamingResponse(generate(), media_type="text/event-stream",
                              headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
@@ -907,33 +919,42 @@ async function startWrap() {
   const dec = new TextDecoder();
   let buf = '';
 
-  while (true) {
-    const {done, value} = await reader.read();
-    if (done) break;
-    buf += dec.decode(value,{stream:true});
-    const lines = buf.split('\n'); buf = lines.pop();
-    for (const line of lines) {
-      if (!line.startsWith('data: ')) continue;
-      const d = JSON.parse(line.slice(6));
-      if (d.line !== undefined) {
-        const cls = d.line.includes('[OK]')     ? 'lk'
-                  : d.line.includes('[FAIL]')   ? 'lf'
-                  : d.line.includes('fallback') ? 'ly'
-                  : 'll';
-        logArea.innerHTML += `<div class="${cls}">${esc(d.line)}</div>`;
-        logArea.scrollTop = logArea.scrollHeight;
-      }
-      if (d.done) {
-        if (d.exit_code === 0) {
-          logArea.innerHTML += '<div class="lk">✓ Done</div>';
-          btn.textContent = '✓ Done';
-          setTimeout(()=>{ refresh(); btn.textContent='Wrap API'; btn.disabled=false; }, 1500);
-        } else {
-          logArea.innerHTML += '<div class="lf">✗ Discovery failed</div>';
-          btn.textContent = 'Wrap API'; btn.disabled = false;
+  let gotDone = false;
+  try {
+    while (true) {
+      const {done, value} = await reader.read();
+      if (done) break;
+      buf += dec.decode(value,{stream:true});
+      const lines = buf.split('\n'); buf = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        let d;
+        try { d = JSON.parse(line.slice(6)); } catch(e) { continue; }
+        if (d.line !== undefined) {
+          const cls = d.line.includes('[OK]')     ? 'lk'
+                    : d.line.includes('[FAIL]')   ? 'lf'
+                    : d.line.includes('fallback') ? 'ly'
+                    : 'll';
+          logArea.innerHTML += `<div class="${cls}">${esc(d.line)}</div>`;
+          logArea.scrollTop = logArea.scrollHeight;
+        }
+        if (d.done) {
+          gotDone = true;
+          if (d.exit_code === 0) {
+            logArea.innerHTML += '<div class="lk">✓ Done</div>';
+            btn.textContent = '✓ Done';
+            setTimeout(()=>{ refresh(); btn.textContent='Wrap API'; btn.disabled=false; }, 1500);
+          } else {
+            logArea.innerHTML += '<div class="lf">✗ Discovery failed</div>';
+            btn.textContent = 'Wrap API'; btn.disabled = false;
+          }
         }
       }
     }
+  } catch(e) {}
+  if (!gotDone) {
+    logArea.innerHTML += '<div class="lf">✗ Stream closed unexpectedly</div>';
+    btn.textContent = 'Wrap API'; btn.disabled = false;
   }
 }
 
