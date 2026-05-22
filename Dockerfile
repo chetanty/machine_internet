@@ -1,4 +1,4 @@
-# build v3 — 2026-05-21
+# build v4 - 2026-05-22
 FROM python:3.12-slim
 
 WORKDIR /app
@@ -11,13 +11,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+ENV GEMINI_MODEL=gemini-2.5-flash
+
 RUN playwright install chromium --with-deps
 
 COPY . .
 
 RUN mkdir -p schemas
-
-ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-ENV GEMINI_MODEL=gemini-2.5-flash
 
 CMD ["sh", "-c", "uvicorn dashboard:app --host 0.0.0.0 --port ${PORT:-7000} --log-level info"]
