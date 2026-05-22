@@ -4,8 +4,6 @@ import asyncio
 import base64
 import json
 import os
-import subprocess
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +18,6 @@ from slowapi.util import get_remote_address
 
 BASE = Path(__file__).parent
 SCHEMAS_DIR = BASE / "schemas"
-PYTHON = sys.executable
 
 _logo_path = BASE / "mi4.png"
 _LOGO_DATA = (
@@ -47,31 +44,25 @@ app = FastAPI(title="UAA Dashboard", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-# port -> {process, schema_file}
-_servers: dict[int, dict[str, Any]] = {}
-_BASE_PORT = 8100
-_STATE_FILE = Path(__file__).parent / "schemas" / ".running.json"
+# stem -> live ASGI MCP app (in-process, no subprocesses)
+_mcp_apps: dict[str, Any] = {}
+_STATE_FILE = BASE / "schemas" / ".running.json"
 
 
-def _next_port() -> int:
-    used = set(_servers.keys())
-    p = _BASE_PORT
-    while p in used:
-        p += 1
-    return p
-
-
-def _prune() -> None:
-    dead = [p for p, v in _servers.items() if v["process"].poll() is not None]
-    for p in dead:
-        del _servers[p]
-    _save_state()
+def _make_mcp_asgi(stem: str, schema_data: dict) -> Any:
+    from src.discovery.schema import CondensedSchema
+    from src.serving.mcp_server import create_mcp_app
+    schema = CondensedSchema(**schema_data)
+    return create_mcp_app(
+        schema,
+        sse_path=f"/mcp/{stem}",
+        messages_path=f"/mcp/{stem}/messages/",
+    )
 
 
 def _save_state() -> None:
     try:
-        data = {str(port): info["schema_file"] for port, info in _servers.items()}
-        _STATE_FILE.write_text(json.dumps(data), encoding="utf-8")
+        _STATE_FILE.write_text(json.dumps(list(_mcp_apps.keys())), encoding="utf-8")
     except Exception:
         pass
 
@@ -80,28 +71,44 @@ def _restore_state() -> None:
     if not _STATE_FILE.exists():
         return
     try:
-        data = json.loads(_STATE_FILE.read_text(encoding="utf-8"))
+        stems = json.loads(_STATE_FILE.read_text(encoding="utf-8"))
     except Exception:
         return
-    for port_str, schema_file in data.items():
-        port = int(port_str)
-        schema_path = (Path(__file__).parent / "schemas" / schema_file).resolve()
+    for stem in stems:
+        schema_path = (SCHEMAS_DIR / f"{stem}.json").resolve()
         if not schema_path.is_relative_to(SCHEMAS_DIR.resolve()):
             continue
         if not schema_path.exists():
             continue
         try:
-            proc = subprocess.Popen(
-                [PYTHON, str(Path(__file__).parent / "serve.py"),
-                 "--schema", str(schema_path), "--port", str(port)],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            _servers[port] = {"process": proc, "schema_file": schema_file}
+            schema_data = json.loads(schema_path.read_text(encoding="utf-8"))
+            _mcp_apps[stem] = _make_mcp_asgi(stem, schema_data)
         except Exception:
             pass
-    _save_state()
 
+
+class _MCPDispatch:
+    """ASGI middleware that routes /mcp/{stem} requests to in-process MCP apps."""
+    def __init__(self, inner: Any) -> None:
+        self._inner = inner
+
+    async def __call__(self, scope, receive, send) -> None:
+        if scope["type"] in ("lifespan", "websocket"):
+            await self._inner(scope, receive, send)
+            return
+        path = scope.get("path", "")
+        if path.startswith("/mcp/"):
+            stem = path[5:].split("/")[0]
+            mcp_app = _mcp_apps.get(stem)
+            if mcp_app:
+                await mcp_app(scope, receive, send)
+                return
+        await self._inner(scope, receive, send)
+
+
+# Wrap the FastAPI app so /mcp/{stem} requests are dispatched in-process.
+# Dockerfile CMD and __main__ both point uvicorn at this object.
+wrapped_app = _MCPDispatch(app)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -133,47 +140,36 @@ def list_schemas():
 
 @app.get("/api/servers")
 def list_servers():
-    _prune()
-    return {str(port): {"schema": info["schema_file"], "port": port}
-            for port, info in _servers.items()}
+    return {stem: {"schema": f"{stem}.json", "mcp_path": f"/mcp/{stem}"}
+            for stem in _mcp_apps}
 
 
 class StartReq(BaseModel):
     schema_file: str
-    port: int | None = None
 
 
 @app.post("/api/servers")
 def start_server(req: StartReq):
-    _prune()
     schema_path = (SCHEMAS_DIR / req.schema_file).resolve()
     if not schema_path.is_relative_to(SCHEMAS_DIR.resolve()):
         raise HTTPException(400, "Invalid schema path")
     if not schema_path.exists():
         raise HTTPException(404, "Schema not found")
-    port = req.port or _next_port()
-    if port in _servers:
-        raise HTTPException(400, f"Port {port} already in use by dashboard")
-    proc = subprocess.Popen(
-        [PYTHON, str(BASE / "serve.py"), "--schema", str(schema_path), "--port", str(port)],
-        stdout=sys.stdout,
-        stderr=sys.stderr,
-        stdin=subprocess.DEVNULL,
-    )
-    _servers[port] = {"process": proc, "schema_file": req.schema_file}
-    _save_state()
-    return {"port": port, "pid": proc.pid}
+    stem = Path(req.schema_file).stem
+    if stem not in _mcp_apps:
+        schema_data = json.loads(schema_path.read_text(encoding="utf-8"))
+        _mcp_apps[stem] = _make_mcp_asgi(stem, schema_data)
+        _save_state()
+    return {"stem": stem, "mcp_path": f"/mcp/{stem}"}
 
 
-@app.delete("/api/servers/{port}")
-def stop_server(port: int):
-    _prune()
-    if port not in _servers:
-        raise HTTPException(404, "No server on that port")
-    _servers[port]["process"].terminate()
-    del _servers[port]
+@app.delete("/api/servers/{stem}")
+def stop_server(stem: str):
+    if stem not in _mcp_apps:
+        raise HTTPException(404, "No server for that schema")
+    del _mcp_apps[stem]
     _save_state()
-    return {"stopped": port}
+    return {"stopped": stem}
 
 
 class DiscoverReq(BaseModel):
@@ -778,9 +774,10 @@ async function refresh() {
 }
 
 // ── grid ───────────────────────────────────────────────────────────────────
-function pbf(srvs) {
-  const m={};
-  for(const [p,info] of Object.entries(srvs)) m[info.schema]=parseInt(p);
+// srvs: {stem: {schema, mcp_path}} — maps schema filename -> stem
+function liveMap(srvs) {
+  const m = {};
+  for (const [stem, info] of Object.entries(srvs)) m[info.schema] = stem;
   return m;
 }
 
@@ -790,16 +787,16 @@ function renderGrid(schemas, srvs) {
     grid.innerHTML = '<div class="grid-empty"><div class="grid-empty-icon">⬡</div><div class="grid-empty-text">No services wrapped yet</div><div class="grid-empty-hint">Paste any API URL above to get started</div></div>';
     return;
   }
-  const portMap = pbf(srvs);
+  const lm = liveMap(srvs);
   grid.innerHTML = schemas.map(s => {
-    const port = portMap[s.file];
-    const live = !!port;
+    const stem = lm[s.file];
+    const live = !!stem;
     const sel  = _selectedFile === s.file;
     const path = s.discovery_method === 'traffic' ? 'B' : 'A';
-    const mcpUrl = port ? `http://localhost:${port}/mcp` : '';
+    const mcpUrl = stem ? `${window.location.origin}/mcp/${stem}` : '';
 
     const livePill = live
-      ? `<span class="pill p-live"><span class="live-dot"></span>live :${port}</span>`
+      ? `<span class="pill p-live"><span class="live-dot"></span>live</span>`
       : `<span class="pill p-stopped">stopped</span>`;
 
     const mcpRow = live ? `
@@ -809,7 +806,7 @@ function renderGrid(schemas, srvs) {
       </div>` : '';
 
     const actionBtn = live
-      ? `<button class="btn-sm btn-stop" onclick="stopSrv(${port},event)">■ Stop</button>`
+      ? `<button class="btn-sm btn-stop" onclick="stopSrv('${esc(stem)}',event)">■ Stop</button>`
       : `<button class="btn-sm btn-start" onclick="startSrv('${esc(s.file)}',event)">▶ Start</button>`;
 
     return `<div class="svc-card${live?' live':''}${sel?' selected':''}" onclick="selectCard('${esc(s.file)}')">
@@ -839,18 +836,18 @@ function selectCard(file) {
 }
 
 function updateFooter(file) {
-  const portMap = pbf(_servers);
-  const port = portMap[file];
+  const lm = liveMap(_servers);
+  const stem = lm[file];
   const el  = document.getElementById('ft-url');
   const btn = document.getElementById('ft-copy');
-  if (port) {
-    const url = `http://localhost:${port}/mcp`;
+  if (stem) {
+    const url = `${window.location.origin}/mcp/${stem}`;
     el.textContent = url;
     el.classList.remove('empty');
     btn.disabled = false;
   } else {
     const s = _schemas.find(x=>x.file===file);
-    el.textContent = (s?s.service_name:'Service') + ' — not running';
+    el.textContent = (s?s.service_name:'Service') + ' - not running';
     el.classList.add('empty');
     btn.disabled = true;
   }
@@ -862,30 +859,28 @@ function copyFooter() {
 
 // ── auth panel ─────────────────────────────────────────────────────────────
 function renderAuth(s) {
-  const portMap = pbf(_servers);
-  const port = portMap[s.file];
-  const cmd  = port
-    ? `python serve.py --schema schemas/${s.file} --port ${port}`
-    : `python serve.py --schema schemas/${s.file}`;
+  const lm = liveMap(_servers);
+  const stem = lm[s.file];
+  const mcpUrl = stem ? `${window.location.origin}/mcp/${stem}` : null;
   document.getElementById('auth-area').innerHTML = `
     <div class="auth-group"><span class="auth-label">Service</span><span class="auth-value">${esc(s.service_name)}</span></div>
     <div class="auth-group"><span class="auth-label">Auth Type</span><span class="auth-value">${esc(s.auth_type)}</span></div>
     <div class="auth-group"><span class="auth-label">Discovery</span><span class="auth-value">Path ${s.discovery_method==='traffic'?'B (traffic)':'A (OpenAPI)'}</span></div>
-    <div class="auth-group"><span class="auth-label">Source URL</span><span class="auth-value" style="font-family:var(--mono);font-size:.7rem;word-break:break-all">${esc(s.source_url||'—')}</span></div>
-    <div class="auth-group"><span class="auth-label">Serve Command</span><div class="auth-cmd">${esc(cmd)}</div></div>
+    <div class="auth-group"><span class="auth-label">Source URL</span><span class="auth-value" style="font-family:var(--mono);font-size:.7rem;word-break:break-all">${esc(s.source_url||'N/A')}</span></div>
+    ${mcpUrl ? `<div class="auth-group"><span class="auth-label">MCP URL</span><div class="auth-cmd">${esc(mcpUrl)}</div></div>` : ''}
   `;
 }
 
 // ── start / stop ───────────────────────────────────────────────────────────
-async function startSrv(file,e) {
+async function startSrv(file, e) {
   if(e) e.stopPropagation();
-  await fetch('/api/servers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({schema_file:file})});
-  setTimeout(refresh,600);
+  await fetch('/api/servers', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({schema_file:file})});
+  setTimeout(refresh, 600);
 }
-async function stopSrv(port,e) {
+async function stopSrv(stem, e) {
   if(e) e.stopPropagation();
-  await fetch(`/api/servers/${port}`,{method:'DELETE'});
-  setTimeout(refresh,300);
+  await fetch(`/api/servers/${stem}`, {method:'DELETE'});
+  setTimeout(refresh, 300);
 }
 
 // ── wrap / discover ────────────────────────────────────────────────────────
@@ -984,7 +979,6 @@ setInterval(refresh, 4000);
 
 
 if __name__ == "__main__":
-    import os
     SCHEMAS_DIR.mkdir(exist_ok=True)
     port = int(os.environ.get("PORT", 7000))
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="warning")
+    uvicorn.run(wrapped_app, host="0.0.0.0", port=port, log_level="warning")

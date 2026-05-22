@@ -44,8 +44,15 @@ def _input_schema(tool: AgentTool) -> dict[str, Any]:
 def create_mcp_app(
     schema: CondensedSchema,
     vault: Optional[CredentialVault] = None,
+    sse_path: str = "/mcp",
+    messages_path: str = "/messages/",
 ) -> Any:
-    """Return a pure ASGI app serving the MCP SSE protocol."""
+    """Return a pure ASGI app serving the MCP SSE protocol.
+
+    sse_path and messages_path let callers mount at a custom prefix, e.g.
+    sse_path="/mcp/github" messages_path="/mcp/github/messages/" when the app
+    is served inline on a shared port rather than its own subprocess port.
+    """
     server = Server(schema.service_name)
 
     auth_injector: Optional[AuthInjector] = None
@@ -83,7 +90,7 @@ def create_mcp_app(
             text = json.dumps({"error": str(exc)})
         return [types.TextContent(type="text", text=text)]
 
-    sse = SseServerTransport("/messages/")
+    sse = SseServerTransport(messages_path)
 
     # Pure ASGI router — avoids Starlette's Route returning-None TypeError
     async def asgi_app(scope, receive, send):
@@ -93,12 +100,12 @@ def create_mcp_app(
 
         path = scope.get("path", "")
 
-        if path == "/mcp" and scope["type"] == "http":
+        if path == sse_path and scope["type"] == "http":
             async with sse.connect_sse(scope, receive, send) as (r, w):
                 await server.run(r, w, server.create_initialization_options())
             return
 
-        if path.startswith("/messages/") and scope["type"] == "http":
+        if path.startswith(messages_path) and scope["type"] == "http":
             await sse.handle_post_message(scope, receive, send)
             return
 

@@ -21,4 +21,4 @@ COPY . .
 
 RUN mkdir -p schemas
 
-CMD ["sh", "-c", "uvicorn dashboard:app --host 0.0.0.0 --port ${PORT:-7000} --log-level info"]
+CMD ["sh", "-c", "uvicorn dashboard:wrapped_app --host 0.0.0.0 --port ${PORT:-7000} --log-level info"]
