@@ -28,7 +28,7 @@ _LOGO_DATA = (
 )
 
 
-_ALLOWLIST = {"49.36.58.170"}
+_ALLOWLIST = set(filter(None, os.environ.get("RATE_LIMIT_ALLOWLIST", "").split(",")))
 
 def _get_ip(request: Request) -> str:
     ip = get_remote_address(request)
