@@ -71,7 +71,9 @@ def _restore_state() -> None:
         return
     for port_str, schema_file in data.items():
         port = int(port_str)
-        schema_path = Path(__file__).parent / "schemas" / schema_file
+        schema_path = (Path(__file__).parent / "schemas" / schema_file).resolve()
+        if not schema_path.is_relative_to(SCHEMAS_DIR.resolve()):
+            continue
         if not schema_path.exists():
             continue
         try:
@@ -130,7 +132,9 @@ class StartReq(BaseModel):
 @app.post("/api/servers")
 def start_server(req: StartReq):
     _prune()
-    schema_path = SCHEMAS_DIR / req.schema_file
+    schema_path = (SCHEMAS_DIR / req.schema_file).resolve()
+    if not schema_path.is_relative_to(SCHEMAS_DIR.resolve()):
+        raise HTTPException(400, "Invalid schema path")
     if not schema_path.exists():
         raise HTTPException(404, "Schema not found")
     port = req.port or _next_port()
@@ -954,7 +958,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeWiki(); })
 
 // ── utilities ──────────────────────────────────────────────────────────────
 function cp(text, e) { if(e) e.stopPropagation(); navigator.clipboard.writeText(text).catch(()=>{}); }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 
 // ── init ───────────────────────────────────────────────────────────────────
 refresh();
