@@ -10,9 +10,12 @@ from typing import Any
 
 import uvicorn
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from pydantic import BaseModel
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
 
 BASE = Path(__file__).parent
 SCHEMAS_DIR = BASE / "schemas"
@@ -25,13 +28,23 @@ _LOGO_DATA = (
 )
 
 
+_ALLOWLIST = {"49.36.58.170"}
+
+def _get_ip(request: Request) -> str:
+    ip = get_remote_address(request)
+    return "allowlisted" if ip in _ALLOWLIST else ip
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _restore_state()
     yield
 
 
+limiter = Limiter(key_func=_get_ip)
 app = FastAPI(title="UAA Dashboard", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # port -> {process, schema_file}
 _servers: dict[int, dict[str, Any]] = {}
@@ -169,7 +182,8 @@ class DiscoverReq(BaseModel):
 
 
 @app.post("/api/discover/stream")
-async def discover_stream(req: DiscoverReq):
+@limiter.limit("5/day")
+async def discover_stream(request: Request, req: DiscoverReq):
     async def generate():
         args = [PYTHON, str(BASE / "discover.py"), "--url", req.url]
         if req.spec_url:
