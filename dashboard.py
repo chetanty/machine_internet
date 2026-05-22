@@ -5,10 +5,15 @@ import base64
 import json
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
 PYTHON = sys.executable
+
+_IDLE_TIMEOUT    = 30 * 60       # seconds of inactivity before shutdown
+_ABSOLUTE_LIMIT  = 2  * 60 * 60  # maximum lifetime regardless of activity
+_CLEANUP_INTERVAL = 5 * 60       # how often the cleanup task runs
 
 import uvicorn
 from contextlib import asynccontextmanager
@@ -39,7 +44,15 @@ def _get_ip(request: Request) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     _restore_state()
-    yield
+    task = asyncio.create_task(_cleanup_loop())
+    try:
+        yield
+    finally:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
 
 
 limiter = Limiter(key_func=_get_ip)
@@ -49,7 +62,25 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # stem -> live ASGI MCP app (in-process, no subprocesses)
 _mcp_apps: dict[str, Any] = {}
+# stem -> {started_at: float, last_used: float}  (monotonic clock)
+_server_meta: dict[str, dict] = {}
 _STATE_FILE = BASE / "schemas" / ".running.json"
+
+
+async def _cleanup_loop() -> None:
+    while True:
+        await asyncio.sleep(_CLEANUP_INTERVAL)
+        now = time.monotonic()
+        to_remove = [
+            stem for stem, meta in list(_server_meta.items())
+            if now - meta["last_used"] > _IDLE_TIMEOUT
+            or now - meta["started_at"] > _ABSOLUTE_LIMIT
+        ]
+        for stem in to_remove:
+            _mcp_apps.pop(stem, None)
+            _server_meta.pop(stem, None)
+        if to_remove:
+            _save_state()
 
 
 def _make_mcp_asgi(stem: str, schema_data: dict) -> Any:
@@ -86,6 +117,8 @@ def _restore_state() -> None:
         try:
             schema_data = json.loads(schema_path.read_text(encoding="utf-8"))
             _mcp_apps[stem] = _make_mcp_asgi(stem, schema_data)
+            now = time.monotonic()
+            _server_meta[stem] = {"started_at": now, "last_used": now}
         except Exception:
             pass
 
@@ -104,6 +137,8 @@ class _MCPDispatch:
             stem = path[5:].split("/")[0]
             mcp_app = _mcp_apps.get(stem)
             if mcp_app:
+                if stem in _server_meta:
+                    _server_meta[stem]["last_used"] = time.monotonic()
                 await mcp_app(scope, receive, send)
                 return
         await self._inner(scope, receive, send)
@@ -162,6 +197,8 @@ def start_server(req: StartReq):
     if stem not in _mcp_apps:
         schema_data = json.loads(schema_path.read_text(encoding="utf-8"))
         _mcp_apps[stem] = _make_mcp_asgi(stem, schema_data)
+        now = time.monotonic()
+        _server_meta[stem] = {"started_at": now, "last_used": now}
         _save_state()
     return {"stem": stem, "mcp_path": f"/mcp/{stem}"}
 
@@ -171,6 +208,7 @@ def stop_server(stem: str):
     if stem not in _mcp_apps:
         raise HTTPException(404, "No server for that schema")
     del _mcp_apps[stem]
+    _server_meta.pop(stem, None)
     _save_state()
     return {"stopped": stem}
 
