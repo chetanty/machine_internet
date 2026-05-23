@@ -3,6 +3,7 @@ from typing import Any, Optional
 
 import httpx
 
+from .errors import SpecEmptyError, SpecNetworkError, SpecParseError
 from .schema import (
     AuthScheme,
     Endpoint,
@@ -36,35 +37,48 @@ SPEC_PATHS = [
 
 
 async def discover_openapi(base_url: str) -> Optional[RawSchema]:
+    """Return a RawSchema or None (spec not found). Raises SpecNetworkError, SpecParseError, SpecEmptyError."""
     base_url = base_url.rstrip("/")
     async with httpx.AsyncClient(follow_redirects=True, timeout=10.0) as client:
-        spec = await _fetch_spec(client, base_url)
+        spec, spec_path = await _fetch_spec(client, base_url)
         if spec is None:
             return None
-        return _parse_spec(spec, base_url)
+    schema = _parse_spec(spec, base_url)
+    if not schema.endpoints:
+        raise SpecEmptyError(spec_path or "")
+    return schema
 
 
-async def discover_openapi_from_spec_url(spec_url: str, base_url: str) -> Optional[RawSchema]:
-    """Fetch an OpenAPI spec from a direct URL and parse it against base_url."""
+async def discover_openapi_from_spec_url(spec_url: str, base_url: str) -> RawSchema:
+    """Fetch a spec from a direct URL. Raises SpecNetworkError, SpecParseError, SpecEmptyError."""
     base_url = base_url.rstrip("/")
     async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
         try:
             resp = await client.get(spec_url)
             resp.raise_for_status()
-        except Exception:
-            return None
+        except (httpx.ConnectError, httpx.ConnectTimeout):
+            raise SpecNetworkError(f"Could not reach {spec_url}")
+        except Exception as exc:
+            raise SpecParseError(spec_url) from exc
         ct = resp.headers.get("content-type", "")
-        if "yaml" in ct or spec_url.endswith((".yaml", ".yml")):
-            import yaml
-            spec = yaml.safe_load(resp.text)
-        else:
-            spec = resp.json()
+        try:
+            if "yaml" in ct or spec_url.endswith((".yaml", ".yml")):
+                import yaml
+                spec = yaml.safe_load(resp.text)
+            else:
+                spec = resp.json()
+        except Exception as exc:
+            raise SpecParseError(spec_url) from exc
     if not isinstance(spec, dict):
-        return None
-    return _parse_spec(spec, base_url)
+        raise SpecParseError(spec_url)
+    schema = _parse_spec(spec, base_url)
+    if not schema.endpoints:
+        raise SpecEmptyError(spec_url)
+    return schema
 
 
-async def _fetch_spec(client: httpx.AsyncClient, base_url: str) -> Optional[dict]:
+async def _fetch_spec(client: httpx.AsyncClient, base_url: str) -> tuple[Optional[dict], Optional[str]]:
+    """Return (spec_dict, path_used) or (None, None). Raises SpecNetworkError, SpecParseError."""
     for path in SPEC_PATHS:
         url = f"{base_url}{path}"
         try:
@@ -72,18 +86,32 @@ async def _fetch_spec(client: httpx.AsyncClient, base_url: str) -> Optional[dict
             if resp.status_code != 200:
                 continue
             ct = resp.headers.get("content-type", "")
-            if "yaml" in ct or path.endswith(".yaml"):
+            is_yaml_path = path.endswith((".yaml", ".yml"))
+            is_json_path = path.endswith(".json")
+            if "yaml" in ct or is_yaml_path:
                 import yaml
-                return yaml.safe_load(resp.text)
+                try:
+                    data = yaml.safe_load(resp.text)
+                    if isinstance(data, dict) and ("paths" in data or "openapi" in data or "swagger" in data):
+                        return data, path
+                except Exception:
+                    if is_yaml_path:
+                        raise SpecParseError(path)
+                continue
             try:
                 data = resp.json()
                 if "paths" in data or "openapi" in data or "swagger" in data:
-                    return data
+                    return data, path
             except Exception:
-                pass
+                if is_json_path:
+                    raise SpecParseError(path)
+        except (SpecParseError, SpecNetworkError):
+            raise
+        except (httpx.ConnectError, httpx.ConnectTimeout):
+            raise SpecNetworkError(f"Could not reach {base_url}")
         except Exception:
             continue
-    return None
+    return None, None
 
 
 def _parse_spec(spec: dict, base_url: str) -> RawSchema:

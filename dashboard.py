@@ -627,6 +627,28 @@ html[data-theme="light"] .wpc-b{background:#fffbeb;color:#92400e}
   padding:.5rem .75rem;font-family:var(--mono);font-size:.72rem;color:var(--muted);
   line-height:1.7;white-space:pre-wrap;margin-top:.4rem;
 }
+.wiki-errs{display:flex;flex-direction:column;gap:.5rem;margin-top:.25rem}
+.wiki-err{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  padding:.65rem .875rem;
+}
+.werr-hdr{display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem}
+.werr-tag{
+  font-size:.6rem;font-weight:700;letter-spacing:.06em;padding:.1rem .4rem;
+  border-radius:4px;flex-shrink:0;
+}
+.werr-tag.fail{background:#450a0a;color:#f87171}
+html[data-theme="light"] .werr-tag.fail{background:#fef2f2;color:#dc2626}
+.werr-tag.warn{background:#2d200e;color:#fcd34d}
+html[data-theme="light"] .werr-tag.warn{background:#fffbeb;color:#92400e}
+.werr-tag.info{background:#1e2d4a;color:#93c5fd}
+html[data-theme="light"] .werr-tag.info{background:#eff6ff;color:#1d4ed8}
+.werr-title{font-size:.8rem;font-weight:600;color:var(--text)}
+.werr-body{font-size:.77rem;color:var(--muted);line-height:1.6}
+.werr-body code{
+  font-family:var(--mono);font-size:.72rem;background:var(--bg);
+  padding:.05rem .3rem;border-radius:3px;color:var(--text);
+}
 </style>
 </head>
 <body>
@@ -645,7 +667,7 @@ html[data-theme="light"] .wpc-b{background:#fffbeb;color:#92400e}
 
 <div class="wrap-section">
   <div class="wrap-row">
-    <input class="wrap-input" type="url" id="w-url" placeholder="https://api.example.com — paste any API URL">
+    <input class="wrap-input" type="url" id="w-url" placeholder="https://api.example.com  (paste any API URL)">
     <button class="btn-primary" id="wrap-btn" onclick="startWrap()">Wrap API</button>
     <button class="btn-ghost" id="opts-toggle" onclick="toggleOpts()">Options</button>
   </div>
@@ -719,7 +741,7 @@ html[data-theme="light"] .wpc-b{background:#fffbeb;color:#92400e}
 
       <div class="wiki-section">
         <h3>What is this?</h3>
-        <p><strong>Machine Internet UAA</strong> (Universal API Adapter) wraps any web API into an <strong>MCP server</strong> — a standardized interface that AI agents can call directly. You paste a URL, it discovers the API's tools, generates a schema, and exposes it on a local port that Claude (or any MCP client) can talk to.</p>
+        <p><strong>Machine Internet UAA</strong> (Universal API Adapter) wraps any web API into an <strong>MCP server</strong>, a standardized interface that AI agents can call directly. Paste a URL, it discovers the API tools, generates a schema, and exposes it on a path that Claude or any MCP client can connect to.</p>
       </div>
 
       <div class="wiki-section">
@@ -728,12 +750,12 @@ html[data-theme="light"] .wpc-b{background:#fffbeb;color:#92400e}
           <div class="wiki-path-card">
             <div class="wpc-badge wpc-a">Path A</div>
             <div class="wpc-title">OpenAPI Spec</div>
-            <div class="wpc-desc">Fetches an OpenAPI / Swagger spec from the target and converts every endpoint into an MCP tool. Works on any modern REST API that publishes a spec.</div>
+            <div class="wpc-desc">Probes 20 standard spec paths. Finds an OpenAPI / Swagger spec and converts every endpoint into an MCP tool. Works on any modern REST API that publishes a spec.</div>
           </div>
           <div class="wiki-path-card">
             <div class="wpc-badge wpc-b">Path B</div>
             <div class="wpc-title">Traffic Sniffing</div>
-            <div class="wpc-desc">When no spec exists, a headless browser loads the site and records XHR/fetch calls. Only works on SPAs (single-page apps) — server-rendered pages yield no captures.</div>
+            <div class="wpc-desc">When no spec exists, a headless browser loads the site and records XHR/fetch calls. Works on SPAs (single-page apps). Server-rendered pages yield no captures.</div>
           </div>
         </div>
       </div>
@@ -741,21 +763,21 @@ html[data-theme="light"] .wpc-b{background:#fffbeb;color:#92400e}
       <div class="wiki-section">
         <h3>Step-by-step</h3>
         <div class="wiki-steps">
-          <div class="wiki-step"><div class="step-num">1</div><div class="step-body"><b>Paste a URL</b> — any API homepage, docs page, or direct spec URL. Use the Options panel to provide a spec URL or filter tags if you already know them.</div></div>
-          <div class="wiki-step"><div class="step-num">2</div><div class="step-body"><b>Click "Wrap API"</b> — the discovery pipeline runs (Path A first, Path B as fallback). Output streams in the Log tab in real time.</div></div>
-          <div class="wiki-step"><div class="step-num">3</div><div class="step-body"><b>Start the service</b> — click ▶ Start on any card. This launches a local MCP server on a free port (starting at 8100).</div></div>
-          <div class="wiki-step"><div class="step-num">4</div><div class="step-body"><b>Copy the MCP URL</b> — shown in the footer and on each live card. Paste it into your Claude MCP config or any compatible AI client.</div></div>
-          <div class="wiki-step"><div class="step-num">5</div><div class="step-body"><b>Use in Claude</b> — add the URL under Settings → MCP Servers. Claude will see all discovered tools and call them on your behalf.</div></div>
+          <div class="wiki-step"><div class="step-num">1</div><div class="step-body"><b>Paste a URL</b> - any API homepage, docs page, or direct spec URL. Use the Options panel to provide a spec URL or filter tags if you already know them.</div></div>
+          <div class="wiki-step"><div class="step-num">2</div><div class="step-body"><b>Click "Wrap API"</b> - the discovery pipeline runs (Path A first, Path B as fallback). Output streams in the Log tab in real time.</div></div>
+          <div class="wiki-step"><div class="step-num">3</div><div class="step-body"><b>Start the service</b> - click Start on any card. This creates an in-process MCP server mounted at <code style="font-family:var(--mono);font-size:.75rem">/mcp/{name}</code> on this same URL.</div></div>
+          <div class="wiki-step"><div class="step-num">4</div><div class="step-body"><b>Copy the MCP URL</b> - shown in the footer and on each live card. Paste it into your Claude MCP config or any compatible AI client.</div></div>
+          <div class="wiki-step"><div class="step-num">5</div><div class="step-body"><b>Use in Claude</b> - add the URL under Settings &gt; MCP Servers. Claude will see all discovered tools and call them on your behalf.</div></div>
         </div>
       </div>
 
       <div class="wiki-section">
         <h3>MCP Config snippet</h3>
-        <p>Add this block to your Claude config file (<code style="font-family:var(--mono);font-size:.78rem">claude_desktop_config.json</code>):</p>
+        <p>Add this block to your Claude Desktop config file (<code style="font-family:var(--mono);font-size:.78rem">claude_desktop_config.json</code>):</p>
         <div class="wiki-code">{
   "mcpServers": {
     "my-api": {
-      "url": "http://localhost:8100/mcp"
+      "url": "https://your-deployment.railway.app/mcp/service_name"
     }
   }
 }</div>
@@ -763,12 +785,76 @@ html[data-theme="light"] .wpc-b{background:#fffbeb;color:#92400e}
 
       <div class="wiki-section">
         <h3>Auth &amp; Secrets</h3>
-        <p>Tap any service card → <strong>Auth tab</strong> to see its auth type and the exact <code style="font-family:var(--mono);font-size:.78rem">serve.py</code> command with the right port. Set secrets as environment variables before starting — the server reads them at runtime, never baking them into the schema file.</p>
+        <p>Tap any service card, then open the Auth tab to see its auth type. Set secrets as environment variables before starting the server. They are read at runtime and never written into the schema file.</p>
       </div>
 
       <div class="wiki-section">
         <h3>Good targets for Path B</h3>
-        <p>Services with no public spec, legacy internal tools, or anything built before the OpenAPI standard. The traffic sniffer works best on React/Vue/Angular SPAs that fire API calls on page load — e.g. HN Algolia search, undocumented dashboards, internal portals.</p>
+        <p>Services with no public spec, internal tools, or anything built before the OpenAPI standard. Works best on React / Vue / Angular SPAs that fire API calls on page load. Examples: search dashboards, HN Algolia, undocumented internal portals.</p>
+        <p>Bad targets for Path B: bare API subdomains (api.example.com returns JSON directly, not a page), fully server-rendered sites (no XHR calls at all), sites behind authentication.</p>
+      </div>
+
+      <div class="wiki-section">
+        <h3>Troubleshooting</h3>
+        <p>Errors stream to the Log tab with actionable hints. Common causes:</p>
+        <div class="wiki-errs">
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag fail">FAIL</span><span class="werr-title">No spec found and no traffic captured</span></div>
+            <div class="werr-body">The URL is likely a bare REST API endpoint (e.g. <code>api.github.com</code>) with no webpage to sniff. Use the Options panel to supply a direct OpenAPI Spec URL, or point at the service homepage and enable traffic sniffing.</div>
+          </div>
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag info">INFO</span><span class="werr-title">No spec at standard locations for api.example.com</span></div>
+            <div class="werr-body">Some services host their spec on a CDN, not on the API domain. Provide the spec URL directly in Options. For GitHub: <code>raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json</code></div>
+          </div>
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag warn">WARN</span><span class="werr-title">Spec has N endpoints, capped at 40</span></div>
+            <div class="werr-body">Large specs are truncated before condensation. Use Filter Tags in Options to focus on specific areas, e.g. <code>repos,issues</code> for GitHub or <code>users,posts</code> for a social API. This reduces the endpoint count before the cap applies.</div>
+          </div>
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag fail">FAIL</span><span class="werr-title">Found a spec but could not parse it</span></div>
+            <div class="werr-body">Supported formats are OpenAPI 3.x and Swagger 2.x in JSON or YAML. The file may be malformed, a different format, or require authentication to download. Try providing a different spec URL directly in Options.</div>
+          </div>
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag fail">FAIL</span><span class="werr-title">Page made no XHR calls (server-rendered)</span></div>
+            <div class="werr-body">The page loaded but made no fetch or XHR requests. This is a server-rendered site. Try a more dynamic page: a search results URL, a user dashboard, or an item detail page. Adding <code>?q=test</code> to trigger a search may help.</div>
+          </div>
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag fail">FAIL</span><span class="werr-title">XHR calls made but all filtered as trackers</span></div>
+            <div class="werr-body">The page only fired analytics or ad calls. Try a more interactive page such as a search results page or dashboard that fetches real data.</div>
+          </div>
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag fail">FAIL</span><span class="werr-title">XHR calls made but none matched the service brand</span></div>
+            <div class="werr-body">The page called a different domain than expected. The API may be on a different TLD (e.g. website on <code>tvmaze.com</code>, API on <code>api.tvmaze.com</code>). The error shows which domains were seen. Try pointing directly at the API domain.</div>
+          </div>
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag fail">FAIL</span><span class="werr-title">AI condensation returned invalid or empty output</span></div>
+            <div class="werr-body">The LLM produced unparseable JSON or no tools. Try filtering with tags to reduce endpoint count, use <code>--raw</code> to inspect the raw schema, or run again since LLM output is non-deterministic.</div>
+          </div>
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag fail">FAIL</span><span class="werr-title">AI provider quota exhausted</span></div>
+            <div class="werr-body">All configured models and API keys are rate-limited. Add a backup key (<code>GEMINI_API_KEY_2</code>) or an OpenAI key (<code>OPENAI_API_KEY</code>) in your environment. The Gemini free tier resets daily at midnight PST.</div>
+          </div>
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag fail">FAIL</span><span class="werr-title">Could not reach the target URL</span></div>
+            <div class="werr-body">Check the URL is correct and publicly accessible. Services behind a VPN, firewall, or authentication cannot be auto-discovered from a cloud deployment.</div>
+          </div>
+
+          <div class="wiki-err">
+            <div class="werr-hdr"><span class="werr-tag fail">FAIL</span><span class="werr-title">Playwright is not installed</span></div>
+            <div class="werr-body">Path B (traffic sniffing) requires Playwright with Chromium. On a local install run <code>playwright install chromium</code>. On Railway, Playwright is installed automatically via the Dockerfile. Path A (spec probing) works without it.</div>
+          </div>
+
+        </div>
       </div>
 
     </div>

@@ -28,6 +28,13 @@ def _brand(url: str) -> str:
     parts = host.split(".")
     return parts[-2] if len(parts) >= 2 else host
 
+from .errors import (
+    AllTrackersFilteredError,
+    BrandFilteredError,
+    NoXHRCapturedError,
+    PlaywrightNotInstalledError,
+    TrafficNetworkError,
+)
 from .schema import (
     AuthScheme,
     Endpoint,
@@ -55,24 +62,35 @@ class _TrafficEntry:
 
 
 async def discover_via_traffic(url: str, timeout: int = 30) -> Optional[RawSchema]:
-    traffic, debug_seen = await _capture_traffic(url, timeout)
-    if not traffic:
-        hint = "page is likely server-rendered" if not debug_seen else f"0 of {len(debug_seen)} XHR calls matched service brand"
-        print(f"  [traffic] no usable calls captured ({hint})")
-        return None
-    print(f"  [traffic] {len(traffic)} same-domain XHR calls captured")
-    return await _infer_schema(url, traffic)
+    """Return a RawSchema or raise a typed DiscoveryError."""
+    entries, stats = await _capture_traffic(url, timeout)
+    if not entries:
+        total = stats["total_xhr"]
+        trackers = stats["tracker_blocked"]
+        brands = stats["brand_blocked"]
+        base_brand = _brand(url)
+        if total == 0:
+            raise NoXHRCapturedError()
+        if brands and not trackers:
+            raise BrandFilteredError(base_brand, sorted(set(brands)))
+        if trackers and not brands:
+            raise AllTrackersFilteredError()
+        if brands:
+            raise BrandFilteredError(base_brand, sorted(set(brands)))
+        raise AllTrackersFilteredError()
+    print(f"  [traffic] {len(entries)} same-domain XHR calls captured")
+    return await _infer_schema(url, entries)
 
 
-async def _capture_traffic(url: str, timeout: int) -> list[_TrafficEntry]:
+async def _capture_traffic(url: str, timeout: int) -> tuple[list[_TrafficEntry], dict]:
+    """Return (entries, stats). stats keys: total_xhr, tracker_blocked, brand_blocked (list of brands)."""
     try:
         from playwright.async_api import async_playwright
     except ImportError:
-        raise RuntimeError(
-            "playwright not installed — run: pip install playwright && playwright install chromium"
-        )
+        raise PlaywrightNotInstalledError()
 
     entries: list[_TrafficEntry] = []
+    stats: dict = {"total_xhr": 0, "tracker_blocked": 0, "brand_blocked": []}
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -80,21 +98,21 @@ async def _capture_traffic(url: str, timeout: int) -> list[_TrafficEntry]:
         page = await context.new_page()
 
         base_brand = _brand(url)
-        _debug_seen: list[str] = []
 
         async def on_response(response):
             try:
                 rt = response.request.resource_type
                 rurl = response.url
                 ct = response.headers.get("content-type", "")
-                if rt in ("xhr", "fetch"):
-                    _debug_seen.append(rurl)
                 if rt not in ("xhr", "fetch"):
                     return
-                # Keep only calls whose brand matches the target service brand
-                if _brand(rurl) != base_brand:
+                stats["total_xhr"] += 1
+                resp_brand = _brand(rurl)
+                if resp_brand != base_brand:
+                    stats["brand_blocked"].append(resp_brand)
                     return
                 if _TRACKER_RE.search(rurl):
+                    stats["tracker_blocked"] += 1
                     return
                 if "json" not in ct:
                     return
@@ -118,10 +136,10 @@ async def _capture_traffic(url: str, timeout: int) -> list[_TrafficEntry]:
 
         page.on("response", on_response)
 
+        network_error: Optional[str] = None
         try:
             await page.goto(url, wait_until="networkidle", timeout=timeout * 1000)
             await asyncio.sleep(2)
-            # Scroll to trigger lazy-loaded content
             for _ in range(3):
                 await page.evaluate("window.scrollBy(0, window.innerHeight)")
                 await asyncio.sleep(0.8)
@@ -129,12 +147,17 @@ async def _capture_traffic(url: str, timeout: int) -> list[_TrafficEntry]:
             await asyncio.sleep(1)
             await _interact(page)
             await asyncio.sleep(4)
-        except Exception:
-            pass
+        except Exception as exc:
+            err_str = str(exc)
+            if any(k in err_str for k in ("ERR_NAME_NOT_RESOLVED", "ERR_CONNECTION_REFUSED", "ERR_CONNECTION_TIMED_OUT")):
+                network_error = err_str
 
         await browser.close()
 
-    return entries, _debug_seen
+    if network_error is not None and stats["total_xhr"] == 0:
+        raise TrafficNetworkError(url)
+
+    return entries, stats
 
 
 async def _interact(page) -> None:

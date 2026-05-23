@@ -3,6 +3,7 @@ import json
 import re
 from datetime import datetime, timezone
 
+from ..discovery.errors import LLMEmptySchemaError, LLMInvalidResponseError, LLMQuotaError
 from ..discovery.schema import (
     AgentTool,
     AuthScheme,
@@ -140,12 +141,21 @@ Return condensed schema as JSON only:
 
 Return ONLY valid JSON. Maximum 15 tools."""
 
-    raw_text = await get_gemini_client().generate(
-        prompt,
-        system=_SYSTEM,
-        max_tokens=32768,
-    )
-    data = _extract_json(raw_text)
+    try:
+        raw_text = await get_gemini_client().generate(
+            prompt,
+            system=_SYSTEM,
+            max_tokens=32768,
+        )
+    except RuntimeError as exc:
+        if "exhausted" in str(exc).lower():
+            raise LLMQuotaError() from exc
+        raise
+
+    try:
+        data = _extract_json(raw_text)
+    except (ValueError, json.JSONDecodeError) as exc:
+        raise LLMInvalidResponseError() from exc
 
     tools: list[AgentTool] = []
     for t in data.get("tools", []):
@@ -181,6 +191,9 @@ Return ONLY valid JSON. Maximum 15 tools."""
             endpoint_mappings=mappings,
             response_fields=t.get("response_fields"),
         ))
+
+    if not tools:
+        raise LLMEmptySchemaError()
 
     auth_type = raw.auth_schemes[0] if raw.auth_schemes else AuthScheme.NONE
 
