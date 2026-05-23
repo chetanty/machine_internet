@@ -2,7 +2,7 @@
 
 Point it at any URL. Get an MCP server any AI agent can call.
 
-**Live:** https://machineinternet-production.up.railway.app
+**Live:** https://machine-internet.onrender.com/
 
 ---
 
