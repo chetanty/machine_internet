@@ -1,0 +1,567 @@
+{
+  "base_url": "https://petstore.swagger.io/v2",
+  "service_name": "swagger_petstore",
+  "service_description": "Manages pets, store orders, and user accounts in a sample Petstore.",
+  "tools": [
+    {
+      "name": "add_pet",
+      "description": "Adds a new pet to the store. The pet object should include at least a `name` and `status`.",
+      "parameters": [
+        {
+          "name": "pet_object",
+          "type": "string",
+          "required": true,
+          "description": "A JSON string representing the Pet object to be added, typically includes 'id', 'category', 'name', 'photoUrls', 'tags', 'status'.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/pet",
+          "parameter_mappings": [
+            {
+              "tool_param": "pet_object",
+              "endpoint_param": "body",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "retrieve_pets",
+      "description": "Retrieves pet information. You can get a single pet by its ID, or search for multiple pets by their status (e.g., 'available', 'pending', 'sold') or by tags. Provide exactly one of 'pet_id', 'status', or 'tags'.",
+      "parameters": [
+        {
+          "name": "pet_id",
+          "type": "integer",
+          "required": false,
+          "description": "ID of the pet to retrieve.",
+          "enum": null
+        },
+        {
+          "name": "status",
+          "type": "array[string]",
+          "required": false,
+          "description": "List of status values to filter pets (e.g., 'available', 'pending', 'sold').",
+          "enum": null
+        },
+        {
+          "name": "tags",
+          "type": "array[string]",
+          "required": false,
+          "description": "List of tags to filter pets.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/pet/{petId}",
+          "parameter_mappings": [
+            {
+              "tool_param": "pet_id",
+              "endpoint_param": "petId",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "GET",
+          "path": "/pet/findByStatus",
+          "parameter_mappings": [
+            {
+              "tool_param": "status",
+              "endpoint_param": "status",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "GET",
+          "path": "/pet/findByTags",
+          "parameter_mappings": [
+            {
+              "tool_param": "tags",
+              "endpoint_param": "tags",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "update_pet",
+      "description": "Updates an existing pet's information. You can either provide a full `pet_object` to replace the pet's entire details, or provide a `pet_id` along with specific `name` and/or `status` fields for a partial update. Do not combine full object and partial attribute updates in a single call.",
+      "parameters": [
+        {
+          "name": "pet_id",
+          "type": "integer",
+          "required": false,
+          "description": "ID of the pet to update. Required for partial updates (name/status).",
+          "enum": null
+        },
+        {
+          "name": "pet_object",
+          "type": "string",
+          "required": false,
+          "description": "A JSON string representing the full Pet object with updated details. Required for full object replacement.",
+          "enum": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "Updated name of the pet. Used for partial update.",
+          "enum": null
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false,
+          "description": "Updated status of the pet. Used for partial update.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "PUT",
+          "path": "/pet",
+          "parameter_mappings": [
+            {
+              "tool_param": "pet_object",
+              "endpoint_param": "body",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "POST",
+          "path": "/pet/{petId}",
+          "parameter_mappings": [
+            {
+              "tool_param": "pet_id",
+              "endpoint_param": "petId",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "name",
+              "endpoint_param": "name",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "status",
+              "endpoint_param": "status",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "delete_pet",
+      "description": "Deletes a pet from the store using its ID.",
+      "parameters": [
+        {
+          "name": "pet_id",
+          "type": "integer",
+          "required": true,
+          "description": "ID of the pet to delete.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "DELETE",
+          "path": "/pet/{petId}",
+          "parameter_mappings": [
+            {
+              "tool_param": "pet_id",
+              "endpoint_param": "petId",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "upload_pet_image",
+      "description": "Uploads an image file for an existing pet, optionally with additional metadata.",
+      "parameters": [
+        {
+          "name": "pet_id",
+          "type": "integer",
+          "required": true,
+          "description": "ID of the pet to update.",
+          "enum": null
+        },
+        {
+          "name": "file",
+          "type": "file",
+          "required": false,
+          "description": "Image file to upload.",
+          "enum": null
+        },
+        {
+          "name": "additional_metadata",
+          "type": "string",
+          "required": false,
+          "description": "Additional data to pass to server.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/pet/{petId}/uploadImage",
+          "parameter_mappings": [
+            {
+              "tool_param": "pet_id",
+              "endpoint_param": "petId",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "additional_metadata",
+              "endpoint_param": "additionalMetadata",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "file",
+              "endpoint_param": "file",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_store_inventory",
+      "description": "Retrieves a map of pet inventory status codes to their quantities.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/store/inventory",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "place_order",
+      "description": "Places a new order for a pet in the store.",
+      "parameters": [
+        {
+          "name": "order_details",
+          "type": "string",
+          "required": true,
+          "description": "A JSON string representing the Order object containing details for purchasing a pet (e.g., 'petId', 'quantity', 'shipDate', 'status', 'complete').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/store/order",
+          "parameter_mappings": [
+            {
+              "tool_param": "order_details",
+              "endpoint_param": "body",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_order_by_id",
+      "description": "Retrieves details of a specific purchase order by its ID. IDs are typically between 1 and 10 for valid responses.",
+      "parameters": [
+        {
+          "name": "order_id",
+          "type": "integer",
+          "required": true,
+          "description": "ID of the order to fetch.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/store/order/{orderId}",
+          "parameter_mappings": [
+            {
+              "tool_param": "order_id",
+              "endpoint_param": "orderId",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "delete_order",
+      "description": "Deletes a purchase order by its ID. Requires a positive integer ID.",
+      "parameters": [
+        {
+          "name": "order_id",
+          "type": "integer",
+          "required": true,
+          "description": "ID of the order to delete.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "DELETE",
+          "path": "/store/order/{orderId}",
+          "parameter_mappings": [
+            {
+              "tool_param": "order_id",
+              "endpoint_param": "orderId",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "create_user",
+      "description": "Creates one or multiple new user accounts. Provide either a JSON string representing a single user object or a JSON string representing an array of user objects.",
+      "parameters": [
+        {
+          "name": "users",
+          "type": "string",
+          "required": true,
+          "description": "A JSON string representing a single user object (e.g., '{\"id\": 1, \"username\": \"testuser\", ...}') or an array of user objects.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/user",
+          "parameter_mappings": [
+            {
+              "tool_param": "users",
+              "endpoint_param": "body",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "POST",
+          "path": "/user/createWithList",
+          "parameter_mappings": [
+            {
+              "tool_param": "users",
+              "endpoint_param": "body",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_user_by_username",
+      "description": "Retrieves details of a user account using their username.",
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "required": true,
+          "description": "The username of the user to fetch. Use 'user1' for testing.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/user/{username}",
+          "parameter_mappings": [
+            {
+              "tool_param": "username",
+              "endpoint_param": "username",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "update_user",
+      "description": "Updates an existing user's account details. This operation requires the user to be logged in.",
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "required": true,
+          "description": "The username of the user to update.",
+          "enum": null
+        },
+        {
+          "name": "user_object",
+          "type": "string",
+          "required": true,
+          "description": "A JSON string representing the updated user object with new details.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "PUT",
+          "path": "/user/{username}",
+          "parameter_mappings": [
+            {
+              "tool_param": "username",
+              "endpoint_param": "username",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "user_object",
+              "endpoint_param": "body",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "delete_user",
+      "description": "Deletes a user account using their username. This operation requires the user to be logged in.",
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "required": true,
+          "description": "The username of the user to delete.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "DELETE",
+          "path": "/user/{username}",
+          "parameter_mappings": [
+            {
+              "tool_param": "username",
+              "endpoint_param": "username",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "login_user",
+      "description": "Logs a user into the system by providing their username and password.",
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "required": true,
+          "description": "The username for login.",
+          "enum": null
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "required": true,
+          "description": "The password for login.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/user/login",
+          "parameter_mappings": [
+            {
+              "tool_param": "username",
+              "endpoint_param": "username",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "password",
+              "endpoint_param": "password",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "logout_user",
+      "description": "Logs out the current logged-in user session, ending their active session.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/user/logout",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "api_key",
+  "auth_config": {},
+  "created_at": "2026-05-19T17:45:12.711280+00:00",
+  "source_url": "https://petstore.swagger.io"
+}

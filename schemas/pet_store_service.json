@@ -1,0 +1,808 @@
+{
+  "base_url": "https://petstore3.swagger.io/api/v3",
+  "service_name": "pet_store_service",
+  "service_description": "Provides tools to manage pets, process orders, and manage user accounts within a pet store.",
+  "tools": [
+    {
+      "name": "create_pet",
+      "description": "Add a new pet to the store with details such as name, category, photo URLs, tags, and status. 'name' and 'photo_urls' are mandatory.",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": false,
+          "description": "Unique identifier for the pet.",
+          "enum": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the pet.",
+          "enum": null
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "required": false,
+          "description": "The category the pet belongs to (e.g., 'dogs', 'cats').",
+          "enum": null
+        },
+        {
+          "name": "photo_urls",
+          "type": "array[string]",
+          "required": true,
+          "description": "A list of URLs for photos of the pet.",
+          "enum": null
+        },
+        {
+          "name": "tags",
+          "type": "array[string]",
+          "required": false,
+          "description": "A list of tags associated with the pet.",
+          "enum": null
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false,
+          "description": "The current status of the pet in the store (e.g., 'available', 'pending', 'sold').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/pet",
+          "parameter_mappings": [
+            {
+              "tool_param": "id",
+              "endpoint_param": "id",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "name",
+              "endpoint_param": "name",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "category",
+              "endpoint_param": "category",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "photo_urls",
+              "endpoint_param": "photoUrls",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "tags",
+              "endpoint_param": "tags",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "status",
+              "endpoint_param": "status",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "update_pet",
+      "description": "Update an existing pet's details (e.g., name, status) or replace its full data. If only 'name' or 'status' are provided, a partial update will be attempted. For full data replacement, include 'photo_urls' and all other relevant fields.",
+      "parameters": [
+        {
+          "name": "pet_id",
+          "type": "integer",
+          "required": true,
+          "description": "The ID of the pet to update.",
+          "enum": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "The updated name of the pet.",
+          "enum": null
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "required": false,
+          "description": "The updated category of the pet.",
+          "enum": null
+        },
+        {
+          "name": "photo_urls",
+          "type": "array[string]",
+          "required": false,
+          "description": "Updated URLs for photos of the pet. Required for full data replacement.",
+          "enum": null
+        },
+        {
+          "name": "tags",
+          "type": "array[string]",
+          "required": false,
+          "description": "Updated tags for the pet.",
+          "enum": null
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false,
+          "description": "The updated status of the pet.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "PUT",
+          "path": "/pet",
+          "parameter_mappings": [
+            {
+              "tool_param": "pet_id",
+              "endpoint_param": "id",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "name",
+              "endpoint_param": "name",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "category",
+              "endpoint_param": "category",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "photo_urls",
+              "endpoint_param": "photoUrls",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "tags",
+              "endpoint_param": "tags",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "status",
+              "endpoint_param": "status",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "POST",
+          "path": "/pet/{petId}",
+          "parameter_mappings": [
+            {
+              "tool_param": "pet_id",
+              "endpoint_param": "petId",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "name",
+              "endpoint_param": "name",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "status",
+              "endpoint_param": "status",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_pets",
+      "description": "Retrieve a pet by its ID, or find multiple pets by status or tags. Provide only one of 'pet_id', 'status', or 'tags' for a search.",
+      "parameters": [
+        {
+          "name": "status",
+          "type": "string",
+          "required": false,
+          "description": "Filter by status: available, pending, or sold",
+          "enum": [
+            "available",
+            "pending",
+            "sold"
+          ]
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/pet/findByStatus",
+          "parameter_mappings": [
+            {
+              "tool_param": "status",
+              "endpoint_param": "status",
+              "location": "query"
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "delete_pet",
+      "description": "Delete a pet from the store by its ID.",
+      "parameters": [
+        {
+          "name": "pet_id",
+          "type": "integer",
+          "required": true,
+          "description": "The ID of the pet to delete.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "DELETE",
+          "path": "/pet/{petId}",
+          "parameter_mappings": [
+            {
+              "tool_param": "pet_id",
+              "endpoint_param": "petId",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "upload_pet_image",
+      "description": "Upload an image file for a specific pet. The image file itself needs to be provided in the request body (not a parameter).",
+      "parameters": [
+        {
+          "name": "pet_id",
+          "type": "integer",
+          "required": true,
+          "description": "The ID of the pet to update with an image.",
+          "enum": null
+        },
+        {
+          "name": "additional_metadata",
+          "type": "string",
+          "required": false,
+          "description": "Additional metadata about the image.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/pet/{petId}/uploadImage",
+          "parameter_mappings": [
+            {
+              "tool_param": "pet_id",
+              "endpoint_param": "petId",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "additional_metadata",
+              "endpoint_param": "additionalMetadata",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_store_inventory",
+      "description": "Retrieve a map of pet inventory status codes to their quantities.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/store/inventory",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "place_order",
+      "description": "Place a new order for a pet in the store.",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "integer",
+          "required": false,
+          "description": "The ID of the order.",
+          "enum": null
+        },
+        {
+          "name": "pet_id",
+          "type": "integer",
+          "required": false,
+          "description": "The ID of the pet being ordered.",
+          "enum": null
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "required": false,
+          "description": "The quantity of the pet ordered.",
+          "enum": null
+        },
+        {
+          "name": "ship_date",
+          "type": "string",
+          "required": false,
+          "description": "The date when the order is expected to be shipped (ISO 8601 format).",
+          "enum": null
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "required": false,
+          "description": "The status of the order (e.g., 'placed', 'approved', 'delivered').",
+          "enum": null
+        },
+        {
+          "name": "complete",
+          "type": "boolean",
+          "required": false,
+          "description": "Indicates if the order is complete.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/store/order",
+          "parameter_mappings": [
+            {
+              "tool_param": "id",
+              "endpoint_param": "id",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "pet_id",
+              "endpoint_param": "petId",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "quantity",
+              "endpoint_param": "quantity",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "ship_date",
+              "endpoint_param": "shipDate",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "status",
+              "endpoint_param": "status",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "complete",
+              "endpoint_param": "complete",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_order",
+      "description": "Find a purchase order by its ID. Valid IDs are <= 5 or > 10.",
+      "parameters": [
+        {
+          "name": "order_id",
+          "type": "integer",
+          "required": true,
+          "description": "The ID of the order to retrieve.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/store/order/{orderId}",
+          "parameter_mappings": [
+            {
+              "tool_param": "order_id",
+              "endpoint_param": "orderId",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "delete_order",
+      "description": "Delete a purchase order by its ID. Valid IDs are < 1000.",
+      "parameters": [
+        {
+          "name": "order_id",
+          "type": "integer",
+          "required": true,
+          "description": "The ID of the order to delete.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "DELETE",
+          "path": "/store/order/{orderId}",
+          "parameter_mappings": [
+            {
+              "tool_param": "order_id",
+              "endpoint_param": "orderId",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "manage_user_profile",
+      "description": "Create a new user profile or update an existing one. To create a user, set 'action' to 'create' and provide user details. To update, set 'action' to 'update', provide the 'username' of the existing user, and the fields to change.",
+      "parameters": [
+        {
+          "name": "action",
+          "type": "string",
+          "required": true,
+          "description": "Specify 'create' to add a new user or 'update' to modify an existing user.",
+          "enum": null
+        },
+        {
+          "name": "id",
+          "type": "integer",
+          "required": false,
+          "description": "The ID of the user.",
+          "enum": null
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "required": false,
+          "description": "The username of the user. Required for updates.",
+          "enum": null
+        },
+        {
+          "name": "first_name",
+          "type": "string",
+          "required": false,
+          "description": "The user's first name.",
+          "enum": null
+        },
+        {
+          "name": "last_name",
+          "type": "string",
+          "required": false,
+          "description": "The user's last name.",
+          "enum": null
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "required": false,
+          "description": "The user's email address.",
+          "enum": null
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "required": false,
+          "description": "The user's password.",
+          "enum": null
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "required": false,
+          "description": "The user's phone number.",
+          "enum": null
+        },
+        {
+          "name": "user_status",
+          "type": "integer",
+          "required": false,
+          "description": "User Status.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/user",
+          "parameter_mappings": [
+            {
+              "tool_param": "id",
+              "endpoint_param": "id",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "username",
+              "endpoint_param": "username",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "first_name",
+              "endpoint_param": "firstName",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "last_name",
+              "endpoint_param": "lastName",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "email",
+              "endpoint_param": "email",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "password",
+              "endpoint_param": "password",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "phone",
+              "endpoint_param": "phone",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "user_status",
+              "endpoint_param": "userStatus",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "PUT",
+          "path": "/user/{username}",
+          "parameter_mappings": [
+            {
+              "tool_param": "username",
+              "endpoint_param": "username",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "id",
+              "endpoint_param": "id",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "username",
+              "endpoint_param": "username",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "first_name",
+              "endpoint_param": "firstName",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "last_name",
+              "endpoint_param": "lastName",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "email",
+              "endpoint_param": "email",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "password",
+              "endpoint_param": "password",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "phone",
+              "endpoint_param": "phone",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "user_status",
+              "endpoint_param": "userStatus",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "create_multiple_users",
+      "description": "Create multiple user profiles in a batch. The request body should contain an array of user objects.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/user/createWithList",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "manage_user_session",
+      "description": "Log a user into or out of the system. Specify 'login' with username and password, or 'logout' to end the current session.",
+      "parameters": [
+        {
+          "name": "action",
+          "type": "string",
+          "required": true,
+          "description": "Specify 'login' to authenticate or 'logout' to end the session.",
+          "enum": null
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "required": false,
+          "description": "The user name for login.",
+          "enum": null
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "required": false,
+          "description": "The password for login.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/user/login",
+          "parameter_mappings": [
+            {
+              "tool_param": "username",
+              "endpoint_param": "username",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "password",
+              "endpoint_param": "password",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "GET",
+          "path": "/user/logout",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_user_by_username",
+      "description": "Retrieve a user's details by their username.",
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "required": true,
+          "description": "The username of the user to retrieve.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/user/{username}",
+          "parameter_mappings": [
+            {
+              "tool_param": "username",
+              "endpoint_param": "username",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "delete_user",
+      "description": "Delete a user from the system by their username.",
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "required": true,
+          "description": "The username of the user to delete.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "DELETE",
+          "path": "/user/{username}",
+          "parameter_mappings": [
+            {
+              "tool_param": "username",
+              "endpoint_param": "username",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "api_key",
+  "auth_config": {},
+  "created_at": "2026-05-17T15:37:01.511176+00:00",
+  "source_url": "https://petstore3.swagger.io"
+}

@@ -1,0 +1,148 @@
+{
+  "base_url": "https://hn.algolia.com",
+  "service_name": "algolia_api_hacker_news",
+  "service_description": "This service provides a search interface for Hacker News articles using the Algolia search engine.",
+  "tools": [
+    {
+      "name": "search_articles",
+      "description": "Use this tool to search for Hacker News articles by providing a query and optional filters.",
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": false,
+          "description": "The search query string to find relevant articles.",
+          "enum": null
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "required": false,
+          "description": "The page number of results to retrieve.",
+          "enum": null
+        },
+        {
+          "name": "hits_per_page",
+          "type": "integer",
+          "required": false,
+          "description": "Number of articles to return per page.",
+          "enum": null
+        },
+        {
+          "name": "numeric_filters",
+          "type": "array",
+          "required": false,
+          "description": "Filters that apply to numeric attributes.",
+          "enum": null
+        },
+        {
+          "name": "tag_filters",
+          "type": "array",
+          "required": false,
+          "description": "Tags to filter the articles.",
+          "enum": null
+        },
+        {
+          "name": "restrict_searchable_attributes",
+          "type": "array",
+          "required": false,
+          "description": "Attributes to restrict the search to.",
+          "enum": null
+        },
+        {
+          "name": "get_ranking_info",
+          "type": "boolean",
+          "required": false,
+          "description": "Indicate if ranking info should be included in the response.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/1/indexes/Item_dev/query",
+          "parameter_mappings": [
+            {
+              "tool_param": "query",
+              "endpoint_param": "query",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "page",
+              "endpoint_param": "page",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "hits_per_page",
+              "endpoint_param": "hitsPerPage",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "numeric_filters",
+              "endpoint_param": "numericFilters",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "tag_filters",
+              "endpoint_param": "tagFilters",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "restrict_searchable_attributes",
+              "endpoint_param": "restrictSearchableAttributes",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "get_ranking_info",
+              "endpoint_param": "getRankingInfo",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "check_service_status",
+      "description": "Use this tool to check if the Hacker News search service is alive.",
+      "parameters": [
+        {
+          "name": "probe",
+          "type": "integer",
+          "required": true,
+          "description": "A probe value to confirm the request.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/1/isalive",
+          "parameter_mappings": [
+            {
+              "tool_param": "probe",
+              "endpoint_param": "probe",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-05-20T19:57:55.360435+00:00",
+  "source_url": "https://hn.algolia.com",
+  "discovery_method": "traffic"
+}

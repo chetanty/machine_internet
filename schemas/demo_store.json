@@ -1,0 +1,206 @@
+{
+  "base_url": "http://localhost:9000",
+  "service_name": "demo_store",
+  "service_description": "A small API for managing items and orders in a demo store.",
+  "tools": [
+    {
+      "name": "list_items",
+      "description": "List all items in the store, optionally filtered by minimum price.",
+      "parameters": [
+        {
+          "name": "min_price",
+          "type": "number",
+          "required": false,
+          "description": "Only return items at or above this price"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/items",
+          "parameter_mappings": [
+            {
+              "tool_param": "min_price",
+              "endpoint_param": "min_price",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_item",
+      "description": "Get a single item by its ID.",
+      "parameters": [
+        {
+          "name": "item_id",
+          "type": "string",
+          "required": true,
+          "description": "The item ID"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/items/{item_id}",
+          "parameter_mappings": [
+            {
+              "tool_param": "item_id",
+              "endpoint_param": "item_id",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "create_item",
+      "description": "Create a new item in the store. Use this when a new product needs to be added to the inventory.",
+      "parameters": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the item.",
+          "enum": null
+        },
+        {
+          "name": "price",
+          "type": "number",
+          "required": true,
+          "description": "The price of the item.",
+          "enum": null
+        },
+        {
+          "name": "stock",
+          "type": "integer",
+          "required": false,
+          "description": "The number of items currently in stock.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/items",
+          "parameter_mappings": [
+            {
+              "tool_param": "name",
+              "endpoint_param": "name",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "price",
+              "endpoint_param": "price",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "stock",
+              "endpoint_param": "stock",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "list_orders",
+      "description": "List all orders that have been placed.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/orders",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_order",
+      "description": "Get a specific order by its ID.",
+      "parameters": [
+        {
+          "name": "order_id",
+          "type": "string",
+          "required": true,
+          "description": "The order ID"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/orders/{order_id}",
+          "parameter_mappings": [
+            {
+              "tool_param": "order_id",
+              "endpoint_param": "order_id",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "place_order",
+      "description": "Place a new order for a specified item and quantity. Use this when a customer wants to purchase an item.",
+      "parameters": [
+        {
+          "name": "item_id",
+          "type": "string",
+          "required": true,
+          "description": "The ID of the item to order.",
+          "enum": null
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "required": true,
+          "description": "The quantity of the item to order.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/orders",
+          "parameter_mappings": [
+            {
+              "tool_param": "item_id",
+              "endpoint_param": "item_id",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "quantity",
+              "endpoint_param": "quantity",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-05-17T15:49:28.732279+00:00",
+  "source_url": "http://localhost:9000"
+}

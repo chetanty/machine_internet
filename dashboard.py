@@ -64,8 +64,6 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 _mcp_apps: dict[str, Any] = {}
 # stem -> {started_at: float, last_used: float}  (monotonic clock)
 _server_meta: dict[str, dict] = {}
-_STATE_FILE = BASE / "schemas" / ".running.json"
-
 
 async def _cleanup_loop() -> None:
     while True:
@@ -95,29 +93,20 @@ def _make_mcp_asgi(stem: str, schema_data: dict) -> Any:
 
 
 def _save_state() -> None:
-    try:
-        _STATE_FILE.write_text(json.dumps(list(_mcp_apps.keys())), encoding="utf-8")
-    except Exception:
-        pass
+    pass  # no-op: state is derived from schemas/ on startup
 
 
 def _restore_state() -> None:
-    if not _STATE_FILE.exists():
+    if not SCHEMAS_DIR.exists():
         return
-    try:
-        stems = json.loads(_STATE_FILE.read_text(encoding="utf-8"))
-    except Exception:
-        return
-    for stem in stems:
-        schema_path = (SCHEMAS_DIR / f"{stem}.json").resolve()
-        if not schema_path.is_relative_to(SCHEMAS_DIR.resolve()):
+    now = time.monotonic()
+    for schema_path in sorted(SCHEMAS_DIR.glob("*.json")):
+        if schema_path.name.startswith("."):
             continue
-        if not schema_path.exists():
-            continue
+        stem = schema_path.stem
         try:
             schema_data = json.loads(schema_path.read_text(encoding="utf-8"))
             _mcp_apps[stem] = _make_mcp_asgi(stem, schema_data)
-            now = time.monotonic()
             _server_meta[stem] = {"started_at": now, "last_used": now}
         except Exception:
             pass
@@ -374,9 +363,22 @@ header{
 
 /* ── grid ─────────────────────────────────────────────────────────────────── */
 .grid-area{flex:1;min-width:0;overflow-y:auto;padding:1.25rem}
-.grid-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.grid-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:.75rem}
 .section-label{font-size:.7rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
 .svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.875rem}
+.search-wrap{position:relative;display:flex;align-items:center}
+.search-input{
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text);font-size:.8rem;padding:.35rem .65rem .35rem 1.75rem;width:180px;
+  transition:border-color var(--t),box-shadow var(--t),width var(--t);outline:none;
+}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,58,237,.12);width:220px}
+.search-input::placeholder{color:var(--muted)}
+.search-icon{position:absolute;left:.5rem;font-size:.75rem;color:var(--muted);pointer-events:none}
+.search-clear{position:absolute;right:.4rem;font-size:.7rem;color:var(--muted);cursor:pointer;
+  background:none;border:none;padding:0 .2rem;display:none}
+.search-clear.visible{display:block}
+.search-clear:hover{color:var(--text)}
 
 /* ── service card ─────────────────────────────────────────────────────────── */
 .svc-card{
@@ -687,6 +689,11 @@ html[data-theme="light"] .werr-tag.info{background:#eff6ff;color:#1d4ed8}
   <div class="grid-area">
     <div class="grid-hdr">
       <span class="section-label">Wrapped Services</span>
+      <div class="search-wrap">
+        <span class="search-icon">&#x2315;</span>
+        <input id="svc-search" class="search-input" type="text" placeholder="Search services..." oninput="onSearch(this.value)">
+        <button class="search-clear" id="search-clear" onclick="clearSearch()" title="Clear">&times;</button>
+      </div>
     </div>
     <div class="svc-grid" id="svc-grid">
       <div class="grid-empty">
@@ -777,7 +784,7 @@ html[data-theme="light"] .werr-tag.info{background:#eff6ff;color:#1d4ed8}
         <div class="wiki-code">{
   "mcpServers": {
     "my-api": {
-      "url": "https://your-deployment.railway.app/mcp/service_name"
+      "url": "https://your-app.onrender.com/mcp/service_name"
     }
   }
 }</div>
@@ -863,7 +870,7 @@ html[data-theme="light"] .werr-tag.info{background:#eff6ff;color:#1d4ed8}
 
 <script>
 // ── state ──────────────────────────────────────────────────────────────────
-let _schemas = [], _servers = {}, _selectedFile = null;
+let _schemas = [], _servers = {}, _selectedFile = null, _searchQ = '';
 
 // ── theme ──────────────────────────────────────────────────────────────────
 (function initTheme() {
@@ -917,14 +924,38 @@ function liveMap(srvs) {
   return m;
 }
 
+function onSearch(q) {
+  _searchQ = q.trim().toLowerCase();
+  document.getElementById('search-clear').classList.toggle('visible', !!_searchQ);
+  renderGrid(_schemas, _servers);
+}
+function clearSearch() {
+  _searchQ = '';
+  document.getElementById('svc-search').value = '';
+  document.getElementById('search-clear').classList.remove('visible');
+  renderGrid(_schemas, _servers);
+}
+
 function renderGrid(schemas, srvs) {
   const grid = document.getElementById('svc-grid');
+  const filtered = _searchQ
+    ? schemas.filter(s =>
+        s.service_name.toLowerCase().includes(_searchQ) ||
+        (s.source_url   || '').toLowerCase().includes(_searchQ) ||
+        (s.description  || '').toLowerCase().includes(_searchQ) ||
+        (s.tools        || []).some(t => t.toLowerCase().includes(_searchQ))
+      )
+    : schemas;
   if (!schemas.length) {
     grid.innerHTML = '<div class="grid-empty"><div class="grid-empty-icon">⬡</div><div class="grid-empty-text">No services wrapped yet</div><div class="grid-empty-hint">Paste any API URL above to get started</div></div>';
     return;
   }
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="grid-empty"><div class="grid-empty-icon">⬡</div><div class="grid-empty-text">No results for &ldquo;${esc(_searchQ)}&rdquo;</div><div class="grid-empty-hint">Try a tool name, URL, or service name</div></div>`;
+    return;
+  }
   const lm = liveMap(srvs);
-  grid.innerHTML = schemas.map(s => {
+  grid.innerHTML = filtered.map(s => {
     const stem = lm[s.file];
     const live = !!stem;
     const sel  = _selectedFile === s.file;

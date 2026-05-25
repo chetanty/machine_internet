@@ -1,0 +1,825 @@
+{
+  "base_url": "http://httpbin.org/",
+  "service_name": "httpbin_service",
+  "service_description": "A simple HTTP Request & Response Service for testing various HTTP functionalities like request inspection, redirects, authentication, caching, and dynamic data generation.",
+  "tools": [
+    {
+      "name": "simulate_redirect",
+      "description": "Simulates an HTTP 302 redirect chain for a specified number of times. The client will be redirected 'n' times.",
+      "parameters": [
+        {
+          "name": "n",
+          "type": "integer",
+          "required": true,
+          "description": "The number of times to redirect (e.g., 1, 2, 3).",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/absolute-redirect/{n}",
+          "parameter_mappings": [
+            {
+              "tool_param": "n",
+              "endpoint_param": "n",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "echo_request_data",
+      "description": "Echoes back the request's method, headers, form data, JSON data, and query parameters, allowing an agent to inspect how any HTTP request is interpreted by the server. This tool supports all HTTP methods (GET, POST, PUT, PATCH, DELETE).",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/anything",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "POST",
+          "path": "/anything",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "PUT",
+          "path": "/anything",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "PATCH",
+          "path": "/anything",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "DELETE",
+          "path": "/anything",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "GET",
+          "path": "/anything/{anything}",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "POST",
+          "path": "/anything/{anything}",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "PUT",
+          "path": "/anything/{anything}",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "PATCH",
+          "path": "/anything/{anything}",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "DELETE",
+          "path": "/anything/{anything}",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "GET",
+          "path": "/get",
+          "parameter_mappings": [],
+          "static_params": {}
+        },
+        {
+          "method": "DELETE",
+          "path": "/delete",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "decode_base64_string",
+      "description": "Decodes a URL-safe base64 encoded string provided in the path.",
+      "parameters": [
+        {
+          "name": "value",
+          "type": "string",
+          "required": true,
+          "description": "The URL-safe base64 encoded string to decode.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/base64/{value}",
+          "parameter_mappings": [
+            {
+              "tool_param": "value",
+              "endpoint_param": "value",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "prompt_basic_auth",
+      "description": "Prompts the client for HTTP Basic Authentication using the provided username and password to configure the expected credentials. Supports both visible and hidden basic auth prompts.",
+      "parameters": [
+        {
+          "name": "username",
+          "type": "string",
+          "required": true,
+          "description": "The username expected for basic authentication.",
+          "enum": null
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "required": true,
+          "description": "The password expected for basic authentication.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/basic-auth/{user}/{passwd}",
+          "parameter_mappings": [
+            {
+              "tool_param": "username",
+              "endpoint_param": "user",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "password",
+              "endpoint_param": "passwd",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "GET",
+          "path": "/hidden-basic-auth/{user}/{passwd}",
+          "parameter_mappings": [
+            {
+              "tool_param": "username",
+              "endpoint_param": "user",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "password",
+              "endpoint_param": "passwd",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "prompt_bearer_auth",
+      "description": "Prompts the client for HTTP Bearer Token authentication. The agent should provide the 'Authorization' header with the bearer token to authenticate against this challenge.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/bearer",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "prompt_digest_auth",
+      "description": "Prompts the client for HTTP Digest Authentication, configured with a specified quality of protection (qop), username, password, optional algorithm, and optional staleness period. The client should send the appropriate Digest Authorization header to authenticate.",
+      "parameters": [
+        {
+          "name": "qop",
+          "type": "string",
+          "required": true,
+          "description": "The quality of protection for Digest Auth (e.g., 'auth' or 'auth-int').",
+          "enum": null
+        },
+        {
+          "name": "username",
+          "type": "string",
+          "required": true,
+          "description": "The username expected for Digest Authentication.",
+          "enum": null
+        },
+        {
+          "name": "password",
+          "type": "string",
+          "required": true,
+          "description": "The password expected for Digest Authentication.",
+          "enum": null
+        },
+        {
+          "name": "algorithm",
+          "type": "string",
+          "required": false,
+          "description": "The algorithm for Digest Auth (e.g., 'MD5', 'SHA-256', 'SHA-512').",
+          "enum": null
+        },
+        {
+          "name": "stale_after_seconds",
+          "type": "string",
+          "required": false,
+          "description": "Optional: Time in seconds after which the nonce should become stale, requiring a new challenge.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/digest-auth/{qop}/{user}/{passwd}",
+          "parameter_mappings": [
+            {
+              "tool_param": "qop",
+              "endpoint_param": "qop",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "username",
+              "endpoint_param": "user",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "password",
+              "endpoint_param": "passwd",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "GET",
+          "path": "/digest-auth/{qop}/{user}/{passwd}/{algorithm}",
+          "parameter_mappings": [
+            {
+              "tool_param": "qop",
+              "endpoint_param": "qop",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "username",
+              "endpoint_param": "user",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "password",
+              "endpoint_param": "passwd",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "algorithm",
+              "endpoint_param": "algorithm",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "GET",
+          "path": "/digest-auth/{qop}/{user}/{passwd}/{algorithm}/{stale_after}",
+          "parameter_mappings": [
+            {
+              "tool_param": "qop",
+              "endpoint_param": "qop",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "username",
+              "endpoint_param": "user",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "password",
+              "endpoint_param": "passwd",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "algorithm",
+              "endpoint_param": "algorithm",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "stale_after_seconds",
+              "endpoint_param": "stale_after",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_compressed_data",
+      "description": "Retrieves data compressed using a specified compression algorithm (Brotli, Deflate, or GZip).",
+      "parameters": [
+        {
+          "name": "compression_type",
+          "type": "string",
+          "required": true,
+          "description": "The type of compression to use for the response data.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/brotli",
+          "parameter_mappings": [],
+          "static_params": {
+            "compression_type": "brotli"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/deflate",
+          "parameter_mappings": [],
+          "static_params": {
+            "compression_type": "deflate"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/gzip",
+          "parameter_mappings": [],
+          "static_params": {
+            "compression_type": "gzip"
+          }
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_random_bytes",
+      "description": "Generates and returns a specified number of random bytes.",
+      "parameters": [
+        {
+          "name": "num_bytes",
+          "type": "integer",
+          "required": true,
+          "description": "The number of random bytes to generate and return.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/bytes/{n}",
+          "parameter_mappings": [
+            {
+              "tool_param": "num_bytes",
+              "endpoint_param": "n",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "inspect_http_caching",
+      "description": "Tests and observes HTTP caching and ETag mechanisms. It can return a 304 Not Modified if `If-Modified-Since`, `If-None-Match`, or `If-Match` headers are present, set a `Cache-Control` header for a specified duration, or simulate a resource having a given ETag.",
+      "parameters": [
+        {
+          "name": "cache_duration_seconds",
+          "type": "integer",
+          "required": false,
+          "description": "Sets a Cache-Control header for this many seconds (only applicable when checking general caching behavior).",
+          "enum": null
+        },
+        {
+          "name": "resource_etag",
+          "type": "string",
+          "required": false,
+          "description": "Simulates that the resource has this ETag value, for testing ETag-specific conditional requests.",
+          "enum": null
+        },
+        {
+          "name": "if_modified_since_header",
+          "type": "string",
+          "required": false,
+          "description": "Optional `If-Modified-Since` header value for conditional requests (e.g., 'Thu, 01 Jan 1970 00:00:00 GMT').",
+          "enum": null
+        },
+        {
+          "name": "if_none_match_header",
+          "type": "string",
+          "required": false,
+          "description": "Optional `If-None-Match` header value for conditional requests (e.g., '\"some-etag\"').",
+          "enum": null
+        },
+        {
+          "name": "if_match_header",
+          "type": "string",
+          "required": false,
+          "description": "Optional `If-Match` header value for conditional requests (e.g., '\"other-etag\"').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/cache",
+          "parameter_mappings": [
+            {
+              "tool_param": "if_modified_since_header",
+              "endpoint_param": "If-Modified-Since",
+              "location": "header",
+              "transform": null
+            },
+            {
+              "tool_param": "if_none_match_header",
+              "endpoint_param": "If-None-Match",
+              "location": "header",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "GET",
+          "path": "/cache/{value}",
+          "parameter_mappings": [
+            {
+              "tool_param": "cache_duration_seconds",
+              "endpoint_param": "value",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "GET",
+          "path": "/etag/{etag}",
+          "parameter_mappings": [
+            {
+              "tool_param": "resource_etag",
+              "endpoint_param": "etag",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "if_none_match_header",
+              "endpoint_param": "If-None-Match",
+              "location": "header",
+              "transform": null
+            },
+            {
+              "tool_param": "if_match_header",
+              "endpoint_param": "If-Match",
+              "location": "header",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "manage_cookies",
+      "description": "Manages HTTP cookies by retrieving current cookies, setting new cookies (individually or via query parameters), or deleting cookies (via query parameters).",
+      "parameters": [
+        {
+          "name": "action",
+          "type": "string",
+          "required": true,
+          "description": "The action to perform on cookies.",
+          "enum": null
+        },
+        {
+          "name": "cookie_name",
+          "type": "string",
+          "required": false,
+          "description": "The name of a single cookie to set (required if 'action' is 'set_one').",
+          "enum": null
+        },
+        {
+          "name": "cookie_value",
+          "type": "string",
+          "required": false,
+          "description": "The value of a single cookie to set (required if 'action' is 'set_one').",
+          "enum": null
+        },
+        {
+          "name": "cookies_to_set",
+          "type": "object",
+          "required": false,
+          "description": "An object where keys are cookie names and values are cookie values, used to set multiple cookies via query parameters (required if 'action' is 'set_multiple').",
+          "enum": null
+        },
+        {
+          "name": "cookies_to_delete",
+          "type": "object",
+          "required": false,
+          "description": "An object where keys are cookie names and values are empty strings or any value, used to delete multiple cookies via query parameters (required if 'action' is 'delete_multiple').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/cookies",
+          "parameter_mappings": [],
+          "static_params": {
+            "action": "get_all"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/cookies/set/{name}/{value}",
+          "parameter_mappings": [
+            {
+              "tool_param": "cookie_name",
+              "endpoint_param": "name",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "cookie_value",
+              "endpoint_param": "value",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {
+            "action": "set_one"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/cookies/set",
+          "parameter_mappings": [
+            {
+              "tool_param": "cookies_to_set",
+              "endpoint_param": "freeform",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {
+            "action": "set_multiple"
+          }
+        },
+        {
+          "method": "GET",
+          "path": "/cookies/delete",
+          "parameter_mappings": [
+            {
+              "tool_param": "cookies_to_delete",
+              "endpoint_param": "freeform",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {
+            "action": "delete_multiple"
+          }
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_delayed_response",
+      "description": "Retrieves a response after a specified delay (maximum 10 seconds), supporting any HTTP method.",
+      "parameters": [
+        {
+          "name": "delay_seconds",
+          "type": "integer",
+          "required": true,
+          "description": "The number of seconds to delay the response (maximum 10).",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/delay/{delay}",
+          "parameter_mappings": [
+            {
+              "tool_param": "delay_seconds",
+              "endpoint_param": "delay",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "POST",
+          "path": "/delay/{delay}",
+          "parameter_mappings": [
+            {
+              "tool_param": "delay_seconds",
+              "endpoint_param": "delay",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "PUT",
+          "path": "/delay/{delay}",
+          "parameter_mappings": [
+            {
+              "tool_param": "delay_seconds",
+              "endpoint_param": "delay",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "PATCH",
+          "path": "/delay/{delay}",
+          "parameter_mappings": [
+            {
+              "tool_param": "delay_seconds",
+              "endpoint_param": "delay",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        },
+        {
+          "method": "DELETE",
+          "path": "/delay/{delay}",
+          "parameter_mappings": [
+            {
+              "tool_param": "delay_seconds",
+              "endpoint_param": "delay",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "simulate_robot_denial",
+      "description": "Simulates a request to a page that would be denied by `robots.txt` rules, returning a corresponding HTTP response.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/deny",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "drip_response_data",
+      "description": "Simulates a slow data drip, sending a specified number of bytes over a duration after an optional initial delay, and returning a specific HTTP status code.",
+      "parameters": [
+        {
+          "name": "duration_seconds",
+          "type": "number",
+          "required": false,
+          "description": "The amount of time (in seconds) over which to drip each byte.",
+          "enum": null
+        },
+        {
+          "name": "num_bytes_to_drip",
+          "type": "integer",
+          "required": false,
+          "description": "The number of bytes to respond with.",
+          "enum": null
+        },
+        {
+          "name": "response_code",
+          "type": "integer",
+          "required": false,
+          "description": "The HTTP status code that will be returned.",
+          "enum": null
+        },
+        {
+          "name": "initial_delay_seconds",
+          "type": "number",
+          "required": false,
+          "description": "The amount of time (in seconds) to delay before starting to drip the response.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/drip",
+          "parameter_mappings": [
+            {
+              "tool_param": "duration_seconds",
+              "endpoint_param": "duration",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "num_bytes_to_drip",
+              "endpoint_param": "numbytes",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "response_code",
+              "endpoint_param": "code",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "initial_delay_seconds",
+              "endpoint_param": "delay",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_utf8_encoded_data",
+      "description": "Retrieves a response with a UTF-8 encoded body.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/encoding/utf8",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_request_headers",
+      "description": "Retrieves and returns all HTTP headers sent in the incoming request.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/headers",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-05-19T17:45:11.424444+00:00",
+  "source_url": "http://httpbin.org"
+}

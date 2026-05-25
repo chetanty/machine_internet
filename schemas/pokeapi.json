@@ -1,0 +1,40 @@
+{
+  "base_url": "https://pokeapi.co/api/v2",
+  "service_name": "pokeapi",
+  "service_description": "Accesses Pok\u00e9mon data, including detailed information about specific Pok\u00e9mon.",
+  "tools": [
+    {
+      "name": "get_pokemon",
+      "description": "Retrieves detailed information about a Pok\u00e9mon. Use this tool when you need to find data like a Pok\u00e9mon's abilities, types, stats, or species information by providing its name or ID.",
+      "parameters": [
+        {
+          "name": "pokemon_identifier",
+          "type": "string",
+          "required": true,
+          "description": "The name (e.g., 'pikachu') or the ID (e.g., '25') of the Pok\u00e9mon to retrieve information for.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/pokemon/{id}",
+          "parameter_mappings": [
+            {
+              "tool_param": "pokemon_identifier",
+              "endpoint_param": "id",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-05-19T19:56:43.297866+00:00",
+  "source_url": "https://pokeapi.co"
+}

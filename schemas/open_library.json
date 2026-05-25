@@ -1,0 +1,83 @@
+{
+  "base_url": "https://openlibrary.org",
+  "service_name": "open_library",
+  "service_description": "API for accessing book data and affiliate links from Open Library.",
+  "tools": [
+    {
+      "name": "get_affiliate_links",
+      "description": "Retrieve affiliate links and pricing for a specific book using its title and ISBN/ASIN.",
+      "parameters": [
+        {
+          "name": "data",
+          "type": "string",
+          "required": true,
+          "description": "URL-encoded JSON object containing the book title and ISBN/ASIN.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/partials/AffiliateLinks.json",
+          "parameter_mappings": [
+            {
+              "tool_param": "data",
+              "endpoint_param": "data",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_book_lists",
+      "description": "Retrieve reading lists associated with a specific work and edition by their IDs.",
+      "parameters": [
+        {
+          "name": "workId",
+          "type": "string",
+          "required": true,
+          "description": "The ID of the work to retrieve lists for.",
+          "enum": null
+        },
+        {
+          "name": "editionId",
+          "type": "string",
+          "required": true,
+          "description": "The ID of the specific edition to retrieve lists for.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/partials/BPListsSection.json",
+          "parameter_mappings": [
+            {
+              "tool_param": "workId",
+              "endpoint_param": "workId",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "editionId",
+              "endpoint_param": "editionId",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-05-21T09:49:15.847513+00:00",
+  "source_url": "https://openlibrary.org/works/OL45804W/Fantastic_Mr_Fox",
+  "discovery_method": "traffic"
+}
