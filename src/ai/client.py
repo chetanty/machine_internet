@@ -38,9 +38,13 @@ def _build_agent_list() -> list[dict]:
     primary_model = settings.gemini_model
     agents: list[dict] = []
 
-    # 1. OpenAI (primary)
+    # 1. OpenAI (primary, only if package is installed)
     if settings.openai_api_key:
-        agents.append({"provider": "openai", "api_key": settings.openai_api_key, "model": settings.openai_model})
+        try:
+            import openai as _openai_pkg  # noqa: F401
+            agents.append({"provider": "openai", "api_key": settings.openai_api_key, "model": settings.openai_model})
+        except ImportError:
+            pass
 
     # 2. Primary Gemini (fallback)
     if primary_key:

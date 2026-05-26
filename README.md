@@ -39,15 +39,12 @@ Or wrap any API yourself at [machine-internet.onrender.com](https://machine-inte
 
 | API | Endpoint | Tools |
 |---|---|---|
-| GitHub REST API | `/mcp/github_v3_rest_api` | 14 — repos, issues, branches |
+| GitHub Issues | `/mcp/github_v3_rest_api` | 15 — list, create, update, comment, label |
 | HN Algolia Search | `/mcp/algolia_api_hacker_news` | 2 — search articles, status |
 | httpbin | `/mcp/httpbin_service` | 15 — inspect, auth, redirect |
 | Open Library | `/mcp/open_library` | 2 — books, affiliate links |
 | Open Library Search | `/mcp/open_library_search_api` | 2 — search books/authors, facets |
 | PokéAPI | `/mcp/pokeapi` | 1 — get Pokemon |
-| TVMaze | `/mcp/tvmaze` | 2 — show details, geo region |
-| Petstore v2 | `/mcp/swagger_petstore` | 15 — full pet store API |
-| Petstore v3 | `/mcp/pet_store_service` | 14 — full pet store API |
 
 All endpoints are live and free. Base URL: `https://machine-internet.onrender.com`
 
@@ -114,7 +111,7 @@ python discover.py --url http://httpbin.org
 python discover.py \
   --url https://api.github.com \
   --spec https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json \
-  --tags repos,issues
+  --tags issues
 
 # No spec: use traffic sniffing
 python discover.py --url https://hn.algolia.com --traffic
@@ -129,12 +126,11 @@ python serve.py --schema schemas/httpbin_service.json --port 8100
 
 | Service | Method | Tools | Notes |
 |---|---|---|---|
-| GitHub REST API | Path A + `--spec` | 14 | Large spec, tag filter required |
+| GitHub Issues API | Path A + `--spec --tags issues` | 15 | 1,186 endpoint spec, tag filter to issues |
 | httpbin.org | Path A auto-detected | 15 | Spec at `/spec.json` |
 | HN Algolia | Path B traffic sniff | 2 | SPA, API on different TLD |
 | PokéAPI | Path B traffic sniff | 1 | No spec anywhere |
 | Open Library | Path B traffic sniff | 2 | Mostly SSR, search page works |
-| TVMaze | Path B traffic sniff | 2 | Show data and geo region |
 | Petstore v2 + v3 | Path A auto-detected | 14-15 | Standard Swagger paths |
 
 ---

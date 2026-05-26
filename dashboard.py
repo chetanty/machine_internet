@@ -97,19 +97,7 @@ def _save_state() -> None:
 
 
 def _restore_state() -> None:
-    if not SCHEMAS_DIR.exists():
-        return
-    now = time.monotonic()
-    for schema_path in sorted(SCHEMAS_DIR.glob("*.json")):
-        if schema_path.name.startswith("."):
-            continue
-        stem = schema_path.stem
-        try:
-            schema_data = json.loads(schema_path.read_text(encoding="utf-8"))
-            _mcp_apps[stem] = _make_mcp_asgi(stem, schema_data)
-            _server_meta[stem] = {"started_at": now, "last_used": now}
-        except Exception:
-            pass
+    pass  # nothing auto-starts; user starts servers explicitly from the dashboard
 
 
 class _MCPDispatch:

@@ -1,66 +1,115 @@
 {
   "base_url": "https://api.github.com",
-  "service_name": "github_v3_rest_api",
-  "service_description": "GitHub's v3 REST API provides programmatic access to GitHub resources like issues, repositories, and branch protection.",
+  "service_name": "github_issues_api",
+  "service_description": "Manages issues and their associated resources like comments, labels, assignees, and dependencies within GitHub repositories.",
   "tools": [
     {
       "name": "list_issues",
-      "description": "Lists issues across all visible repositories or specific to an organization. Can filter by assignment, creation, mentions, subscription, state, labels, and update time.",
+      "description": "Lists issues based on various criteria, including issues assigned to the authenticated user across all visible repositories, issues within a specific organization, or issues in a particular repository. Agents can filter issues by state (open, closed, all), labels, assignee, creator, mentioned users, milestone, issue type, or custom issue field values.",
       "parameters": [
         {
           "name": "org",
           "type": "string",
           "required": false,
-          "description": "The organization name. If provided, lists issues within that organization. Otherwise, lists issues for the authenticated user.",
+          "description": "The organization name to list issues from.",
+          "enum": null
+        },
+        {
+          "name": "owner",
+          "type": "string",
+          "required": false,
+          "description": "The account owner of the repository. Required when 'repo' is provided.",
+          "enum": null
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "required": false,
+          "description": "The name of the repository. Required when 'owner' is provided.",
           "enum": null
         },
         {
           "name": "filter",
           "type": "string",
           "required": false,
-          "description": "Indicates which sorts of issues to return. E.g., 'assigned' (to you), 'created' (by you), 'mentioned' (mentioning you), 'subscribed', 'all', or 'repos'.",
+          "description": "Indicates which sorts of issues to return. Can be 'assigned' (issues assigned to you), 'created' (issues created by you), 'mentioned' (issues mentioning you), 'subscribed' (issues you're subscribed to), 'all' (all issues you can see), or 'repos' (all issues in owned/member repositories).",
           "enum": null
         },
         {
           "name": "state",
           "type": "string",
           "required": false,
-          "description": "Indicates the state of the issues to return ('open', 'closed', 'all').",
+          "description": "Indicates the state of the issues to return. Can be 'open', 'closed', or 'all'.",
           "enum": null
         },
         {
           "name": "labels",
           "type": "string",
           "required": false,
-          "description": "A comma-separated list of label names to filter issues by. Example: 'bug,ui,@high'.",
-          "enum": null
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "description": "Can be the name of an issue type. Only applicable when listing organization issues.",
+          "description": "A comma-separated list of label names to filter by. Example: 'bug,ui,@high'.",
           "enum": null
         },
         {
           "name": "sort",
           "type": "string",
           "required": false,
-          "description": "What to sort results by ('created', 'updated', 'comments').",
+          "description": "What to sort results by. Can be 'created', 'updated', 'comments', or 'due_date'.",
           "enum": null
         },
         {
           "name": "direction",
           "type": "string",
           "required": false,
-          "description": "The direction to sort the results by ('asc' or 'desc').",
+          "description": "The direction to sort the results by. 'asc' or 'desc'. Ignored without the 'sort' parameter.",
           "enum": null
         },
         {
           "name": "since",
           "type": "string",
           "required": false,
-          "description": "Only show results that were last updated after the given time (ISO 8601 format: YYYY-MM-DDTHH:MM:SSZ).",
+          "description": "Only show results that were last updated after the given time. This is a timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`.",
+          "enum": null
+        },
+        {
+          "name": "milestone",
+          "type": "string",
+          "required": false,
+          "description": "Filter by milestone. Pass an integer for its `number` field, '*' for issues with any milestone, or 'none' for issues without milestones.",
+          "enum": null
+        },
+        {
+          "name": "assignee",
+          "type": "string",
+          "required": false,
+          "description": "Filter by assignee. Pass a username, 'none' for issues with no assignee, or '*' for issues assigned to any user.",
+          "enum": null
+        },
+        {
+          "name": "creator",
+          "type": "string",
+          "required": false,
+          "description": "Filter by the user that created the issue.",
+          "enum": null
+        },
+        {
+          "name": "mentioned",
+          "type": "string",
+          "required": false,
+          "description": "Filter by a user that's mentioned in the issue.",
+          "enum": null
+        },
+        {
+          "name": "issue_field_values",
+          "type": "string",
+          "required": false,
+          "description": "A comma-separated list of issue field filters in 'field_slug:value' format. Example: 'priority:Urgent,severity:High'. Requires issue fields to be enabled.",
+          "enum": null
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "description": "Filter by issue type name, '*' for any type, or 'none' for no type.",
           "enum": null
         }
       ],
@@ -162,40 +211,10 @@
             }
           ],
           "static_params": {}
-        }
-      ],
-      "response_fields": null
-    },
-    {
-      "name": "get_repository_assignees",
-      "description": "Retrieves a list of users eligible to be assigned to issues in a given repository, or checks if a specific user is assignable to issues in that repository.",
-      "parameters": [
-        {
-          "name": "owner",
-          "type": "string",
-          "required": true,
-          "description": "The account owner of the repository.",
-          "enum": null
         },
-        {
-          "name": "repo",
-          "type": "string",
-          "required": true,
-          "description": "The name of the repository.",
-          "enum": null
-        },
-        {
-          "name": "assignee",
-          "type": "string",
-          "required": false,
-          "description": "The username of the assignee to check. If provided, checks if this user can be assigned. Otherwise, lists all assignees.",
-          "enum": null
-        }
-      ],
-      "endpoint_mappings": [
         {
           "method": "GET",
-          "path": "/repos/{owner}/{repo}/assignees",
+          "path": "/repos/{owner}/{repo}/issues",
           "parameter_mappings": [
             {
               "tool_param": "owner",
@@ -208,85 +227,52 @@
               "endpoint_param": "repo",
               "location": "path",
               "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}/assignees/{assignee}",
-          "parameter_mappings": [
+            },
             {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
+              "tool_param": "milestone",
+              "endpoint_param": "milestone",
+              "location": "query",
               "transform": null
             },
             {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
+              "tool_param": "state",
+              "endpoint_param": "state",
+              "location": "query",
               "transform": null
             },
             {
               "tool_param": "assignee",
               "endpoint_param": "assignee",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        }
-      ],
-      "response_fields": null
-    },
-    {
-      "name": "list_organization_repositories",
-      "description": "Lists repositories for a specified organization, with optional filtering by type and sorting.",
-      "parameters": [
-        {
-          "name": "org",
-          "type": "string",
-          "required": true,
-          "description": "The organization name.",
-          "enum": null
-        },
-        {
-          "name": "type",
-          "type": "string",
-          "required": false,
-          "description": "Specifies the types of repositories to return (e.g., 'all', 'public', 'private', 'forks', 'sources', 'member').",
-          "enum": null
-        },
-        {
-          "name": "sort",
-          "type": "string",
-          "required": false,
-          "description": "The property to sort the results by ('created', 'updated', 'pushed', 'full_name').",
-          "enum": null
-        },
-        {
-          "name": "direction",
-          "type": "string",
-          "required": false,
-          "description": "The order to sort by ('asc' or 'desc').",
-          "enum": null
-        }
-      ],
-      "endpoint_mappings": [
-        {
-          "method": "GET",
-          "path": "/orgs/{org}/repos",
-          "parameter_mappings": [
-            {
-              "tool_param": "org",
-              "endpoint_param": "org",
-              "location": "path",
+              "location": "query",
               "transform": null
             },
             {
               "tool_param": "type",
               "endpoint_param": "type",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "creator",
+              "endpoint_param": "creator",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "mentioned",
+              "endpoint_param": "mentioned",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_field_values",
+              "endpoint_param": "issue_field_values",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "labels",
+              "endpoint_param": "labels",
               "location": "query",
               "transform": null
             },
@@ -301,597 +287,11 @@
               "endpoint_param": "direction",
               "location": "query",
               "transform": null
-            }
-          ],
-          "static_params": {}
-        }
-      ],
-      "response_fields": null
-    },
-    {
-      "name": "manage_repository",
-      "description": "Manages a repository: creates a new repository in an organization, retrieves its details, updates its settings, or deletes it. Use the 'action' parameter to specify the desired operation.",
-      "parameters": [
-        {
-          "name": "action",
-          "type": "string",
-          "required": false,
-          "description": "The action to perform: 'create' (organization repository), 'get' (repository details), 'update' (repository settings), or 'delete' (repository).",
-          "enum": null
-        },
-        {
-          "name": "owner",
-          "type": "string",
-          "required": false,
-          "description": "The account owner of the repository. Required for 'get', 'update', and 'delete' actions.",
-          "enum": null
-        },
-        {
-          "name": "repo",
-          "type": "string",
-          "required": false,
-          "description": "The name of the repository. Required for 'get', 'update', and 'delete' actions.",
-          "enum": null
-        },
-        {
-          "name": "org",
-          "type": "string",
-          "required": false,
-          "description": "The organization name. Required for 'create' action (creates an organization repository).",
-          "enum": null
-        },
-        {
-          "name": "name",
-          "type": "string",
-          "required": false,
-          "description": "The name of the repository. Required for 'create', optional for 'update'.",
-          "enum": null
-        },
-        {
-          "name": "description",
-          "type": "string",
-          "required": false,
-          "description": "A short description of the repository. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "homepage",
-          "type": "string",
-          "required": false,
-          "description": "A URL with more information about the repository. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "private",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether the repository is private. Optional for 'create' and 'update'. Default: `false`.",
-          "enum": null
-        },
-        {
-          "name": "visibility",
-          "type": "string",
-          "required": false,
-          "description": "The visibility of the repository ('public', 'private', 'internal'). Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "has_issues",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to enable issues for this repository. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "has_projects",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to enable projects for this repository. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "has_wiki",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to enable the wiki for this repository. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "is_template",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to make this repo available as a template repository. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "team_id",
-          "type": "integer",
-          "required": false,
-          "description": "The ID of the team granted access to this repository. Only valid for 'create' action in an organization.",
-          "enum": null
-        },
-        {
-          "name": "auto_init",
-          "type": "boolean",
-          "required": false,
-          "description": "Pass `true` to create an initial commit with empty README. Only for 'create' action.",
-          "enum": null
-        },
-        {
-          "name": "gitignore_template",
-          "type": "string",
-          "required": false,
-          "description": "Desired language or platform .gitignore template to apply. Only for 'create' action.",
-          "enum": null
-        },
-        {
-          "name": "license_template",
-          "type": "string",
-          "required": false,
-          "description": "Choose an open source license template keyword. Only for 'create' action.",
-          "enum": null
-        },
-        {
-          "name": "allow_squash_merge",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to allow squash-merging pull requests. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "allow_merge_commit",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to allow merging pull requests with a merge commit. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "allow_rebase_merge",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to allow rebase-merging pull requests. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "allow_auto_merge",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to allow auto-merge on pull requests. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "delete_branch_on_merge",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to automatically delete head branches when pull requests are merged. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "default_branch",
-          "type": "string",
-          "required": false,
-          "description": "Updates the default branch for this repository. Only for 'update' action.",
-          "enum": null
-        },
-        {
-          "name": "archived",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to archive this repository. `false` will unarchive. Only for 'update' action.",
-          "enum": null
-        },
-        {
-          "name": "allow_forking",
-          "type": "boolean",
-          "required": false,
-          "description": "Either `true` to allow private forks, or `false` to prevent private forks. Only for 'update' action.",
-          "enum": null
-        },
-        {
-          "name": "web_commit_signoff_required",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to require contributors to sign off on web-based commits. Only for 'update' action.",
-          "enum": null
-        },
-        {
-          "name": "security_and_analysis",
-          "type": "object",
-          "required": false,
-          "description": "Specify security and analysis features (e.g., Dependabot, Advanced Security) to enable or disable. Only for 'update' action. Requires admin permissions.",
-          "enum": null
-        },
-        {
-          "name": "allow_update_branch",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to always allow a pull request head branch that is behind its base branch to be updated. Only for 'update' action.",
-          "enum": null
-        },
-        {
-          "name": "squash_merge_commit_title",
-          "type": "string",
-          "required": false,
-          "description": "Default value for squash merge commit title ('PR_TITLE', 'COMMIT_OR_PR_TITLE'). Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "squash_merge_commit_message",
-          "type": "string",
-          "required": false,
-          "description": "Default value for squash merge commit message ('PR_BODY', 'COMMIT_MESSAGES', 'BLANK'). Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "merge_commit_title",
-          "type": "string",
-          "required": false,
-          "description": "Default value for merge commit title ('PR_TITLE', 'MERGE_MESSAGE'). Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "merge_commit_message",
-          "type": "string",
-          "required": false,
-          "description": "Default value for merge commit message ('PR_TITLE', 'PR_BODY', 'BLANK'). Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "custom_properties",
-          "type": "object",
-          "required": false,
-          "description": "Custom properties for the repository. Only for 'create' action.",
-          "enum": null
-        }
-      ],
-      "endpoint_mappings": [
-        {
-          "method": "POST",
-          "path": "/orgs/{org}/repos",
-          "parameter_mappings": [
-            {
-              "tool_param": "org",
-              "endpoint_param": "org",
-              "location": "path",
-              "transform": null
             },
             {
-              "tool_param": "name",
-              "endpoint_param": "name",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "description",
-              "endpoint_param": "description",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "homepage",
-              "endpoint_param": "homepage",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "private",
-              "endpoint_param": "private",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "visibility",
-              "endpoint_param": "visibility",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "has_issues",
-              "endpoint_param": "has_issues",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "has_projects",
-              "endpoint_param": "has_projects",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "has_wiki",
-              "endpoint_param": "has_wiki",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "is_template",
-              "endpoint_param": "is_template",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "team_id",
-              "endpoint_param": "team_id",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "auto_init",
-              "endpoint_param": "auto_init",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "gitignore_template",
-              "endpoint_param": "gitignore_template",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "license_template",
-              "endpoint_param": "license_template",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_squash_merge",
-              "endpoint_param": "allow_squash_merge",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_merge_commit",
-              "endpoint_param": "allow_merge_commit",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_rebase_merge",
-              "endpoint_param": "allow_rebase_merge",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_auto_merge",
-              "endpoint_param": "allow_auto_merge",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "delete_branch_on_merge",
-              "endpoint_param": "delete_branch_on_merge",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "squash_merge_commit_title",
-              "endpoint_param": "squash_merge_commit_title",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "squash_merge_commit_message",
-              "endpoint_param": "squash_merge_commit_message",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "merge_commit_title",
-              "endpoint_param": "merge_commit_title",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "merge_commit_message",
-              "endpoint_param": "merge_commit_message",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "custom_properties",
-              "endpoint_param": "custom_properties",
-              "location": "body",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "PATCH",
-          "path": "/repos/{owner}/{repo}",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "name",
-              "endpoint_param": "name",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "description",
-              "endpoint_param": "description",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "homepage",
-              "endpoint_param": "homepage",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "private",
-              "endpoint_param": "private",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "visibility",
-              "endpoint_param": "visibility",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "security_and_analysis",
-              "endpoint_param": "security_and_analysis",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "has_issues",
-              "endpoint_param": "has_issues",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "has_projects",
-              "endpoint_param": "has_projects",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "has_wiki",
-              "endpoint_param": "has_wiki",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "is_template",
-              "endpoint_param": "is_template",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "default_branch",
-              "endpoint_param": "default_branch",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_squash_merge",
-              "endpoint_param": "allow_squash_merge",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_merge_commit",
-              "endpoint_param": "allow_merge_commit",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_rebase_merge",
-              "endpoint_param": "allow_rebase_merge",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_auto_merge",
-              "endpoint_param": "allow_auto_merge",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "delete_branch_on_merge",
-              "endpoint_param": "delete_branch_on_merge",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_update_branch",
-              "endpoint_param": "allow_update_branch",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "squash_merge_commit_title",
-              "endpoint_param": "squash_merge_commit_title",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "squash_merge_commit_message",
-              "endpoint_param": "squash_merge_commit_message",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "merge_commit_title",
-              "endpoint_param": "merge_commit_title",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "merge_commit_message",
-              "endpoint_param": "merge_commit_message",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "archived",
-              "endpoint_param": "archived",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_forking",
-              "endpoint_param": "allow_forking",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "web_commit_signoff_required",
-              "endpoint_param": "web_commit_signoff_required",
-              "location": "body",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "DELETE",
-          "path": "/repos/{owner}/{repo}",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
+              "tool_param": "since",
+              "endpoint_param": "since",
+              "location": "query",
               "transform": null
             }
           ],
@@ -901,8 +301,8 @@
       "response_fields": null
     },
     {
-      "name": "list_repository_activity",
-      "description": "Lists a detailed history of changes to a repository, such as pushes, merges, force pushes, and branch changes. Can filter by time, Git reference, actor, and activity type.",
+      "name": "get_issue",
+      "description": "Retrieves the full details of a specific issue from a repository, identified by its issue number. This includes its title, body, state, labels, assignees, and other metadata.",
       "parameters": [
         {
           "name": "owner",
@@ -919,59 +319,17 @@
           "enum": null
         },
         {
-          "name": "direction",
-          "type": "string",
-          "required": false,
-          "description": "The direction to sort the results by ('asc' or 'desc').",
-          "enum": null
-        },
-        {
-          "name": "before",
-          "type": "string",
-          "required": false,
-          "description": "A cursor to search for results before this point (for pagination).",
-          "enum": null
-        },
-        {
-          "name": "after",
-          "type": "string",
-          "required": false,
-          "description": "A cursor to search for results after this point (for pagination).",
-          "enum": null
-        },
-        {
-          "name": "ref",
-          "type": "string",
-          "required": false,
-          "description": "The Git reference (e.g., branch name or 'refs/heads/BRANCH_NAME') for activities to list.",
-          "enum": null
-        },
-        {
-          "name": "actor",
-          "type": "string",
-          "required": false,
-          "description": "The GitHub username to filter by the actor who performed the activity.",
-          "enum": null
-        },
-        {
-          "name": "time_period",
-          "type": "string",
-          "required": false,
-          "description": "The time period to filter by ('day', 'week').",
-          "enum": null
-        },
-        {
-          "name": "activity_type",
-          "type": "string",
-          "required": false,
-          "description": "The activity type to filter by (e.g., 'force_push', 'merge').",
+          "name": "issue_number",
+          "type": "integer",
+          "required": true,
+          "description": "The number that identifies the issue.",
           "enum": null
         }
       ],
       "endpoint_mappings": [
         {
           "method": "GET",
-          "path": "/repos/{owner}/{repo}/activity",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}",
           "parameter_mappings": [
             {
               "tool_param": "owner",
@@ -983,6 +341,665 @@
               "tool_param": "repo",
               "endpoint_param": "repo",
               "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "create_issue",
+      "description": "Creates a new issue in a specified repository. Agents must provide a title, and can optionally include a body, assignees, labels, a milestone, custom issue field values, or an issue type.",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "required": true,
+          "description": "The account owner of the repository.",
+          "enum": null
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The name of the repository.",
+          "enum": null
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": true,
+          "description": "The title of the issue.",
+          "enum": null
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "The contents of the issue.",
+          "enum": null
+        },
+        {
+          "name": "milestone",
+          "type": "integer",
+          "required": false,
+          "description": "The number of the milestone to associate with this issue.",
+          "enum": null
+        },
+        {
+          "name": "labels",
+          "type": "array[string]",
+          "required": false,
+          "description": "Labels to associate with this issue. Only users with push access can set labels for new issues.",
+          "enum": null
+        },
+        {
+          "name": "assignees",
+          "type": "array[string]",
+          "required": false,
+          "description": "Logins for Users to assign to this issue. Only users with push access can set assignees for new issues.",
+          "enum": null
+        },
+        {
+          "name": "issue_field_values",
+          "type": "array[object]",
+          "required": false,
+          "description": "An array of issue field values to set on this issue. Each field value must include the field ID and the value to set. E.g., `[{'field_id': 123, 'value': 'Urgent'}]`.",
+          "enum": null
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "description": "The name of the issue type to associate with this issue. Only users with push access can set the type for new issues.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues",
+          "parameter_mappings": [
+            {
+              "tool_param": "owner",
+              "endpoint_param": "owner",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "repo",
+              "endpoint_param": "repo",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "title",
+              "endpoint_param": "title",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "body",
+              "endpoint_param": "body",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "milestone",
+              "endpoint_param": "milestone",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "labels",
+              "endpoint_param": "labels",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "assignees",
+              "endpoint_param": "assignees",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_field_values",
+              "endpoint_param": "issue_field_values",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "type",
+              "endpoint_param": "type",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "update_issue",
+      "description": "Updates an existing issue in a repository. Agents can modify the issue's title, body, change its state (open/closed) and provide a reason, update its milestone, replace all labels, replace all assignees, update custom field values, or change its type.",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "required": true,
+          "description": "The account owner of the repository.",
+          "enum": null
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The name of the repository.",
+          "enum": null
+        },
+        {
+          "name": "issue_number",
+          "type": "integer",
+          "required": true,
+          "description": "The number that identifies the issue.",
+          "enum": null
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "The new title of the issue.",
+          "enum": null
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "The new contents of the issue.",
+          "enum": null
+        },
+        {
+          "name": "state",
+          "type": "string",
+          "required": false,
+          "description": "The open or closed state of the issue. Can be 'open' or 'closed'.",
+          "enum": null
+        },
+        {
+          "name": "state_reason",
+          "type": "string",
+          "required": false,
+          "description": "The reason for the state change. Ignored unless 'state' is changed. Can be 'completed', 'not_planned', 'reopened'.",
+          "enum": null
+        },
+        {
+          "name": "milestone",
+          "type": "integer",
+          "required": false,
+          "description": "The number of the milestone to associate with this issue. Pass 'null' to remove a milestone.",
+          "enum": null
+        },
+        {
+          "name": "labels",
+          "type": "array[string]",
+          "required": false,
+          "description": "Labels to associate with this issue. Pass one or more labels to _replace_ the set of labels. Send an empty array (`[]`) to clear all labels. Only users with push access can set labels.",
+          "enum": null
+        },
+        {
+          "name": "assignees",
+          "type": "array[string]",
+          "required": false,
+          "description": "Usernames to assign to this issue. Pass one or more user logins to _replace_ the set of assignees. Send an empty array (`[]`) to clear all assignees. Only users with push access can set assignees.",
+          "enum": null
+        },
+        {
+          "name": "issue_field_values",
+          "type": "array[object]",
+          "required": false,
+          "description": "An array of issue field values to set on this issue. Each field value must include the field ID and the value to set. Only users with push access can set field values.",
+          "enum": null
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "description": "The name of the issue type to associate with this issue or use `null` to remove the current issue type. Only users with push access can set the type.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}",
+          "parameter_mappings": [
+            {
+              "tool_param": "owner",
+              "endpoint_param": "owner",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "repo",
+              "endpoint_param": "repo",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "title",
+              "endpoint_param": "title",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "body",
+              "endpoint_param": "body",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "state",
+              "endpoint_param": "state",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "state_reason",
+              "endpoint_param": "state_reason",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "milestone",
+              "endpoint_param": "milestone",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "labels",
+              "endpoint_param": "labels",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "assignees",
+              "endpoint_param": "assignees",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_field_values",
+              "endpoint_param": "issue_field_values",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "type",
+              "endpoint_param": "type",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "add_labels_to_issue",
+      "description": "Adds one or more labels to an existing issue. This action appends new labels without removing existing ones. Use this when you want to incrementally add labels to an issue.",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "required": true,
+          "description": "The account owner of the repository.",
+          "enum": null
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The name of the repository.",
+          "enum": null
+        },
+        {
+          "name": "issue_number",
+          "type": "integer",
+          "required": true,
+          "description": "The number that identifies the issue.",
+          "enum": null
+        },
+        {
+          "name": "labels",
+          "type": "array[string]",
+          "required": true,
+          "description": "An array of label names to add to the issue.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/labels",
+          "parameter_mappings": [
+            {
+              "tool_param": "owner",
+              "endpoint_param": "owner",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "repo",
+              "endpoint_param": "repo",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "labels",
+              "endpoint_param": "body",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "remove_label_from_issue",
+      "description": "Removes a specific label from an issue. The agent must provide the exact name of the label to be removed.",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "required": true,
+          "description": "The account owner of the repository.",
+          "enum": null
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The name of the repository.",
+          "enum": null
+        },
+        {
+          "name": "issue_number",
+          "type": "integer",
+          "required": true,
+          "description": "The number that identifies the issue.",
+          "enum": null
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "description": "The name of the label to remove.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/labels/{name}",
+          "parameter_mappings": [
+            {
+              "tool_param": "owner",
+              "endpoint_param": "owner",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "repo",
+              "endpoint_param": "repo",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "name",
+              "endpoint_param": "name",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "add_assignees_to_issue",
+      "description": "Adds one or more users as assignees to an issue. This action appends new assignees without removing existing ones. Use this to incrementally assign users to an issue.",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "required": true,
+          "description": "The account owner of the repository.",
+          "enum": null
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The name of the repository.",
+          "enum": null
+        },
+        {
+          "name": "issue_number",
+          "type": "integer",
+          "required": true,
+          "description": "The number that identifies the issue.",
+          "enum": null
+        },
+        {
+          "name": "assignees",
+          "type": "array[string]",
+          "required": true,
+          "description": "Usernames of people to assign to this issue.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/assignees",
+          "parameter_mappings": [
+            {
+              "tool_param": "owner",
+              "endpoint_param": "owner",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "repo",
+              "endpoint_param": "repo",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "assignees",
+              "endpoint_param": "assignees",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "remove_assignees_from_issue",
+      "description": "Removes one or more users from being assigned to an issue. The agent must provide the usernames of the assignees to be removed.",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "required": true,
+          "description": "The account owner of the repository.",
+          "enum": null
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The name of the repository.",
+          "enum": null
+        },
+        {
+          "name": "issue_number",
+          "type": "integer",
+          "required": true,
+          "description": "The number that identifies the issue.",
+          "enum": null
+        },
+        {
+          "name": "assignees",
+          "type": "array[string]",
+          "required": true,
+          "description": "Usernames of assignees to remove from an issue.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/assignees",
+          "parameter_mappings": [
+            {
+              "tool_param": "owner",
+              "endpoint_param": "owner",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "repo",
+              "endpoint_param": "repo",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "assignees",
+              "endpoint_param": "assignees",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "list_issue_comments",
+      "description": "Lists comments either across all issues in a specified repository or for a specific issue number. Results can be sorted and filtered by creation/update time.",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "required": true,
+          "description": "The account owner of the repository.",
+          "enum": null
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The name of the repository.",
+          "enum": null
+        },
+        {
+          "name": "issue_number",
+          "type": "integer",
+          "required": false,
+          "description": "The number that identifies the issue to list comments for. If omitted, lists comments for the entire repository.",
+          "enum": null
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "required": false,
+          "description": "The property to sort the results by. Can be 'created' or 'updated'.",
+          "enum": null
+        },
+        {
+          "name": "direction",
+          "type": "string",
+          "required": false,
+          "description": "Either 'asc' or 'desc'. Ignored without the 'sort' parameter.",
+          "enum": null
+        },
+        {
+          "name": "since",
+          "type": "string",
+          "required": false,
+          "description": "Only show results that were last updated after the given time. This is a timestamp in ISO 8601 format: `YYYY-MM-DDTHH:MM:SSZ`.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/comments",
+          "parameter_mappings": [
+            {
+              "tool_param": "owner",
+              "endpoint_param": "owner",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "repo",
+              "endpoint_param": "repo",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "sort",
+              "endpoint_param": "sort",
+              "location": "query",
               "transform": null
             },
             {
@@ -992,129 +1009,9 @@
               "transform": null
             },
             {
-              "tool_param": "before",
-              "endpoint_param": "before",
+              "tool_param": "since",
+              "endpoint_param": "since",
               "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "after",
-              "endpoint_param": "after",
-              "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "ref",
-              "endpoint_param": "ref",
-              "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "actor",
-              "endpoint_param": "actor",
-              "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "time_period",
-              "endpoint_param": "time_period",
-              "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "activity_type",
-              "endpoint_param": "activity_type",
-              "location": "query",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        }
-      ],
-      "response_fields": null
-    },
-    {
-      "name": "manage_repository_attestations",
-      "description": "Creates an artifact attestation or lists existing attestations for a repository. Requires write permission for creation, read for listing.",
-      "parameters": [
-        {
-          "name": "action",
-          "type": "string",
-          "required": true,
-          "description": "The action to perform: 'create' (an attestation) or 'list' (attestations).",
-          "enum": null
-        },
-        {
-          "name": "owner",
-          "type": "string",
-          "required": true,
-          "description": "The account owner of the repository.",
-          "enum": null
-        },
-        {
-          "name": "repo",
-          "type": "string",
-          "required": true,
-          "description": "The name of the repository.",
-          "enum": null
-        },
-        {
-          "name": "bundle",
-          "type": "object",
-          "required": false,
-          "description": "The attestation's Sigstore Bundle. Required for 'create' action.",
-          "enum": null
-        },
-        {
-          "name": "subject_digest",
-          "type": "string",
-          "required": false,
-          "description": "The attestation's subject's SHA256 digest (e.g., 'sha256:HEX_DIGEST'). Required for 'list' action to filter results.",
-          "enum": null
-        },
-        {
-          "name": "predicate_type",
-          "type": "string",
-          "required": false,
-          "description": "Optional filter for fetching attestations with a given predicate type ('provenance', 'sbom', 'release', or custom). Only for 'list' action.",
-          "enum": null
-        },
-        {
-          "name": "before",
-          "type": "string",
-          "required": false,
-          "description": "A cursor to search for results before this point (for pagination). Only for 'list' action.",
-          "enum": null
-        },
-        {
-          "name": "after",
-          "type": "string",
-          "required": false,
-          "description": "A cursor to search for results after this point (for pagination). Only for 'list' action.",
-          "enum": null
-        }
-      ],
-      "endpoint_mappings": [
-        {
-          "method": "POST",
-          "path": "/repos/{owner}/{repo}/attestations",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "bundle",
-              "endpoint_param": "bundle",
-              "location": "body",
               "transform": null
             }
           ],
@@ -1122,7 +1019,7 @@
         },
         {
           "method": "GET",
-          "path": "/repos/{owner}/{repo}/attestations/{subject_digest}",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/comments",
           "parameter_mappings": [
             {
               "tool_param": "owner",
@@ -1137,26 +1034,14 @@
               "transform": null
             },
             {
-              "tool_param": "subject_digest",
-              "endpoint_param": "subject_digest",
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
               "location": "path",
               "transform": null
             },
             {
-              "tool_param": "predicate_type",
-              "endpoint_param": "predicate_type",
-              "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "before",
-              "endpoint_param": "before",
-              "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "after",
-              "endpoint_param": "after",
+              "tool_param": "since",
+              "endpoint_param": "since",
               "location": "query",
               "transform": null
             }
@@ -1167,16 +1052,9 @@
       "response_fields": null
     },
     {
-      "name": "manage_repository_autolinks",
-      "description": "Manages autolink references for a repository. Agents can list all autolinks, get a specific autolink by ID, create a new one, or delete an existing one.",
+      "name": "create_issue_comment",
+      "description": "Adds a new comment to an existing issue in a repository.",
       "parameters": [
-        {
-          "name": "action",
-          "type": "string",
-          "required": true,
-          "description": "The action to perform: 'list', 'get', 'create', or 'delete' an autolink.",
-          "enum": null
-        },
         {
           "name": "owner",
           "type": "string",
@@ -1192,57 +1070,24 @@
           "enum": null
         },
         {
-          "name": "autolink_id",
+          "name": "issue_number",
           "type": "integer",
-          "required": false,
-          "description": "The unique identifier of the autolink. Required for 'get' and 'delete' actions.",
+          "required": true,
+          "description": "The number that identifies the issue.",
           "enum": null
         },
         {
-          "name": "key_prefix",
+          "name": "body",
           "type": "string",
-          "required": false,
-          "description": "This prefix appended by certain characters will generate a link. Required for 'create' action.",
-          "enum": null
-        },
-        {
-          "name": "url_template",
-          "type": "string",
-          "required": false,
-          "description": "The URL must contain '<num>' for the reference number. Required for 'create' action.",
-          "enum": null
-        },
-        {
-          "name": "is_alphanumeric",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether this autolink matches alphanumeric characters (true) or only numeric (false). Optional for 'create' action. Default: `false`.",
+          "required": true,
+          "description": "The contents of the comment.",
           "enum": null
         }
       ],
       "endpoint_mappings": [
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}/autolinks",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
         {
           "method": "POST",
-          "path": "/repos/{owner}/{repo}/autolinks",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/comments",
           "parameter_mappings": [
             {
               "tool_param": "owner",
@@ -1257,124 +1102,26 @@
               "transform": null
             },
             {
-              "tool_param": "key_prefix",
-              "endpoint_param": "key_prefix",
-              "location": "body",
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
+              "location": "path",
               "transform": null
             },
             {
-              "tool_param": "url_template",
-              "endpoint_param": "url_template",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "is_alphanumeric",
-              "endpoint_param": "is_alphanumeric",
+              "tool_param": "body",
+              "endpoint_param": "body",
               "location": "body",
               "transform": null
             }
           ],
           "static_params": {}
-        },
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}/autolinks/{autolink_id}",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "autolink_id",
-              "endpoint_param": "autolink_id",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "DELETE",
-          "path": "/repos/{owner}/{repo}/autolinks/{autolink_id}",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "autolink_id",
-              "endpoint_param": "autolink_id",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
         }
       ],
       "response_fields": null
     },
     {
-      "name": "get_dependabot_security_updates_status",
-      "description": "Checks whether Dependabot security updates are currently enabled, disabled, or paused for a specific repository.",
-      "parameters": [
-        {
-          "name": "owner",
-          "type": "string",
-          "required": true,
-          "description": "The account owner of the repository.",
-          "enum": null
-        },
-        {
-          "name": "repo",
-          "type": "string",
-          "required": true,
-          "description": "The name of the repository.",
-          "enum": null
-        }
-      ],
-      "endpoint_mappings": [
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}/automated-security-fixes",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        }
-      ],
-      "response_fields": null
-    },
-    {
-      "name": "set_dependabot_security_updates_status",
-      "description": "Enables or disables Dependabot security updates for a repository. Requires admin access to the repository.",
+      "name": "update_issue_comment",
+      "description": "Edits the body of an existing issue comment by its unique ID.",
       "parameters": [
         {
           "name": "owner",
@@ -1391,562 +1138,24 @@
           "enum": null
         },
         {
-          "name": "enabled",
-          "type": "boolean",
-          "required": true,
-          "description": "Set to `true` to enable Dependabot security updates, or `false` to disable them.",
-          "enum": null
-        }
-      ],
-      "endpoint_mappings": [
-        {
-          "method": "PUT",
-          "path": "/repos/{owner}/{repo}/automated-security-fixes",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "DELETE",
-          "path": "/repos/{owner}/{repo}/automated-security-fixes",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        }
-      ],
-      "response_fields": null
-    },
-    {
-      "name": "list_branches",
-      "description": "Lists branches for a repository, with an option to filter by protection status.",
-      "parameters": [
-        {
-          "name": "owner",
-          "type": "string",
-          "required": true,
-          "description": "The account owner of the repository.",
-          "enum": null
-        },
-        {
-          "name": "repo",
-          "type": "string",
-          "required": true,
-          "description": "The name of the repository.",
-          "enum": null
-        },
-        {
-          "name": "protected",
-          "type": "boolean",
-          "required": false,
-          "description": "Set to `true` to return only protected branches, `false` for unprotected branches. Omit for all branches.",
-          "enum": null
-        }
-      ],
-      "endpoint_mappings": [
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}/branches",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "protected",
-              "endpoint_param": "protected",
-              "location": "query",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        }
-      ],
-      "response_fields": null
-    },
-    {
-      "name": "get_branch_details",
-      "description": "Retrieves detailed information about a specific branch in a repository, including its commit SHA.",
-      "parameters": [
-        {
-          "name": "owner",
-          "type": "string",
-          "required": true,
-          "description": "The account owner of the repository.",
-          "enum": null
-        },
-        {
-          "name": "repo",
-          "type": "string",
-          "required": true,
-          "description": "The name of the repository.",
-          "enum": null
-        },
-        {
-          "name": "branch",
-          "type": "string",
-          "required": true,
-          "description": "The name of the branch.",
-          "enum": null
-        }
-      ],
-      "endpoint_mappings": [
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}/branches/{branch}",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        }
-      ],
-      "response_fields": null
-    },
-    {
-      "name": "manage_branch_protection",
-      "description": "Manages comprehensive branch protection settings for a repository branch. This tool allows getting, updating, or deleting main protection rules, managing admin enforcement, pull request review requirements, and commit signature protection.",
-      "parameters": [
-        {
-          "name": "action",
-          "type": "string",
-          "required": true,
-          "description": "The specific branch protection action to perform.",
-          "enum": null
-        },
-        {
-          "name": "owner",
-          "type": "string",
-          "required": true,
-          "description": "The account owner of the repository.",
-          "enum": null
-        },
-        {
-          "name": "repo",
-          "type": "string",
-          "required": true,
-          "description": "The name of the repository.",
-          "enum": null
-        },
-        {
-          "name": "branch",
-          "type": "string",
-          "required": true,
-          "description": "The name of the branch.",
-          "enum": null
-        },
-        {
-          "name": "required_status_checks",
-          "type": "object",
-          "required": false,
-          "description": "Require status checks to pass before merging. Set to `null` to disable. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "enforce_admins",
-          "type": "boolean",
-          "required": false,
-          "description": "Enforce all configured restrictions for administrators. Set to `true` to enforce. Set to `null` to disable. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "required_pull_request_reviews",
-          "type": "object",
-          "required": false,
-          "description": "Require at least one approving review on a pull request before merging. Set to `null` to disable. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "restrictions",
-          "type": "object",
-          "required": false,
-          "description": "Restrict who can push to the protected branch. Set to `null` to disable. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "required_linear_history",
-          "type": "boolean",
-          "required": false,
-          "description": "Enforces a linear commit Git history. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "allow_force_pushes",
-          "type": "boolean",
-          "required": false,
-          "description": "Permits force pushes to the protected branch. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "allow_deletions",
-          "type": "boolean",
-          "required": false,
-          "description": "Allows deletion of the protected branch. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "block_creations",
-          "type": "boolean",
-          "required": false,
-          "description": "If true, `restrictions` also block pushes that create new branches. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "required_conversation_resolution",
-          "type": "boolean",
-          "required": false,
-          "description": "Requires all conversations on code to be resolved before a pull request can be merged. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "lock_branch",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether to set the branch as read-only. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "allow_fork_syncing",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether users can pull changes from upstream when the branch is locked. Only for 'update_all_protection'.",
-          "enum": null
-        },
-        {
-          "name": "dismissal_restrictions",
-          "type": "object",
-          "required": false,
-          "description": "Specify which users, teams, and apps can dismiss pull request reviews. Pass an empty object to disable. Only for 'update_pr_review_protection'.",
-          "enum": null
-        },
-        {
-          "name": "dismiss_stale_reviews",
-          "type": "boolean",
-          "required": false,
-          "description": "Automatically dismiss approving reviews when someone pushes a new commit. Only for 'update_pr_review_protection'.",
-          "enum": null
-        },
-        {
-          "name": "require_code_owner_reviews",
-          "type": "boolean",
-          "required": false,
-          "description": "Blocks merging pull requests until code owners have reviewed. Only for 'update_pr_review_protection'.",
-          "enum": null
-        },
-        {
-          "name": "required_approving_review_count",
+          "name": "comment_id",
           "type": "integer",
-          "required": false,
-          "description": "Specifies the number of reviewers required to approve pull requests (1-6 or 0 to not require). Only for 'update_pr_review_protection'.",
+          "required": true,
+          "description": "The unique identifier of the comment.",
           "enum": null
         },
         {
-          "name": "require_last_push_approval",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether the most recent push must be approved by someone other than the person who pushed it. Only for 'update_pr_review_protection'.",
-          "enum": null
-        },
-        {
-          "name": "bypass_pull_request_allowances",
-          "type": "object",
-          "required": false,
-          "description": "Allow specific users, teams, or apps to bypass pull request requirements. Only for 'update_pr_review_protection'.",
+          "name": "body",
+          "type": "string",
+          "required": true,
+          "description": "The new contents of the comment.",
           "enum": null
         }
       ],
       "endpoint_mappings": [
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "PUT",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "required_status_checks",
-              "endpoint_param": "required_status_checks",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "enforce_admins",
-              "endpoint_param": "enforce_admins",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "required_pull_request_reviews",
-              "endpoint_param": "required_pull_request_reviews",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "restrictions",
-              "endpoint_param": "restrictions",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "required_linear_history",
-              "endpoint_param": "required_linear_history",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_force_pushes",
-              "endpoint_param": "allow_force_pushes",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_deletions",
-              "endpoint_param": "allow_deletions",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "block_creations",
-              "endpoint_param": "block_creations",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "required_conversation_resolution",
-              "endpoint_param": "required_conversation_resolution",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "lock_branch",
-              "endpoint_param": "lock_branch",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "allow_fork_syncing",
-              "endpoint_param": "allow_fork_syncing",
-              "location": "body",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "DELETE",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "POST",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "DELETE",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection/enforce_admins",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
         {
           "method": "PATCH",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews",
+          "path": "/repos/{owner}/{repo}/issues/comments/{comment_id}",
           "parameter_mappings": [
             {
               "tool_param": "owner",
@@ -1961,53 +1170,53 @@
               "transform": null
             },
             {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
+              "tool_param": "comment_id",
+              "endpoint_param": "comment_id",
               "location": "path",
               "transform": null
             },
             {
-              "tool_param": "dismissal_restrictions",
-              "endpoint_param": "dismissal_restrictions",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "dismiss_stale_reviews",
-              "endpoint_param": "dismiss_stale_reviews",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "require_code_owner_reviews",
-              "endpoint_param": "require_code_owner_reviews",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "required_approving_review_count",
-              "endpoint_param": "required_approving_review_count",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "require_last_push_approval",
-              "endpoint_param": "require_last_push_approval",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "bypass_pull_request_allowances",
-              "endpoint_param": "bypass_pull_request_allowances",
+              "tool_param": "body",
+              "endpoint_param": "body",
               "location": "body",
               "transform": null
             }
           ],
           "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "delete_issue_comment",
+      "description": "Deletes a specific issue comment by its unique ID.",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "required": true,
+          "description": "The account owner of the repository.",
+          "enum": null
         },
+        {
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The name of the repository.",
+          "enum": null
+        },
+        {
+          "name": "comment_id",
+          "type": "integer",
+          "required": true,
+          "description": "The unique identifier of the comment.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
         {
           "method": "DELETE",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection/required_pull_request_reviews",
+          "path": "/repos/{owner}/{repo}/issues/comments/{comment_id}",
           "parameter_mappings": [
             {
               "tool_param": "owner",
@@ -2022,83 +1231,8 @@
               "transform": null
             },
             {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "GET",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "POST",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
-              "location": "path",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "DELETE",
-          "path": "/repos/{owner}/{repo}/branches/{branch}/protection/required_signatures",
-          "parameter_mappings": [
-            {
-              "tool_param": "owner",
-              "endpoint_param": "owner",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "repo",
-              "endpoint_param": "repo",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "branch",
-              "endpoint_param": "branch",
+              "tool_param": "comment_id",
+              "endpoint_param": "comment_id",
               "location": "path",
               "transform": null
             }
@@ -2109,237 +1243,156 @@
       "response_fields": null
     },
     {
-      "name": "manage_organization_rulesets",
-      "description": "Manages repository rulesets for an organization. Agents can list all rulesets, retrieve a specific ruleset, create a new ruleset, update an existing one, or delete a ruleset.",
+      "name": "list_issue_dependencies",
+      "description": "Lists issues that a given issue is blocking, or issues that are blocking the given issue.",
       "parameters": [
         {
-          "name": "action",
+          "name": "owner",
           "type": "string",
           "required": true,
-          "description": "The action to perform: 'list', 'get', 'create', 'update', or 'delete' a ruleset.",
+          "description": "The account owner of the repository.",
           "enum": null
         },
         {
-          "name": "org",
+          "name": "repo",
           "type": "string",
           "required": true,
-          "description": "The organization name.",
+          "description": "The name of the repository.",
           "enum": null
         },
         {
-          "name": "ruleset_id",
+          "name": "issue_number",
           "type": "integer",
-          "required": false,
-          "description": "The ID of the ruleset. Required for 'get', 'update', and 'delete' actions.",
+          "required": true,
+          "description": "The number that identifies the issue.",
           "enum": null
         },
         {
-          "name": "name",
+          "name": "dependency_type",
           "type": "string",
-          "required": false,
-          "description": "The name of the ruleset. Required for 'create', optional for 'update'.",
-          "enum": null
-        },
-        {
-          "name": "target",
-          "type": "string",
-          "required": false,
-          "description": "The target of the ruleset. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "enforcement",
-          "type": "string",
-          "required": false,
-          "description": "The enforcement level of the ruleset. Required for 'create', optional for 'update'.",
-          "enum": null
-        },
-        {
-          "name": "bypass_actors",
-          "type": "array[string]",
-          "required": false,
-          "description": "The actors that can bypass the rules in this ruleset. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "conditions",
-          "type": "string",
-          "required": false,
-          "description": "Conditions under which the ruleset applies. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "rules",
-          "type": "array[string]",
-          "required": false,
-          "description": "An array of rules within the ruleset. Optional for 'create' and 'update'.",
-          "enum": null
-        },
-        {
-          "name": "targets",
-          "type": "string",
-          "required": false,
-          "description": "A comma-separated list of rule targets to filter by (e.g., 'branch,tag,push'). Only for 'list' action.",
+          "required": true,
+          "description": "The type of dependency to list. Can be 'blocking' (issues this issue blocks) or 'blocked_by' (issues that block this issue).",
           "enum": null
         }
       ],
       "endpoint_mappings": [
         {
           "method": "GET",
-          "path": "/orgs/{org}/rulesets",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/dependencies/blocked_by",
           "parameter_mappings": [
             {
-              "tool_param": "org",
-              "endpoint_param": "org",
+              "tool_param": "owner",
+              "endpoint_param": "owner",
               "location": "path",
               "transform": null
             },
             {
-              "tool_param": "targets",
-              "endpoint_param": "targets",
-              "location": "query",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "POST",
-          "path": "/orgs/{org}/rulesets",
-          "parameter_mappings": [
-            {
-              "tool_param": "org",
-              "endpoint_param": "org",
+              "tool_param": "repo",
+              "endpoint_param": "repo",
               "location": "path",
               "transform": null
             },
             {
-              "tool_param": "name",
-              "endpoint_param": "name",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "target",
-              "endpoint_param": "target",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "enforcement",
-              "endpoint_param": "enforcement",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "bypass_actors",
-              "endpoint_param": "bypass_actors",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "conditions",
-              "endpoint_param": "conditions",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "rules",
-              "endpoint_param": "rules",
-              "location": "body",
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
+              "location": "path",
               "transform": null
             }
           ],
-          "static_params": {}
+          "static_params": {
+            "dependency_type": "blocked_by"
+          }
         },
         {
           "method": "GET",
-          "path": "/orgs/{org}/rulesets/{ruleset_id}",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/dependencies/blocking",
           "parameter_mappings": [
             {
-              "tool_param": "org",
-              "endpoint_param": "org",
+              "tool_param": "owner",
+              "endpoint_param": "owner",
               "location": "path",
               "transform": null
             },
             {
-              "tool_param": "ruleset_id",
-              "endpoint_param": "ruleset_id",
+              "tool_param": "repo",
+              "endpoint_param": "repo",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
               "location": "path",
               "transform": null
             }
           ],
-          "static_params": {}
+          "static_params": {
+            "dependency_type": "blocking"
+          }
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "add_issue_blocked_by_dependency",
+      "description": "Adds a 'blocked by' relationship to an issue, indicating that this issue is blocked by another specified issue.",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "required": true,
+          "description": "The account owner of the repository.",
+          "enum": null
         },
         {
-          "method": "PUT",
-          "path": "/orgs/{org}/rulesets/{ruleset_id}",
-          "parameter_mappings": [
-            {
-              "tool_param": "org",
-              "endpoint_param": "org",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "ruleset_id",
-              "endpoint_param": "ruleset_id",
-              "location": "path",
-              "transform": null
-            },
-            {
-              "tool_param": "name",
-              "endpoint_param": "name",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "target",
-              "endpoint_param": "target",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "enforcement",
-              "endpoint_param": "enforcement",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "bypass_actors",
-              "endpoint_param": "bypass_actors",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "conditions",
-              "endpoint_param": "conditions",
-              "location": "body",
-              "transform": null
-            },
-            {
-              "tool_param": "rules",
-              "endpoint_param": "rules",
-              "location": "body",
-              "transform": null
-            }
-          ],
-          "static_params": {}
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The name of the repository.",
+          "enum": null
         },
         {
-          "method": "DELETE",
-          "path": "/orgs/{org}/rulesets/{ruleset_id}",
+          "name": "issue_number",
+          "type": "integer",
+          "required": true,
+          "description": "The number that identifies the issue that will be blocked.",
+          "enum": null
+        },
+        {
+          "name": "blocking_issue_id",
+          "type": "integer",
+          "required": true,
+          "description": "The ID of the issue that blocks the current issue.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/dependencies/blocked_by",
           "parameter_mappings": [
             {
-              "tool_param": "org",
-              "endpoint_param": "org",
+              "tool_param": "owner",
+              "endpoint_param": "owner",
               "location": "path",
               "transform": null
             },
             {
-              "tool_param": "ruleset_id",
-              "endpoint_param": "ruleset_id",
+              "tool_param": "repo",
+              "endpoint_param": "repo",
               "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "blocking_issue_id",
+              "endpoint_param": "issue_id",
+              "location": "body",
               "transform": null
             }
           ],
@@ -2349,116 +1402,64 @@
       "response_fields": null
     },
     {
-      "name": "get_organization_rule_suites",
-      "description": "Retrieves details of a specific organization rule suite or lists multiple rule suites with optional filtering criteria.",
+      "name": "remove_issue_blocked_by_dependency",
+      "description": "Removes a 'blocked by' relationship from an issue, meaning the specified blocking issue no longer blocks the current issue.",
       "parameters": [
         {
-          "name": "org",
+          "name": "owner",
           "type": "string",
           "required": true,
-          "description": "The organization name.",
+          "description": "The account owner of the repository.",
           "enum": null
         },
         {
-          "name": "rule_suite_id",
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The name of the repository.",
+          "enum": null
+        },
+        {
+          "name": "issue_number",
           "type": "integer",
-          "required": false,
-          "description": "The unique identifier of a specific rule suite result. If provided, retrieves details for that suite. Otherwise, lists suites based on other filters.",
+          "required": true,
+          "description": "The number that identifies the issue from which the dependency will be removed.",
           "enum": null
         },
         {
-          "name": "ref",
-          "type": "string",
-          "required": false,
-          "description": "The name of the ref (e.g., 'refs/heads/main'). When specified, only rule evaluations triggered for this ref will be returned. Only for listing.",
-          "enum": null
-        },
-        {
-          "name": "repository_name",
-          "type": "string",
-          "required": false,
-          "description": "The name of the repository to filter on. Only for listing.",
-          "enum": null
-        },
-        {
-          "name": "time_period",
-          "type": "string",
-          "required": false,
-          "description": "The time period to filter by ('day', 'week'). Only for listing.",
-          "enum": null
-        },
-        {
-          "name": "actor_name",
-          "type": "string",
-          "required": false,
-          "description": "The GitHub username to filter on. Only rule evaluations triggered by this actor will be returned. Only for listing.",
-          "enum": null
-        },
-        {
-          "name": "rule_suite_result",
-          "type": "string",
-          "required": false,
-          "description": "The rule suite results to filter on ('pass', 'fail', 'bypass'). Only for listing.",
+          "name": "blocking_issue_id",
+          "type": "integer",
+          "required": true,
+          "description": "The ID of the blocking issue to remove as a dependency.",
           "enum": null
         }
       ],
       "endpoint_mappings": [
         {
-          "method": "GET",
-          "path": "/orgs/{org}/rulesets/rule-suites",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/dependencies/blocked_by/{issue_id}",
           "parameter_mappings": [
             {
-              "tool_param": "org",
-              "endpoint_param": "org",
+              "tool_param": "owner",
+              "endpoint_param": "owner",
               "location": "path",
               "transform": null
             },
             {
-              "tool_param": "ref",
-              "endpoint_param": "ref",
-              "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "repository_name",
-              "endpoint_param": "repository_name",
-              "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "time_period",
-              "endpoint_param": "time_period",
-              "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "actor_name",
-              "endpoint_param": "actor_name",
-              "location": "query",
-              "transform": null
-            },
-            {
-              "tool_param": "rule_suite_result",
-              "endpoint_param": "rule_suite_result",
-              "location": "query",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        },
-        {
-          "method": "GET",
-          "path": "/orgs/{org}/rulesets/rule-suites/{rule_suite_id}",
-          "parameter_mappings": [
-            {
-              "tool_param": "org",
-              "endpoint_param": "org",
+              "tool_param": "repo",
+              "endpoint_param": "repo",
               "location": "path",
               "transform": null
             },
             {
-              "tool_param": "rule_suite_id",
-              "endpoint_param": "rule_suite_id",
+              "tool_param": "issue_number",
+              "endpoint_param": "issue_number",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "blocking_issue_id",
+              "endpoint_param": "issue_id",
               "location": "path",
               "transform": null
             }
@@ -2471,6 +1472,7 @@
   ],
   "auth_type": "none",
   "auth_config": {},
-  "created_at": "2026-05-18T12:58:55.316586+00:00",
-  "source_url": "https://api.github.com"
+  "created_at": "2026-05-26T21:36:07.693719+00:00",
+  "source_url": "https://api.github.com",
+  "discovery_method": "openapi"
 }
