@@ -1,58 +1,177 @@
-# Machine Internet UAA
+# Machine Internet
 
-Point it at any URL. Get an MCP server any AI agent can call.
+> Hosted MCP endpoints for any API. No setup required.
 
-**Live:** https://machine-internet.onrender.com/
+Point it at any URL. It discovers the API surface, condenses it into clean agent-friendly tools, and serves it as a live MCP endpoint your agent can call immediately.
+
+**Live:** [machine-internet.onrender.com](https://machine-internet.onrender.com)
 
 ---
 
-## The problem
+## Use a hosted endpoint right now
 
-Most APIs on the internet are not accessible to AI agents. They speak HTTP, not MCP. They have no agent SDK, no tool definitions, and often no public documentation at all. Every new integration is a custom build.
+No installation. No API keys. Just paste into your MCP config and go.
 
-Machine Internet UAA eliminates that. Give it a URL and it produces a working MCP endpoint in seconds — one that any agent, Claude, Cursor, or any MCP client can call against the real service with no additional code.
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/github_v3_rest_api", "--transport", "sse-only"]
+    },
+    "hn-search": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/algolia_api_hacker_news", "--transport", "sse-only"]
+    },
+    "httpbin": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/httpbin_service", "--transport", "sse-only"]
+    }
+  }
+}
+```
+
+Or wrap any API yourself at [machine-internet.onrender.com](https://machine-internet.onrender.com). Paste a URL, get an endpoint.
+
+---
+
+## Available hosted endpoints
+
+| API | Endpoint | Tools |
+|---|---|---|
+| GitHub REST API | `/mcp/github_v3_rest_api` | 14 — repos, issues, branches |
+| HN Algolia Search | `/mcp/algolia_api_hacker_news` | 2 — search articles, status |
+| httpbin | `/mcp/httpbin_service` | 15 — inspect, auth, redirect |
+| Open Library | `/mcp/open_library` | 2 — books, affiliate links |
+| Open Library Search | `/mcp/open_library_search_api` | 2 — search books/authors, facets |
+| PokéAPI | `/mcp/pokeapi` | 1 — get Pokemon |
+| TVMaze | `/mcp/tvmaze` | 2 — show details, geo region |
+| Petstore v2 | `/mcp/swagger_petstore` | 15 — full pet store API |
+| Petstore v3 | `/mcp/pet_store_service` | 14 — full pet store API |
+
+All endpoints are live and free. Base URL: `https://machine-internet.onrender.com`
+
+Want an API that isn't listed? Wrap it yourself in 30 seconds on the dashboard.
+
+---
+
+## Demo
+
+<!-- REPLACE WITH DEMO GIF -->
+
+*Discovery running against httpbin. 73 endpoints condensed to 15 clean agent tools in seconds.*
+
+<!-- REPLACE WITH CLAUDE DESKTOP SCREENSHOT -->
+
+*Claude calling live GitHub data through a Machine Internet MCP endpoint. Auto-generated from GitHub's OpenAPI spec.*
+
+---
+
+## Who this is for
+
+**Agent developers using LangChain, AutoGPT, or any MCP-compatible framework** who need to add an API as a tool without spending hours building a custom integration.
+
+**Claude Desktop and Cursor users** who want tools beyond what's natively available.
+
+**Teams with internal APIs** who want their agents to access proprietary services without writing MCP servers from scratch.
+
+**Anyone building agents** who hits the wall where the tool they need doesn't have an MCP server yet.
 
 ---
 
 ## How it works
 
-**Step 1: Discovery.** It tries to find an OpenAPI spec automatically by probing 20 standard paths. If it finds one, it parses it. If there is no spec, it launches a headless browser, observes the XHR traffic the page makes, and uses an LLM to infer the schema from what was captured. Every API on the internet is a target.
+**Path A: OpenAPI spec detection**
+Probes 20 standard locations for an OpenAPI or Swagger spec. If found, parses the entire API surface automatically. Zero LLM cost. Works on any documented API.
 
-**Step 2: Condensation.** Raw API specs can have hundreds of endpoints. An LLM collapses them into 10-15 clean, agent-friendly tools with `verb_noun` names and descriptions that tell agents exactly when to use each one. A 400-endpoint CRM becomes `get_customer`, `create_deal`, `log_interaction`.
+**Path B: Traffic sniffing**
+If no spec exists, launches headless Chromium, observes XHR traffic while interacting with the page, and uses an LLM to infer a schema from what was captured. Works on SPAs and undocumented services. Verified on PokéAPI and HN Algolia (which calls a different TLD than its website).
 
-**Step 3: Serving.** The condensed schema is saved locally and served as a standard MCP SSE endpoint. Paste the URL into any MCP client. The agent makes real calls against the real service.
+**Condensation**
+Raw API specs can have hundreds of endpoints. An LLM collapses them into 10-15 clean tools with `verb_noun` names and descriptions that tell agents exactly when to use each one. A 400-endpoint CRM becomes `get_customer`, `create_deal`, `log_interaction`.
+
+**Serving**
+The condensed schema is served as a standard SSE-based MCP server. Any MCP-compatible client connects immediately and makes real calls against the real service.
 
 ---
 
-## Quickstart
+## Wrap your own API
+
+Using the hosted dashboard (no install):
+
+1. Visit [machine-internet.onrender.com](https://machine-internet.onrender.com)
+2. Paste any URL into the wrap bar
+3. Copy the MCP endpoint URL
+4. Add it to your agent config
+
+Using the CLI (self-hosted):
+
+```bash
+# Any API with an OpenAPI spec
+python discover.py --url http://httpbin.org
+
+# Large specs: use --spec and --tags to focus
+python discover.py \
+  --url https://api.github.com \
+  --spec https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json \
+  --tags repos,issues
+
+# No spec: use traffic sniffing
+python discover.py --url https://hn.algolia.com --traffic
+
+# Serve the result
+python serve.py --schema schemas/httpbin_service.json --port 8100
+```
+
+---
+
+## Verified on
+
+| Service | Method | Tools | Notes |
+|---|---|---|---|
+| GitHub REST API | Path A + `--spec` | 14 | Large spec, tag filter required |
+| httpbin.org | Path A auto-detected | 15 | Spec at `/spec.json` |
+| HN Algolia | Path B traffic sniff | 2 | SPA, API on different TLD |
+| PokéAPI | Path B traffic sniff | 1 | No spec anywhere |
+| Open Library | Path B traffic sniff | 2 | Mostly SSR, search page works |
+| TVMaze | Path B traffic sniff | 2 | Show data and geo region |
+| Petstore v2 + v3 | Path A auto-detected | 14-15 | Standard Swagger paths |
+
+---
+
+## Condensation quality
+
+Eval suite measures coverage against ground truth schemas. Pass threshold: 70%.
+
+| Dataset | Endpoints | Coverage | Score |
+|---|---|---|---|
+| Demo store | 6 | 100% | **100% PASS** |
+| GitHub repos + issues | 40 | 100% | **100% PASS** |
+| GitHub API | ~40 | 73% | **84% PASS** |
+| httpbin | 73 | 54% | **72% PASS** |
+
+---
+
+## Self-hosted setup
 
 ```bash
 git clone https://github.com/chetanty/machine_internet
 cd machine_internet
 pip install -r requirements.txt
 playwright install chromium
-cp .env.example .env   # add GEMINI_API_KEY or OPENAI_API_KEY
+cp .env.example .env
 ```
 
-Wrap any API with a public spec:
+Add at least one key to `.env`:
 
-```bash
-python discover.py --url https://api.github.com \
-  --spec https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json \
-  --tags repos,issues
-python serve.py --schema schemas/github_v3_rest_api.json --port 8100
+```
+OPENAI_API_KEY=sk-...        # recommended, no daily quota
+GEMINI_API_KEY=your-key      # free tier, 20 req/day on flash
 ```
 
-Add `http://localhost:8100/mcp` to your Claude MCP config. Done.
+The AI client tries OpenAI first, then falls back through multiple Gemini models automatically on quota exhaustion.
 
-Wrap an API with no spec using traffic sniffing:
-
-```bash
-python discover.py --url https://hn.algolia.com --traffic
-python serve.py --schema schemas/algolia_api_hacker_news.json --port 8101
-```
-
-Run the dashboard to manage everything from a browser:
+Run the dashboard:
 
 ```bash
 python dashboard.py   # http://localhost:7000
@@ -60,88 +179,31 @@ python dashboard.py   # http://localhost:7000
 
 ---
 
-## What it can wrap
-
-| Service | Method | Tools generated |
-|---|---|---|
-| GitHub REST API | OpenAPI spec | 14 tools: repos, issues, branches |
-| httpbin.org | OpenAPI spec (auto-detected) | 15 tools |
-| Stripe, Petstore, any OpenAPI service | OpenAPI spec | up to 15 tools |
-| PokéAPI | Traffic sniffing (no spec) | `get_pokemon` |
-| HN Algolia search | Traffic sniffing (React SPA, API on different TLD) | `search_articles`, `check_service_status` |
-| Open Library | Traffic sniffing (partial, SSR-limited) | `search_books_authors`, `get_search_facets` |
-
-Traffic sniffing works on SPAs that load data via XHR. Server-rendered pages yield fewer captures. The right target is any page that fetches data dynamically after load.
-
----
-
-## Claude MCP config
-
-```json
-{
-  "mcpServers": {
-    "github": {
-      "url": "http://localhost:8100/mcp"
-    },
-    "algolia": {
-      "url": "http://localhost:8101/mcp"
-    }
-  }
-}
-```
-
----
-
-## Configuration
-
-Copy `.env.example` to `.env` and fill in at least one key:
-
-```
-GEMINI_API_KEY=your-key        # free tier: 20 req/day on flash
-OPENAI_API_KEY=sk-...          # no daily quota, gpt-4o-mini default
-```
-
-The AI client tries OpenAI first, then Gemini, then fallback Gemini models, then secondary Gemini keys. Add more keys to `GEMINI_API_KEY_2` through `GEMINI_API_KEY_5` to increase capacity.
-
----
-
-## Auth
-
-Credentials are stored encrypted via Fernet in `~/.uaa/vault/`. The server injects them per request as Bearer token, API key header, Basic auth, or OAuth2 client credentials flow.
-
-```bash
-python serve.py --schema schemas/github_v3_rest_api.json --set-creds
-```
-
----
-
-## Deployment
-
-Deployed on Railway via Docker. The live dashboard at https://machineinternet-production.up.railway.app runs discovery and wrapping in the cloud. MCP servers launched from the deployed instance are accessible within the container network.
-
-To deploy your own instance:
-
-```bash
-railway up
-```
-
----
-
 ## Project structure
 
 ```
-discover.py       discover any API and save a condensed schema
-serve.py          serve a schema as an MCP endpoint
-dashboard.py      web UI: wrap, start, stop services
-
+discover.py       discover any API, save condensed schema
+serve.py          serve a schema as a live MCP endpoint
+dashboard.py      web UI: wrap, start, stop, manage services
 src/
   discovery/      Path A (OpenAPI) and Path B (traffic sniffing)
-  condensation/   LLM-based schema condensation and eval runner
-  serving/        MCP server (pure ASGI SSE) and executor
-  auth/           encrypted credential vault and request injector
-  ai/             Gemini + OpenAI fallback client
-
-evals/            ground truth schemas and scoring
+  condensation/   LLM condensation and eval runner
+  serving/        pure ASGI SSE MCP server and smart executor
+  auth/           Fernet-encrypted credential vault
+  ai/             OpenAI + Gemini fallback client
+evals/            ground truth schemas and scoring scripts
 ```
 
-For a full technical breakdown of the architecture, design decisions, eval results, and build log, see [BUILD_REPORT.md](BUILD_REPORT.md).
+Full technical breakdown including architecture decisions, eval results, and build log: [BUILD_REPORT.md](BUILD_REPORT.md)
+
+---
+
+## Contributing
+
+Issues and PRs welcome. If you wrap an API that works well, open a PR to add the schema to the `schemas/` directory and the endpoint to this README.
+
+---
+
+## License
+
+Apache 2.0
