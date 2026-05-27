@@ -1,8 +1,10 @@
 # Machine Internet
 
-> Hosted MCP endpoints for any API. No setup required.
+> MCP endpoints for APIs that will never have documentation.
 
-Point it at any URL. It discovers the API surface, condenses it into clean agent-friendly tools, and serves it as a live MCP endpoint your agent can call immediately.
+Most of the internet has no OpenAPI spec and never will. Every SPA, every internal tool, every API that only a browser has ever seen. Machine Internet connects AI agents to all of it. Paste a URL, get a working MCP endpoint.
+
+[Bundlephobia](https://bundlephobia.com) has no public API. [caniuse.com](https://caniuse.com) has no public API. Machine Internet wraps both in under 30 seconds.
 
 **Live:** [machine-internet.onrender.com](https://machine-internet.onrender.com)
 
@@ -43,11 +45,12 @@ Or wrap any API yourself at [machine-internet.onrender.com](https://machine-inte
 
 | API | Endpoint | Tools |
 |---|---|---|
+| [Bundlephobia](https://bundlephobia.com) | `/mcp/bundlephobia` | 3: package size, history, recent packages |
+| [caniuse.com](https://caniuse.com) | `/mcp/caniuse` | 5: search features, browser support, news |
 | [GitHub Issues](https://docs.github.com/en/rest/issues/issues) | `/mcp/github_v3_rest_api` | 15: list, create, update, comment, label |
 | [HN Algolia Search](https://hn.algolia.com/api) | `/mcp/algolia_api_hacker_news` | 2: search articles, status |
 | [httpbin](https://httpbin.org) | `/mcp/httpbin_service` | 15: inspect, auth, redirect |
 | [Open Library](https://openlibrary.org) | `/mcp/open_library` | 2: books, affiliate links |
-| [Open Library Search](https://openlibrary.org/search) | `/mcp/open_library_search_api` | 2: search books/authors, facets |
 | [PokéAPI](https://pokeapi.co) | `/mcp/pokeapi` | 1: get Pokemon |
 
 All endpoints are live and free. Base URL: `https://machine-internet.onrender.com`
@@ -68,31 +71,31 @@ Want an API that isn't listed? Wrap it yourself in 30 seconds on the dashboard.
 
 ---
 
-## Who this is for
-
-**Agent developers using LangChain, AutoGPT, or any MCP-compatible framework** who need to add an API as a tool without spending hours building a custom integration.
-
-**Claude Desktop and Cursor users** who want tools beyond what's natively available.
-
-**Teams with internal APIs** who want their agents to access proprietary services without writing MCP servers from scratch.
-
-**Anyone building agents** who hits the wall where the tool they need doesn't have an MCP server yet.
-
----
-
 ## How it works
 
-**Path A: OpenAPI spec detection**
-Probes 20 standard locations for an OpenAPI or Swagger spec. If found, parses the entire API surface automatically. Zero LLM cost. Works on any documented API.
+**Path B: Traffic sniffing (the hard part)**
+When no spec exists, launches headless Chromium, observes the XHR and fetch calls the page makes while navigating and scrolling, and uses an LLM to infer a clean schema from the captured traffic. Works on any SPA, any internal tool, any API that has no public documentation. This is the part nobody else does.
 
-**Path B: Traffic sniffing**
-If no spec exists, launches headless Chromium, observes XHR traffic while interacting with the page, and uses an LLM to infer a schema from what was captured. Works on SPAs and undocumented services. Verified on [PokéAPI](https://pokeapi.co) and [HN Algolia](https://hn.algolia.com/api) (which calls a different TLD than its website).
+**Path A: OpenAPI spec detection**
+Probes 20 standard locations for an OpenAPI or Swagger spec. If found, parses the entire API surface automatically. Zero LLM cost. Useful for documented APIs where you want an MCP endpoint without writing any code.
 
 **Condensation**
-Raw API specs can have hundreds of endpoints. An LLM collapses them into 10-15 clean tools with `verb_noun` names and descriptions that tell agents exactly when to use each one. A 400-endpoint CRM becomes `get_customer`, `create_deal`, `log_interaction`.
+Raw specs can have hundreds of endpoints. An LLM collapses them into 10-15 clean tools with `verb_noun` names and descriptions that tell agents exactly when to use each one. A 400-endpoint CRM becomes `get_customer`, `create_deal`, `log_interaction`.
 
 **Serving**
 The condensed schema is served as a standard SSE-based MCP server. Any MCP-compatible client connects immediately and makes real calls against the real service.
+
+---
+
+## Who this is for
+
+**Agent developers** who need to connect to an API that has no MCP server, no OpenAPI spec, and no plans to publish either.
+
+**Claude Desktop and Cursor users** who want to add any tool to their agent without writing integration code.
+
+**Teams with internal APIs** behind a firewall, documented only in someone's head or a Confluence page nobody reads.
+
+**Anyone building agents** who hits the wall where the tool they need has never heard of MCP.
 
 ---
 
@@ -128,27 +131,25 @@ python serve.py --schema schemas/httpbin_service.json --port 8100
 
 ## Verified on
 
-| Service | Method | Tools | Notes |
-|---|---|---|---|
-| [GitHub Issues API](https://docs.github.com/en/rest/issues/issues) | Path A + `--spec --tags issues` | 15 | 1,186 endpoint spec, tag filter to issues |
-| [httpbin.org](https://httpbin.org) | Path A auto-detected | 15 | Spec at `/spec.json` |
-| [HN Algolia](https://hn.algolia.com/api) | Path B traffic sniff | 2 | SPA, API on different TLD |
-| [PokéAPI](https://pokeapi.co) | Path B traffic sniff | 1 | No spec anywhere |
-| [Open Library](https://openlibrary.org) | Path B traffic sniff | 2 | Mostly SSR, search page works |
-| [Petstore v2](https://petstore.swagger.io) + [v3](https://petstore3.swagger.io) | Path A auto-detected | 14-15 | Standard Swagger paths |
+| Service | Method | Notes |
+|---|---|---|
+| [Bundlephobia](https://bundlephobia.com) | Path B traffic sniff | No public API. 3 tools: package size, history, recent |
+| [caniuse.com](https://caniuse.com) | Path B traffic sniff | No public API. 5 tools: feature search, browser support, news |
+| [HN Algolia](https://hn.algolia.com/api) | Path B traffic sniff | SPA, API lives on a different TLD than the website |
+| [PokéAPI](https://pokeapi.co) | Path B traffic sniff | No spec exists anywhere |
+| [Open Library](https://openlibrary.org) | Path B traffic sniff | Mostly server-rendered, search page works |
+| [GitHub Issues API](https://docs.github.com/en/rest/issues/issues) | Path A + `--spec --tags issues` | 1,186 endpoint spec, filtered to issues |
+| [httpbin.org](https://httpbin.org) | Path A auto-detected | Spec at `/spec.json` |
 
 ---
 
-## Condensation quality
+## Pricing
 
-Eval suite measures coverage against ground truth schemas. Pass threshold: 70%.
+Free tier: wrap public APIs, use hosted endpoints.
 
-| Dataset | Endpoints | Coverage | Score |
-|---|---|---|---|
-| Demo store | 6 | 100% | **100% PASS** |
-| GitHub repos + issues | 40 | 100% | **100% PASS** |
-| GitHub API | ~40 | 73% | **84% PASS** |
-| httpbin | 73 | 54% | **72% PASS** |
+Pro ($29/month): private APIs, credential vault, higher rate limits.
+
+Enterprise: self-hosted license for internal APIs behind a firewall.
 
 ---
 

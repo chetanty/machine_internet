@@ -1,0 +1,142 @@
+{
+  "base_url": "https://caniuse.com",
+  "service_name": "caniuse_data_api",
+  "service_description": "API for querying web feature support data, news, and related resources from caniuse.com.",
+  "tools": [
+    {
+      "name": "search_features",
+      "description": "Searches for web features by a given term and returns a list of matching feature IDs. Use this tool when you need to find the ID of a feature before retrieving its data.",
+      "parameters": [
+        {
+          "name": "search_term",
+          "type": "string",
+          "required": true,
+          "description": "The term to search for web features (e.g., 'css grid', 'async await').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/process/query.php",
+          "parameter_mappings": [
+            {
+              "tool_param": "search_term",
+              "endpoint_param": "search",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_feature_support_data",
+      "description": "Retrieves comprehensive support data for one or more web features by their IDs. Use this tool to get detailed browser compatibility and usage information for multiple features.",
+      "parameters": [
+        {
+          "name": "feature_ids",
+          "type": "string",
+          "required": true,
+          "description": "A comma-separated list of feature IDs (e.g., 'css-grid,css-subgrid,async-await') for which to retrieve full support data.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/process/get_feat_data.php",
+          "parameter_mappings": [
+            {
+              "tool_param": "feature_ids",
+              "endpoint_param": "fullDataFeats",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {
+            "type": "support-data"
+          }
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_feature_details",
+      "description": "Fetches specific supplementary data, such as related links or other specific data types, for a single web feature. Use this tool when you need specific, non-support-data details about one feature.",
+      "parameters": [
+        {
+          "name": "feature_id",
+          "type": "string",
+          "required": true,
+          "description": "The ID of the single feature to retrieve data for (e.g., 'css-grid').",
+          "enum": null
+        },
+        {
+          "name": "data_type",
+          "type": "string",
+          "required": true,
+          "description": "The type of specific data to retrieve, e.g., 'links' for related resources.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/process/get_feat_data.php",
+          "parameter_mappings": [
+            {
+              "tool_param": "feature_id",
+              "endpoint_param": "feat",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "data_type",
+              "endpoint_param": "type",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_news",
+      "description": "Retrieves a list of recent news entries and announcements related to web features and caniuse.com updates. Use this tool to stay informed about the latest developments.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/process/get_news.php",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_regions",
+      "description": "Retrieves a JSON object mapping region codes (e.g., country codes) to their full names. Use this to understand the geographical context of browser support data.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/resources/sc-regions.json",
+          "parameter_mappings": [],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-05-27T21:20:44.450862+00:00",
+  "source_url": "https://caniuse.com/?search=grid",
+  "discovery_method": "traffic"
+}

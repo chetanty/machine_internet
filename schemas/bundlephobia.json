@@ -1,0 +1,112 @@
+{
+  "base_url": "https://bundlephobia.com",
+  "service_name": "bundle_phobia_api",
+  "service_description": "API for fetching bundle size and package information for npm packages.",
+  "tools": [
+    {
+      "name": "get_recent_packages",
+      "description": "Use this tool to discover popular or recently searched npm packages and their basic information, such as search count, last search date, name, and version. This is useful for understanding current trends in package usage.",
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "The maximum number of recent packages to return.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/recent",
+          "parameter_mappings": [
+            {
+              "tool_param": "limit",
+              "endpoint_param": "limit",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_package_size",
+      "description": "Use this tool to retrieve detailed bundle size, dependency count, and other relevant metadata for a specific npm package by its name. This helps in evaluating the impact of a package on application size.",
+      "parameters": [
+        {
+          "name": "package",
+          "type": "string",
+          "required": true,
+          "description": "The name of the npm package to query (e.g., 'react', '@scope/package').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/size",
+          "parameter_mappings": [
+            {
+              "tool_param": "package",
+              "endpoint_param": "package",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_package_history",
+      "description": "Use this tool to fetch historical bundle size and metadata for different versions of a specific npm package. This is useful for tracking changes in package size over time and understanding how updates might affect bundle size.",
+      "parameters": [
+        {
+          "name": "package",
+          "type": "string",
+          "required": true,
+          "description": "The name of the npm package to query.",
+          "enum": null
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "The maximum number of historical versions to return.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/package-history",
+          "parameter_mappings": [
+            {
+              "tool_param": "package",
+              "endpoint_param": "package",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "limit",
+              "endpoint_param": "limit",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-05-27T21:16:24.138769+00:00",
+  "source_url": "https://bundlephobia.com/package/react",
+  "discovery_method": "traffic"
+}
