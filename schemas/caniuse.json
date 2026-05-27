@@ -78,8 +78,8 @@
           "name": "data_type",
           "type": "string",
           "required": true,
-          "description": "The type of specific data to retrieve, e.g., 'links' for related resources.",
-          "enum": null
+          "description": "The type of specific data to retrieve.",
+          "enum": ["links", "bugs", "notes"]
         }
       ],
       "endpoint_mappings": [
@@ -119,20 +119,6 @@
       ],
       "response_fields": null
     },
-    {
-      "name": "get_regions",
-      "description": "Retrieves a JSON object mapping region codes (e.g., country codes) to their full names. Use this to understand the geographical context of browser support data.",
-      "parameters": [],
-      "endpoint_mappings": [
-        {
-          "method": "GET",
-          "path": "/resources/sc-regions.json",
-          "parameter_mappings": [],
-          "static_params": {}
-        }
-      ],
-      "response_fields": null
-    }
   ],
   "auth_type": "none",
   "auth_config": {},

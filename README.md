@@ -46,7 +46,7 @@ Or wrap any API yourself at [machine-internet.onrender.com](https://machine-inte
 | API | Endpoint | Tools |
 |---|---|---|
 | [Bundlephobia](https://bundlephobia.com) | `/mcp/bundlephobia` | 3: package size, history, recent packages |
-| [caniuse.com](https://caniuse.com) | `/mcp/caniuse` | 5: search features, browser support, news |
+| [caniuse.com](https://caniuse.com) | `/mcp/caniuse` | 4: search features, browser support, feature details, news |
 | [GitHub Issues](https://docs.github.com/en/rest/issues/issues) | `/mcp/github_v3_rest_api` | 15: list, create, update, comment, label |
 | [HN Algolia Search](https://hn.algolia.com/api) | `/mcp/algolia_api_hacker_news` | 2: search articles, status |
 | [httpbin](https://httpbin.org) | `/mcp/httpbin_service` | 15: inspect, auth, redirect |
@@ -64,7 +64,7 @@ Want an API that isn't listed? Wrap it yourself in 30 seconds on the dashboard.
 <!-- GIF coming soon: terminal running discover.py against httpbin, 73 endpoints to 15 tools -->
 
 ![Machine Internet Dashboard](assets/dashboard.png)
-*The Machine Internet dashboard. 9 services wrapped, 72 tools available, live MCP endpoints with one-click copy.*
+*The Machine Internet dashboard. Wrapped services, live MCP endpoints, one-click URL copy.*
 
 ![Claude calling GitHub data via MCP](assets/claude_mcp.png)
 *Claude calling live [GitHub](https://github.com/microsoft/vscode) data through a Machine Internet MCP endpoint. 17,938 open issues as of today.*
@@ -134,7 +134,7 @@ python serve.py --schema schemas/httpbin_service.json --port 8100
 | Service | Method | Notes |
 |---|---|---|
 | [Bundlephobia](https://bundlephobia.com) | Path B traffic sniff | No public API. 3 tools: package size, history, recent |
-| [caniuse.com](https://caniuse.com) | Path B traffic sniff | No public API. 5 tools: feature search, browser support, news |
+| [caniuse.com](https://caniuse.com) | Path B traffic sniff | No public API. 4 tools: search, browser support, feature details, news |
 | [HN Algolia](https://hn.algolia.com/api) | Path B traffic sniff | SPA, API lives on a different TLD than the website |
 | [PokéAPI](https://pokeapi.co) | Path B traffic sniff | No spec exists anywhere |
 | [Open Library](https://openlibrary.org) | Path B traffic sniff | Mostly server-rendered, search page works |

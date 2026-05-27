@@ -40,7 +40,7 @@
           "name": "package",
           "type": "string",
           "required": true,
-          "description": "The name of the npm package to query (e.g., 'react', '@scope/package').",
+          "description": "The npm package name, optionally with a specific version using @ syntax (e.g., 'react', 'react@17.0.2', '@scope/package@1.0.0'). Omit the version to get the latest.",
           "enum": null
         }
       ],
