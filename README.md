@@ -6,11 +6,15 @@ Point it at any URL. It discovers the API surface, condenses it into clean agent
 
 **Live:** [machine-internet.onrender.com](https://machine-internet.onrender.com)
 
+![License](https://img.shields.io/badge/license-Apache%202.0-blue)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![MCP](https://img.shields.io/badge/MCP-compatible-orange)
+
 ---
 
 ## Use a hosted endpoint right now
 
-No installation. No API keys. Just paste into your MCP config and go.
+Works with Claude Desktop, Cursor, Cline, and any MCP-compatible client.
 
 ```json
 {
@@ -39,12 +43,12 @@ Or wrap any API yourself at [machine-internet.onrender.com](https://machine-inte
 
 | API | Endpoint | Tools |
 |---|---|---|
-| GitHub Issues | `/mcp/github_v3_rest_api` | 15 — list, create, update, comment, label |
-| HN Algolia Search | `/mcp/algolia_api_hacker_news` | 2 — search articles, status |
-| httpbin | `/mcp/httpbin_service` | 15 — inspect, auth, redirect |
-| Open Library | `/mcp/open_library` | 2 — books, affiliate links |
-| Open Library Search | `/mcp/open_library_search_api` | 2 — search books/authors, facets |
-| PokéAPI | `/mcp/pokeapi` | 1 — get Pokemon |
+| [GitHub Issues](https://docs.github.com/en/rest/issues/issues) | `/mcp/github_v3_rest_api` | 15 — list, create, update, comment, label |
+| [HN Algolia Search](https://hn.algolia.com/api) | `/mcp/algolia_api_hacker_news` | 2 — search articles, status |
+| [httpbin](https://httpbin.org) | `/mcp/httpbin_service` | 15 — inspect, auth, redirect |
+| [Open Library](https://openlibrary.org) | `/mcp/open_library` | 2 — books, affiliate links |
+| [Open Library Search](https://openlibrary.org/search) | `/mcp/open_library_search_api` | 2 — search books/authors, facets |
+| [PokéAPI](https://pokeapi.co) | `/mcp/pokeapi` | 1 — get Pokemon |
 
 All endpoints are live and free. Base URL: `https://machine-internet.onrender.com`
 
@@ -54,13 +58,13 @@ Want an API that isn't listed? Wrap it yourself in 30 seconds on the dashboard.
 
 ## Demo
 
-![Machine Internet Dashboard](assets/dashboard.png)
+<!-- GIF coming soon: terminal running discover.py against httpbin, 73 endpoints to 15 tools -->
 
+![Machine Internet Dashboard](assets/dashboard.png)
 *The Machine Internet dashboard. 9 services wrapped, 72 tools available, live MCP endpoints with one-click copy.*
 
 ![Claude calling GitHub data via MCP](assets/claude_mcp.png)
-
-*Claude calling live GitHub data through a Machine Internet MCP endpoint. 17,938 open issues as of today.*
+*Claude calling live [GitHub](https://github.com/microsoft/vscode) data through a Machine Internet MCP endpoint. 17,938 open issues as of today.*
 
 ---
 
@@ -82,7 +86,7 @@ Want an API that isn't listed? Wrap it yourself in 30 seconds on the dashboard.
 Probes 20 standard locations for an OpenAPI or Swagger spec. If found, parses the entire API surface automatically. Zero LLM cost. Works on any documented API.
 
 **Path B: Traffic sniffing**
-If no spec exists, launches headless Chromium, observes XHR traffic while interacting with the page, and uses an LLM to infer a schema from what was captured. Works on SPAs and undocumented services. Verified on PokéAPI and HN Algolia (which calls a different TLD than its website).
+If no spec exists, launches headless Chromium, observes XHR traffic while interacting with the page, and uses an LLM to infer a schema from what was captured. Works on SPAs and undocumented services. Verified on [PokéAPI](https://pokeapi.co) and [HN Algolia](https://hn.algolia.com/api) (which calls a different TLD than its website).
 
 **Condensation**
 Raw API specs can have hundreds of endpoints. An LLM collapses them into 10-15 clean tools with `verb_noun` names and descriptions that tell agents exactly when to use each one. A 400-endpoint CRM becomes `get_customer`, `create_deal`, `log_interaction`.
@@ -126,12 +130,12 @@ python serve.py --schema schemas/httpbin_service.json --port 8100
 
 | Service | Method | Tools | Notes |
 |---|---|---|---|
-| GitHub Issues API | Path A + `--spec --tags issues` | 15 | 1,186 endpoint spec, tag filter to issues |
-| httpbin.org | Path A auto-detected | 15 | Spec at `/spec.json` |
-| HN Algolia | Path B traffic sniff | 2 | SPA, API on different TLD |
-| PokéAPI | Path B traffic sniff | 1 | No spec anywhere |
-| Open Library | Path B traffic sniff | 2 | Mostly SSR, search page works |
-| Petstore v2 + v3 | Path A auto-detected | 14-15 | Standard Swagger paths |
+| [GitHub Issues API](https://docs.github.com/en/rest/issues/issues) | Path A + `--spec --tags issues` | 15 | 1,186 endpoint spec, tag filter to issues |
+| [httpbin.org](https://httpbin.org) | Path A auto-detected | 15 | Spec at `/spec.json` |
+| [HN Algolia](https://hn.algolia.com/api) | Path B traffic sniff | 2 | SPA, API on different TLD |
+| [PokéAPI](https://pokeapi.co) | Path B traffic sniff | 1 | No spec anywhere |
+| [Open Library](https://openlibrary.org) | Path B traffic sniff | 2 | Mostly SSR, search page works |
+| [Petstore v2](https://petstore.swagger.io) + [v3](https://petstore3.swagger.io) | Path A auto-detected | 14-15 | Standard Swagger paths |
 
 ---
 
@@ -190,7 +194,7 @@ src/
 evals/            ground truth schemas and scoring scripts
 ```
 
-Full technical breakdown including architecture decisions, eval results, and build log: [BUILD_REPORT.md](BUILD_REPORT.md)
+Full technical breakdown — architecture decisions, eval results, build log: [BUILD_REPORT.md](BUILD_REPORT.md)
 
 ---
 
