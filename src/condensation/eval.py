@@ -105,7 +105,7 @@ async def _eval_single(path: Path) -> EvalResult:
 
 def print_report(results: list[EvalResult]) -> None:
     SEP = "-" * 64
-    print(f"\n{'UAA Condensation Eval':^64}")
+    print(f"\n{'Condensation Eval':^64}")
     print(SEP)
     for r in results:
         if r.errors:

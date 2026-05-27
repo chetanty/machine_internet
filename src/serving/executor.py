@@ -23,7 +23,7 @@ class ToolExecutor:
             headers, query = await self.auth_injector.inject(headers, query)
 
         async with httpx.AsyncClient(timeout=30.0, follow_redirects=True,
-                                     headers={"User-Agent": "UAA/1.0 (Universal Agent Adapter)"}) as client:
+                                     headers={"User-Agent": "machine-internet/1.0"}) as client:
             resp = await client.request(
                 method=mapping.method,
                 url=url,

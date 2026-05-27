@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
 
-app = FastAPI(title="Demo Store", description="A tiny store API for testing UAA.")
+app = FastAPI(title="Demo Store", description="A tiny store API for testing Machine Internet.")
 
 _items: dict = {
     "1": {"id": "1", "name": "Apple",  "price": 1.50, "stock": 100},

@@ -43,12 +43,12 @@ Or wrap any API yourself at [machine-internet.onrender.com](https://machine-inte
 
 | API | Endpoint | Tools |
 |---|---|---|
-| [GitHub Issues](https://docs.github.com/en/rest/issues/issues) | `/mcp/github_v3_rest_api` | 15 — list, create, update, comment, label |
-| [HN Algolia Search](https://hn.algolia.com/api) | `/mcp/algolia_api_hacker_news` | 2 — search articles, status |
-| [httpbin](https://httpbin.org) | `/mcp/httpbin_service` | 15 — inspect, auth, redirect |
-| [Open Library](https://openlibrary.org) | `/mcp/open_library` | 2 — books, affiliate links |
-| [Open Library Search](https://openlibrary.org/search) | `/mcp/open_library_search_api` | 2 — search books/authors, facets |
-| [PokéAPI](https://pokeapi.co) | `/mcp/pokeapi` | 1 — get Pokemon |
+| [GitHub Issues](https://docs.github.com/en/rest/issues/issues) | `/mcp/github_v3_rest_api` | 15: list, create, update, comment, label |
+| [HN Algolia Search](https://hn.algolia.com/api) | `/mcp/algolia_api_hacker_news` | 2: search articles, status |
+| [httpbin](https://httpbin.org) | `/mcp/httpbin_service` | 15: inspect, auth, redirect |
+| [Open Library](https://openlibrary.org) | `/mcp/open_library` | 2: books, affiliate links |
+| [Open Library Search](https://openlibrary.org/search) | `/mcp/open_library_search_api` | 2: search books/authors, facets |
+| [PokéAPI](https://pokeapi.co) | `/mcp/pokeapi` | 1: get Pokemon |
 
 All endpoints are live and free. Base URL: `https://machine-internet.onrender.com`
 
@@ -194,7 +194,7 @@ src/
 evals/            ground truth schemas and scoring scripts
 ```
 
-Full technical breakdown — architecture decisions, eval results, build log: [BUILD_REPORT.md](BUILD_REPORT.md)
+Full technical breakdown: architecture decisions, eval results, build log: [BUILD_REPORT.md](BUILD_REPORT.md)
 
 ---
 

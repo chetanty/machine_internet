@@ -1,4 +1,4 @@
-"""UAA Dashboard — monitor and manage MCP wrappers."""
+"""Machine Internet Dashboard - monitor and manage MCP wrappers."""
 from __future__ import annotations
 import asyncio
 import base64
@@ -56,7 +56,7 @@ async def lifespan(app: FastAPI):
 
 
 limiter = Limiter(key_func=_get_ip)
-app = FastAPI(title="UAA Dashboard", lifespan=lifespan)
+app = FastAPI(title="Machine Internet Dashboard", lifespan=lifespan)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
@@ -236,7 +236,7 @@ _HTML = r"""<!DOCTYPE html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Machine Internet UAA</title>
+<title>Machine Internet</title>
 <link rel="icon" type="image/png" href="__MI_LOGO__">
 <style>
 /* ── tokens ───────────────────────────────────────────────────────────────── */
@@ -646,7 +646,7 @@ html[data-theme="light"] .werr-tag.info{background:#eff6ff;color:#1d4ed8}
 <header>
   <div class="logo">
     <img class="logo-mark" src="__MI_LOGO__" alt="Machine Internet" width="28" height="28">
-    <div class="logo-name">Machine Internet <span>UAA</span></div>
+    <div class="logo-name">Machine Internet</div>
   </div>
   <div class="hdr-right">
     <div class="count-pill"><b id="hdr-count">0</b> services</div>
@@ -729,14 +729,14 @@ html[data-theme="light"] .werr-tag.info{background:#eff6ff;color:#1d4ed8}
 <div class="wiki-backdrop" id="wiki-backdrop" onclick="closeWikiOnBackdrop(event)">
   <div class="wiki-modal">
     <div class="wiki-hdr">
-      <span class="wiki-title">How Machine Internet UAA Works</span>
+      <span class="wiki-title">How Machine Internet Works</span>
       <button class="wiki-close" onclick="closeWiki()">✕</button>
     </div>
     <div class="wiki-body">
 
       <div class="wiki-section">
         <h3>What is this?</h3>
-        <p><strong>Machine Internet UAA</strong> (Universal API Adapter) wraps any web API into an <strong>MCP server</strong>, a standardized interface that AI agents can call directly. Paste a URL, it discovers the API tools, generates a schema, and exposes it on a path that Claude or any MCP client can connect to.</p>
+        <p><strong>Machine Internet</strong> wraps any web API into an <strong>MCP server</strong>, a standardized interface that AI agents can call directly. Paste a URL, it discovers the API tools, generates a schema, and exposes it on a path that Claude or any MCP client can connect to.</p>
       </div>
 
       <div class="wiki-section">
