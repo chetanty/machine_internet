@@ -54,11 +54,11 @@ Want an API that isn't listed? Wrap it yourself in 30 seconds on the dashboard.
 
 ## Demo
 
-<!-- REPLACE WITH DEMO GIF -->
+![Machine Internet Dashboard](assets/dashboard.png)
 
 *Discovery running against httpbin. 73 endpoints condensed to 15 clean agent tools in seconds.*
 
-<!-- REPLACE WITH CLAUDE DESKTOP SCREENSHOT -->
+![Claude calling GitHub data via MCP](assets/claude_mcp.png)
 
 *Claude calling live GitHub data through a Machine Internet MCP endpoint. Auto-generated from GitHub's OpenAPI spec.*
 
