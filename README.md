@@ -143,16 +143,6 @@ python serve.py --schema schemas/httpbin_service.json --port 8100
 
 ---
 
-## Pricing
-
-Free tier: wrap public APIs, use hosted endpoints.
-
-Pro ($29/month): private APIs, credential vault, higher rate limits.
-
-Enterprise: self-hosted license for internal APIs behind a firewall.
-
----
-
 ## Self-hosted setup
 
 ```bash
