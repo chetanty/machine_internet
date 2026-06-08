@@ -4,7 +4,7 @@
 
 Most of the internet has no OpenAPI spec and never will. Every SPA, every internal tool, every API that only a browser has ever seen. Machine Internet connects AI agents to all of it. Paste a URL, get a working MCP endpoint.
 
-[Bundlephobia](https://bundlephobia.com) has no public API. [caniuse.com](https://caniuse.com) has no public API. Machine Internet wraps both in under 30 seconds.
+[Bundlephobia](https://bundlephobia.com) has no public API. [caniuse.com](https://caniuse.com) has no public API. Machine Internet wraps both.
 
 **Live:** [machine-internet.onrender.com](https://machine-internet.onrender.com)
 
@@ -55,13 +55,11 @@ Or wrap any API yourself at [machine-internet.onrender.com](https://machine-inte
 
 All endpoints are live and free. Base URL: `https://machine-internet.onrender.com`
 
-Want an API that isn't listed? Wrap it yourself in 30 seconds on the dashboard.
+Want an API that isn't listed? Wrap it yourself on the dashboard. Path A (OpenAPI spec detected): under 30 seconds. Path B (traffic sniffing): 1-3 minutes depending on site complexity.
 
 ---
 
 ## Demo
-
-<!-- GIF coming soon: terminal running discover.py against httpbin, 73 endpoints to 15 tools -->
 
 ![Machine Internet Dashboard](assets/dashboard.png)
 *The Machine Internet dashboard. Wrapped services, live MCP endpoints, one-click URL copy.*
