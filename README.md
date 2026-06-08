@@ -45,7 +45,7 @@ Or wrap any API yourself at [machine-internet.onrender.com](https://machine-inte
 
 | API | Endpoint | Tools |
 |---|---|---|
-| [Bundlephobia](https://bundlephobia.com) | `/mcp/bundlephobia` | 3: package size, history, recent packages |
+| [Bundlephobia](https://bundlephobia.com) | `/mcp/bundlephobia` | 6: size, tree-shaking check, history, similar, per-export sizes, recent |
 | [caniuse.com](https://caniuse.com) | `/mcp/caniuse` | 4: search features, browser support, feature details, news |
 | [GitHub Issues](https://docs.github.com/en/rest/issues/issues) | `/mcp/github_v3_rest_api` | 15: list, create, update, comment, label |
 | [HN Algolia Search](https://hn.algolia.com/api) | `/mcp/algolia_api_hacker_news` | 2: search articles, status |
@@ -133,7 +133,7 @@ python serve.py --schema schemas/httpbin_service.json --port 8100
 
 | Service | Method | Notes |
 |---|---|---|
-| [Bundlephobia](https://bundlephobia.com) | Path B traffic sniff | No public API. 3 tools: package size, history, recent |
+| [Bundlephobia](https://bundlephobia.com) | Path B traffic sniff | No public API. 6 tools: size, tree-shaking check, history, similar packages, per-export sizes, recent |
 | [caniuse.com](https://caniuse.com) | Path B traffic sniff | No public API. 4 tools: search, browser support, feature details, news |
 | [HN Algolia](https://hn.algolia.com/api) | Path B traffic sniff | SPA, API lives on a different TLD than the website |
 | [PokéAPI](https://pokeapi.co) | Path B traffic sniff | No spec exists anywhere |

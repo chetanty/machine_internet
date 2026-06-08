@@ -1,46 +1,17 @@
 {
   "base_url": "https://bundlephobia.com",
   "service_name": "bundle_phobia_api",
-  "service_description": "API for fetching bundle size and package information for npm packages.",
+  "service_description": "API for fetching npm package bundle sizes, version history, tree-shaking metadata, per-export costs, and similar package suggestions from Bundlephobia.",
   "tools": [
     {
-      "name": "get_recent_packages",
-      "description": "Use this tool to discover popular or recently searched npm packages and their basic information, such as search count, last search date, name, and version. This is useful for understanding current trends in package usage.",
-      "parameters": [
-        {
-          "name": "limit",
-          "type": "integer",
-          "required": false,
-          "description": "The maximum number of recent packages to return.",
-          "enum": null
-        }
-      ],
-      "endpoint_mappings": [
-        {
-          "method": "GET",
-          "path": "/api/recent",
-          "parameter_mappings": [
-            {
-              "tool_param": "limit",
-              "endpoint_param": "limit",
-              "location": "query",
-              "transform": null
-            }
-          ],
-          "static_params": {}
-        }
-      ],
-      "response_fields": null
-    },
-    {
       "name": "get_package_size",
-      "description": "Use this tool to retrieve detailed bundle size, dependency count, and other relevant metadata for a specific npm package by its name. This helps in evaluating the impact of a package on application size.",
+      "description": "Get the minified and gzipped bundle size for an npm package. Returns size in bytes, gzip size, resolved version, description, and repository URL. Use this when you need to know how much a package adds to a JavaScript bundle.",
       "parameters": [
         {
           "name": "package",
           "type": "string",
           "required": true,
-          "description": "The npm package name, optionally with a specific version using @ syntax (e.g., 'react', 'react@17.0.2', '@scope/package@1.0.0'). Omit the version to get the latest.",
+          "description": "The npm package name, optionally pinned with @ syntax (e.g., 'react', 'react@18.2.0', '@scope/package@1.0.0'). Omit the version to get the latest.",
           "enum": null
         }
       ],
@@ -59,24 +30,53 @@
           "static_params": {}
         }
       ],
-      "response_fields": null
+      "response_fields": ["name", "version", "description", "repository", "size", "gzip", "dependencyCount"]
     },
     {
-      "name": "get_package_history",
-      "description": "Use this tool to fetch historical bundle size and metadata for different versions of a specific npm package. This is useful for tracking changes in package size over time and understanding how updates might affect bundle size.",
+      "name": "check_tree_shaking",
+      "description": "Check whether an npm package supports tree-shaking and side-effect-free imports. Returns hasJSModule (whether an ES module entry exists), hasSideEffects (false means safe to tree-shake), and hasJSNext flags. Use this when deciding whether named imports like 'import { format } from date-fns' will be bundled efficiently.",
       "parameters": [
         {
           "name": "package",
           "type": "string",
           "required": true,
-          "description": "The name of the npm package to query.",
+          "description": "The npm package name, optionally pinned with @ syntax (e.g., 'lodash-es', 'date-fns', 'lodash@4.17.21').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/size",
+          "parameter_mappings": [
+            {
+              "tool_param": "package",
+              "endpoint_param": "package",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": ["name", "version", "hasJSModule", "hasJSNext", "hasSideEffects", "isModuleType"]
+    },
+    {
+      "name": "get_package_history",
+      "description": "Fetch historical bundle sizes for multiple versions of an npm package. Returns an object keyed by version string, each containing size, gzip, and dependency data. Use this to track how bundle size has changed across releases or to compare the cost of upgrading.",
+      "parameters": [
+        {
+          "name": "package",
+          "type": "string",
+          "required": true,
+          "description": "The npm package name (e.g., 'lodash', 'react', 'moment').",
           "enum": null
         },
         {
           "name": "limit",
           "type": "integer",
           "required": false,
-          "description": "The maximum number of historical versions to return.",
+          "description": "Maximum number of historical versions to return. Defaults to 15 if omitted.",
           "enum": null
         }
       ],
@@ -102,11 +102,99 @@
         }
       ],
       "response_fields": null
+    },
+    {
+      "name": "get_recent_packages",
+      "description": "Get recently searched npm packages on Bundlephobia, including their name, version, search count, and last searched timestamp. Use this to discover trending or frequently evaluated packages.",
+      "parameters": [
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "Maximum number of recent packages to return.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/recent",
+          "parameter_mappings": [
+            {
+              "tool_param": "limit",
+              "endpoint_param": "limit",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_similar_packages",
+      "description": "Find similar or alternative npm packages to a given package. Returns a category label (e.g., 'HTTP client libraries for Node.js') and a list of similar package names. Use this when evaluating lighter-weight alternatives or when a package is too large.",
+      "parameters": [
+        {
+          "name": "package",
+          "type": "string",
+          "required": true,
+          "description": "The npm package name to find alternatives for (e.g., 'axios', 'moment', 'lodash').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/similar-packages",
+          "parameter_mappings": [
+            {
+              "tool_param": "package",
+              "endpoint_param": "package",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_exports_sizes",
+      "description": "Get the individual bundle size for each named export of a tree-shakeable npm package. Returns a list of exports sorted by size, each with name, minified size, and gzip size in bytes. Use this to find the cheapest specific function to import, or to compare the cost of individual utilities (e.g., lodash-es/pick vs lodash-es/merge). Only works for packages that expose named ES module exports.",
+      "parameters": [
+        {
+          "name": "package",
+          "type": "string",
+          "required": true,
+          "description": "The npm package name, optionally pinned with @ syntax (e.g., 'lodash-es', 'date-fns', 'rxjs'). Best used with packages known to support tree-shaking.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/exports-sizes",
+          "parameter_mappings": [
+            {
+              "tool_param": "package",
+              "endpoint_param": "package",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
     }
   ],
   "auth_type": "none",
   "auth_config": {},
   "created_at": "2026-05-27T21:16:24.138769+00:00",
+  "updated_at": "2026-06-08T00:00:00.000000+00:00",
   "source_url": "https://bundlephobia.com/package/react",
   "discovery_method": "traffic"
 }
