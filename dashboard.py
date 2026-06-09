@@ -43,6 +43,7 @@ def _get_ip(request: Request) -> str:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    _load_stats()
     _restore_state()
     task = asyncio.create_task(_cleanup_loop())
     try:
@@ -64,6 +65,22 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 _mcp_apps: dict[str, Any] = {}
 # stem -> {started_at: float, last_used: float, calls: int}  (monotonic clock)
 _server_meta: dict[str, dict] = {}
+# Persistent call counts (survive stop/restart within the same process lifetime)
+_STATS_FILE = SCHEMAS_DIR / ".stats.json"
+_total_calls: dict[str, int] = {}
+
+def _load_stats() -> None:
+    try:
+        data = json.loads(_STATS_FILE.read_text(encoding="utf-8"))
+        _total_calls.update(data)
+    except Exception:
+        pass
+
+def _save_stats() -> None:
+    try:
+        _STATS_FILE.write_text(json.dumps(_total_calls), encoding="utf-8")
+    except Exception:
+        pass
 
 async def _cleanup_loop() -> None:
     while True:
@@ -119,6 +136,8 @@ class _MCPDispatch:
                     _server_meta[stem]["last_used"] = now
                     if scope["type"] == "http" and scope.get("method") == "POST":
                         _server_meta[stem]["calls"] += 1
+                        _total_calls[stem] = _total_calls.get(stem, 0) + 1
+                        _save_stats()
                 await mcp_app(scope, receive, send)
                 return
         await self._inner(scope, receive, send)
@@ -140,16 +159,18 @@ def list_schemas():
     for f in sorted(f for f in SCHEMAS_DIR.glob("*.json") if not f.name.startswith(".")):
         try:
             d = json.loads(f.read_text(encoding="utf-8"))
+            stem = f.stem
             out.append({
                 "file": f.name,
-                "service_name": d.get("service_name", f.stem),
+                "service_name": d.get("service_name", stem),
                 "description": d.get("service_description", ""),
                 "tool_count": len(d.get("tools", [])),
-                "tools": [t["name"] for t in d.get("tools", [])],
+                "tools": [{"name": t["name"], "description": t.get("description", "")} for t in d.get("tools", [])],
                 "auth_type": d.get("auth_type", "none"),
                 "created_at": d.get("created_at", ""),
                 "source_url": d.get("source_url", ""),
                 "discovery_method": d.get("discovery_method", "openapi"),
+                "total_calls": _total_calls.get(stem, 0),
             })
         except Exception:
             pass
@@ -188,7 +209,7 @@ def start_server(req: StartReq):
         schema_data = json.loads(schema_path.read_text(encoding="utf-8"))
         _mcp_apps[stem] = _make_mcp_asgi(stem, schema_data)
         now = time.monotonic()
-        _server_meta[stem] = {"started_at": now, "last_used": now, "calls": 0}
+        _server_meta[stem] = {"started_at": now, "last_used": now, "calls": _total_calls.get(stem, 0)}
         _save_state()
     return {"stem": stem, "mcp_path": f"/mcp/{stem}"}
 
@@ -439,6 +460,16 @@ html[data-theme="light"] .p-live{background:var(--green-bg);color:#15803d;border
 .card-stats{display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted);margin-top:.1rem}
 .stat-item{font-variant-numeric:tabular-nums}
 .stat-sep{opacity:.4}
+.info-area{padding:.875rem;display:flex;flex-direction:column;gap:1rem;overflow-y:auto}
+.info-site{font-size:.75rem;word-break:break-all}
+.info-site a{color:var(--accent);text-decoration:none}.info-site a:hover{text-decoration:underline}
+.info-site-lbl{font-size:.68rem;color:var(--muted);margin-bottom:.15rem}
+.info-calls{font-size:.75rem;color:var(--muted)}
+.info-calls strong{color:var(--text)}
+.tool-list{display:flex;flex-direction:column;gap:.5rem}
+.tool-item{background:var(--surface2);border-radius:var(--r);padding:.45rem .6rem}
+.tool-name{font-size:.72rem;font-weight:600;font-family:var(--mono);color:var(--accent);margin-bottom:.2rem}
+.tool-desc{font-size:.68rem;color:var(--muted);line-height:1.4}
 .card-actions{display:flex;gap:.4rem}
 .btn-sm{
   padding:.35rem .75rem;font-size:.75rem;font-weight:500;border-radius:var(--r-sm);
@@ -700,11 +731,17 @@ html[data-theme="light"] .werr-tag.info{background:#eff6ff;color:#1d4ed8}
   <div class="sidebar">
     <div class="sb-tabs">
       <button class="tab-btn active" id="tab-log"   onclick="showTab('log')">Log</button>
+      <button class="tab-btn"        id="tab-info"  onclick="showTab('info')">Info</button>
       <button class="tab-btn"        id="tab-auth"  onclick="showTab('auth')">Auth</button>
     </div>
     <div class="tab-panel active" id="panel-log">
       <div class="log-area" id="log-area">
         <div class="log-hint">Discovery output streams here when you wrap a new API.</div>
+      </div>
+    </div>
+    <div class="tab-panel" id="panel-info">
+      <div class="info-area" id="info-area">
+        <div class="auth-hint">Tap a service card to see its tools here.</div>
       </div>
     </div>
     <div class="tab-panel" id="panel-auth">
@@ -885,7 +922,7 @@ function toggleOpts() {
 
 // ── tabs ───────────────────────────────────────────────────────────────────
 function showTab(name) {
-  ['log','auth'].forEach(t => {
+  ['log','info','auth'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('active', t===name);
     document.getElementById('panel-'+t).classList.toggle('active', t===name);
   });
@@ -938,7 +975,7 @@ function renderGrid(schemas, srvs) {
         s.service_name.toLowerCase().includes(_searchQ) ||
         (s.source_url   || '').toLowerCase().includes(_searchQ) ||
         (s.description  || '').toLowerCase().includes(_searchQ) ||
-        (s.tools        || []).some(t => t.toLowerCase().includes(_searchQ))
+        (s.tools        || []).some(t => (t.name||t).toLowerCase().includes(_searchQ))
       )
     : schemas;
   if (!schemas.length) {
@@ -1002,8 +1039,8 @@ function selectCard(file) {
   renderGrid(_schemas, _servers);
   updateFooter(file);
   const s = _schemas.find(x=>x.file===file);
-  if (s) renderAuth(s);
-  showTab('auth');
+  if (s) { renderInfo(s); renderAuth(s); }
+  showTab('info');
 }
 
 function updateFooter(file) {
@@ -1026,6 +1063,27 @@ function updateFooter(file) {
 
 function copyFooter() {
   cp(document.getElementById('ft-url').textContent, null);
+}
+
+// ── info panel ─────────────────────────────────────────────────────────────
+function renderInfo(s) {
+  const totalCalls = s.total_calls || 0;
+  const toolsHtml = (s.tools||[]).map(t =>
+    `<div class="tool-item">
+      <div class="tool-name">${esc(t.name)}</div>
+      ${t.description ? `<div class="tool-desc">${esc(t.description.slice(0,180))}${t.description.length>180?'…':''}</div>` : ''}
+    </div>`
+  ).join('');
+  document.getElementById('info-area').innerHTML = `
+    <div>
+      <div class="info-site-lbl">Source</div>
+      <div class="info-site">${s.source_url
+        ? `<a href="${esc(s.source_url)}" target="_blank" rel="noopener">${esc(s.source_url)}</a>`
+        : '<span style="color:var(--muted)">Unknown</span>'}</div>
+    </div>
+    <div class="info-calls">Total calls: <strong>${totalCalls}</strong></div>
+    <div class="tool-list">${toolsHtml || '<span style="color:var(--muted);font-size:.75rem">No tools found</span>'}</div>
+  `;
 }
 
 // ── auth panel ─────────────────────────────────────────────────────────────
