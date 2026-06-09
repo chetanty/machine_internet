@@ -487,16 +487,6 @@ html[data-theme="light"] .btn-stop{background:#fef2f2;color:#dc2626;border-color
 }
 .ll{color:var(--text)}.lk{color:var(--green)}.lf{color:var(--red)}.ly{color:var(--yellow)}
 
-.evals-area{padding:.875rem;display:flex;flex-direction:column;gap:1rem}
-.eval-row{}
-.eval-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:.35rem}
-.eval-name{font-size:.78rem;font-weight:600}
-.eval-score{font-size:.72rem;font-weight:500;color:var(--muted)}
-.eval-score.pass{color:var(--green)}.eval-score.fail{color:var(--red)}
-.eval-track{height:4px;background:var(--surface2);border-radius:999px;overflow:hidden}
-.eval-bar{height:100%;border-radius:999px;background:var(--green);transition:width .6s ease}
-.eval-bar.fail{background:var(--red)}
-.eval-meta{font-size:.68rem;color:var(--muted);margin-top:.25rem}
 
 .auth-area{padding:.875rem;display:flex;flex-direction:column;gap:.875rem}
 .auth-hint{color:var(--muted);font-size:.8rem;text-align:center;padding:2rem 1rem;line-height:1.6}
@@ -710,16 +700,12 @@ html[data-theme="light"] .werr-tag.info{background:#eff6ff;color:#1d4ed8}
   <div class="sidebar">
     <div class="sb-tabs">
       <button class="tab-btn active" id="tab-log"   onclick="showTab('log')">Log</button>
-      <button class="tab-btn"        id="tab-evals" onclick="showTab('evals')">Evals</button>
       <button class="tab-btn"        id="tab-auth"  onclick="showTab('auth')">Auth</button>
     </div>
     <div class="tab-panel active" id="panel-log">
       <div class="log-area" id="log-area">
         <div class="log-hint">Discovery output streams here when you wrap a new API.</div>
       </div>
-    </div>
-    <div class="tab-panel" id="panel-evals">
-      <div class="evals-area" id="evals-area"></div>
     </div>
     <div class="tab-panel" id="panel-auth">
       <div class="auth-area" id="auth-area">
@@ -899,7 +885,7 @@ function toggleOpts() {
 
 // ── tabs ───────────────────────────────────────────────────────────────────
 function showTab(name) {
-  ['log','evals','auth'].forEach(t => {
+  ['log','auth'].forEach(t => {
     document.getElementById('tab-'+t).classList.toggle('active', t===name);
     document.getElementById('panel-'+t).classList.toggle('active', t===name);
   });
@@ -1022,11 +1008,11 @@ function selectCard(file) {
 
 function updateFooter(file) {
   const lm = liveMap(_servers);
-  const stem = lm[file];
+  const info = lm[file];
   const el  = document.getElementById('ft-url');
   const btn = document.getElementById('ft-copy');
-  if (stem) {
-    const url = `${window.location.origin}/mcp/${stem}`;
+  if (info) {
+    const url = `${window.location.origin}/mcp/${info.stem}`;
     el.textContent = url;
     el.classList.remove('empty');
     btn.disabled = false;
@@ -1045,8 +1031,8 @@ function copyFooter() {
 // ── auth panel ─────────────────────────────────────────────────────────────
 function renderAuth(s) {
   const lm = liveMap(_servers);
-  const stem = lm[s.file];
-  const mcpUrl = stem ? `${window.location.origin}/mcp/${stem}` : null;
+  const info = lm[s.file];
+  const mcpUrl = info ? `${window.location.origin}/mcp/${info.stem}` : null;
   document.getElementById('auth-area').innerHTML = `
     <div class="auth-group"><span class="auth-label">Service</span><span class="auth-value">${esc(s.service_name)}</span></div>
     <div class="auth-group"><span class="auth-label">Auth Type</span><span class="auth-value">${esc(s.auth_type)}</span></div>
@@ -1133,26 +1119,6 @@ async function startWrap() {
 
 document.getElementById('w-url').addEventListener('keydown',e=>{ if(e.key==='Enter') startWrap(); });
 
-// ── evals ──────────────────────────────────────────────────────────────────
-const EVALS = [
-  {name:'github_api',       path:'A', model:'gemini-2.5-flash', cov:88, pass:true},
-  {name:'httpbin',          path:'A', model:'gpt-4o-mini',      cov:54, pass:true},
-  {name:'pet_store_service',path:'A', model:'gpt-4o-mini',      cov:100,pass:true},
-  {name:'stripe_api',       path:'A', model:'gpt-4o-mini',      cov:71, pass:true},
-];
-
-(function renderEvals() {
-  document.getElementById('evals-area').innerHTML = EVALS.map(e=>`
-    <div>
-      <div class="eval-hdr">
-        <span class="eval-name">${esc(e.name)}</span>
-        <span class="eval-score ${e.pass?'pass':'fail'}">${e.cov}% ${e.pass?'PASS':'FAIL'}</span>
-      </div>
-      <div class="eval-track"><div class="eval-bar${e.pass?'':' fail'}" style="width:${e.cov}%"></div></div>
-      <div class="eval-meta">Path ${e.path} · ${esc(e.model)}</div>
-    </div>
-  `).join('');
-})();
 
 // ── wiki ───────────────────────────────────────────────────────────────────
 function openWiki() { document.getElementById('wiki-backdrop').classList.add('open'); }
