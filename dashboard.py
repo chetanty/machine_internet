@@ -69,6 +69,11 @@ _server_meta: dict[str, dict] = {}
 _STATS_FILE = SCHEMAS_DIR / ".stats.json"
 _total_calls: dict[str, int] = {}
 
+# Live event ring buffer — last 500 tool calls across all services
+_events: list[dict] = []
+_event_seq: int = 0
+_EVENT_CAP = 500
+
 def _load_stats() -> None:
     try:
         data = json.loads(_STATS_FILE.read_text(encoding="utf-8"))
@@ -102,10 +107,21 @@ def _make_mcp_asgi(stem: str, schema_data: dict) -> Any:
     from src.discovery.schema import CondensedSchema
     from src.serving.mcp_server import create_mcp_app
     schema = CondensedSchema(**schema_data)
+
+    def _on_call(tool_name: str, ok: bool, duration_ms: int) -> None:
+        global _event_seq
+        _event_seq += 1
+        entry = {"seq": _event_seq, "stem": stem, "tool": tool_name,
+                 "ok": ok, "ms": duration_ms, "ts": time.time()}
+        _events.append(entry)
+        if len(_events) > _EVENT_CAP:
+            _events.pop(0)
+
     return create_mcp_app(
         schema,
         sse_path=f"/mcp/{stem}",
         messages_path=f"/mcp/{stem}/messages/",
+        on_call=_on_call,
     )
 
 
@@ -191,6 +207,12 @@ def list_servers():
             "uptime_seconds": int(now - started),
         }
     return out
+
+
+@app.get("/api/events")
+def get_events(stem: str = "", since: int = 0):
+    filtered = [e for e in _events if e["seq"] > since and (not stem or e["stem"] == stem)]
+    return {"events": filtered, "latest_seq": _event_seq}
 
 
 class StartReq(BaseModel):
@@ -460,6 +482,16 @@ html[data-theme="light"] .p-live{background:var(--green-bg);color:#15803d;border
 .card-stats{display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted);margin-top:.1rem}
 .stat-item{font-variant-numeric:tabular-nums}
 .stat-sep{opacity:.4}
+.call-log{border-top:1px solid var(--border);flex-shrink:0;max-height:40%;overflow-y:auto;display:none}
+.call-log.visible{display:block}
+.call-log-hdr{font-size:.65rem;font-weight:600;letter-spacing:.05em;color:var(--muted);padding:.4rem .75rem;text-transform:uppercase;position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border)}
+.call-entry{display:flex;align-items:baseline;gap:.4rem;padding:.25rem .75rem;font-size:.7rem;font-family:var(--mono);border-bottom:1px solid var(--border)}
+.call-entry:last-child{border-bottom:none}
+.call-ts{color:var(--muted);flex-shrink:0}
+.call-tool{color:var(--accent);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.call-ms{color:var(--muted);flex-shrink:0}
+.call-ok{color:var(--green);flex-shrink:0}
+.call-err{color:var(--red);flex-shrink:0}
 .info-area{padding:.875rem;display:flex;flex-direction:column;gap:1rem;overflow-y:auto}
 .info-site{font-size:.75rem;word-break:break-all}
 .info-site a{color:var(--accent);text-decoration:none}.info-site a:hover{text-decoration:underline}
@@ -738,6 +770,10 @@ html[data-theme="light"] .werr-tag.info{background:#eff6ff;color:#1d4ed8}
       <div class="log-area" id="log-area">
         <div class="log-hint">Discovery output streams here when you wrap a new API.</div>
       </div>
+      <div class="call-log" id="call-log">
+        <div class="call-log-hdr">Live calls</div>
+        <div id="call-entries"></div>
+      </div>
     </div>
     <div class="tab-panel" id="panel-info">
       <div class="info-area" id="info-area">
@@ -898,6 +934,7 @@ html[data-theme="light"] .werr-tag.info{background:#eff6ff;color:#1d4ed8}
 <script>
 // ── state ──────────────────────────────────────────────────────────────────
 let _schemas = [], _servers = {}, _selectedFile = null, _searchQ = '';
+let _eventSince = 0, _callPollTimer = null;
 
 // ── theme ──────────────────────────────────────────────────────────────────
 (function initTheme() {
@@ -1040,7 +1077,10 @@ function selectCard(file) {
   updateFooter(file);
   const s = _schemas.find(x=>x.file===file);
   if (s) { renderInfo(s); renderAuth(s); }
-  showTab('info');
+  const lm = liveMap(_servers);
+  const info = lm[file];
+  if (info) { startCallPoll(info.stem); showTab('log'); }
+  else { stopCallPoll(); showTab('info'); }
 }
 
 function updateFooter(file) {
@@ -1177,6 +1217,42 @@ async function startWrap() {
 
 document.getElementById('w-url').addEventListener('keydown',e=>{ if(e.key==='Enter') startWrap(); });
 
+
+// ── call log polling ───────────────────────────────────────────────────────
+function startCallPoll(stem) {
+  stopCallPoll();
+  const callLog = document.getElementById('call-log');
+  callLog.classList.add('visible');
+  _eventSince = 0;
+  document.getElementById('call-entries').innerHTML = '';
+  _callPollTimer = setInterval(() => fetchCalls(stem), 2000);
+  fetchCalls(stem);
+}
+function stopCallPoll() {
+  if (_callPollTimer) { clearInterval(_callPollTimer); _callPollTimer = null; }
+  document.getElementById('call-log').classList.remove('visible');
+}
+async function fetchCalls(stem) {
+  try {
+    const r = await fetch(`/api/events?stem=${encodeURIComponent(stem)}&since=${_eventSince}`);
+    const data = await r.json();
+    if (!data.events.length) return;
+    _eventSince = data.latest_seq;
+    const box = document.getElementById('call-entries');
+    for (const e of data.events) {
+      const d = new Date(e.ts * 1000);
+      const ts = d.toTimeString().slice(0,8);
+      const row = document.createElement('div');
+      row.className = 'call-entry';
+      row.innerHTML = `<span class="call-ts">${ts}</span>`
+        + `<span class="call-tool">${esc(e.tool)}</span>`
+        + `<span class="call-ms">${e.ms}ms</span>`
+        + (e.ok ? `<span class="call-ok">OK</span>` : `<span class="call-err">ERR</span>`);
+      box.appendChild(row);
+    }
+    box.scrollTop = box.scrollHeight;
+  } catch(e) {}
+}
 
 // ── wiki ───────────────────────────────────────────────────────────────────
 function openWiki() { document.getElementById('wiki-backdrop').classList.add('open'); }

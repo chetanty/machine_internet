@@ -46,6 +46,7 @@ def create_mcp_app(
     vault: Optional[CredentialVault] = None,
     sse_path: str = "/mcp",
     messages_path: str = "/messages/",
+    on_call=None,
 ) -> Any:
     """Return a pure ASGI app serving the MCP SSE protocol.
 
@@ -80,14 +81,23 @@ def create_mcp_app(
         name: str,
         arguments: Optional[dict[str, Any]],
     ) -> list[types.TextContent]:
+        import time as _time
         tool = tool_map.get(name)
         if not tool:
+            if on_call:
+                on_call(name, False, 0)
             return [types.TextContent(type="text", text=json.dumps({"error": f"Unknown tool: {name}"}))]
+        t0 = _time.monotonic()
         try:
             result = await executor.execute(tool, arguments or {})
             text = json.dumps(result, indent=2) if isinstance(result, (dict, list)) else str(result)
+            ok = True
         except Exception as exc:
             text = json.dumps({"error": str(exc)})
+            ok = False
+        duration_ms = int((_time.monotonic() - t0) * 1000)
+        if on_call:
+            on_call(name, ok, duration_ms)
         return [types.TextContent(type="text", text=text)]
 
     sse = SseServerTransport(messages_path)
