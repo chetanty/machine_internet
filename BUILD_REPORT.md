@@ -1,6 +1,6 @@
 # Build Report
 
-Full technical documentation: architecture, design decisions, eval results, sample output, and build log.
+Full technical documentation: architecture, design decisions, sample output, and build log.
 
 ---
 
@@ -45,7 +45,8 @@ discover.py  --url <base>  [--spec <url>]  [--tags <t1,t2>]  [--traffic]
       http://localhost:<port>/mcp   <-- any MCP agent connects here
 
 dashboard.py  (port 7000)
-      Card grid of wrapped services, sidebar (Log / Evals / Auth tabs),
+      Card grid of wrapped services, per-card call count + uptime display,
+      sidebar (Log / Info / Auth tabs), live call log polled via /api/events,
       light/dark mode, wiki modal, MCP URL footer, hero wrap bar
 ```
 
@@ -57,10 +58,10 @@ dashboard.py  (port 7000)
 |---|---|---|
 | Claude API | Gemini 2.5 Flash + OpenAI fallback | Access and cost |
 | Next.js dashboard | FastAPI + vanilla JS, single file | No Node.js dependency |
-| AWS ECS Fargate | Railway (Docker) | Simpler, no AWS setup needed |
+| AWS ECS Fargate | Render (Docker) | Simpler, no AWS setup needed |
 | PostgreSQL + pgvector | JSON files in `schemas/` | No database needed for local operation |
-| Docker Compose | venv (local) + Dockerfile (Railway) | Simpler on Windows locally |
-| Terraform | Not built | Railway handles infrastructure |
+| Docker Compose | venv (local) + Dockerfile (Render) | Simpler on Windows locally |
+| Terraform | Not built | Render handles infrastructure |
 
 ---
 
@@ -88,7 +89,7 @@ src/
     eval.py              Eval runner: re-condenses ground truth schemas, scores coverage
 
   serving/
-    mcp_server.py        Pure ASGI SSE MCP server (no Starlette routing)
+    mcp_server.py        Pure ASGI SSE MCP server (no Starlette routing); on_call callback for telemetry
     executor.py          Smart endpoint selector + httpx request builder
 
   auth/
@@ -96,6 +97,19 @@ src/
     injector.py          Auth injection per request (Bearer, API key, OAuth2, Basic)
 
   config.py              Settings via .env
+
+schemas/
+  bundlephobia.json      6 tools: size, tree-shaking, history, similar, exports, recent
+  caniuse.json           4 tools: search, browser support, feature details, news
+  npm_trends.json        4 tools: registry info, downloads, trend range, GitHub stats
+  regex101.json          3 tools: browse library, get regex, list versions
+  algolia_api_hacker_news.json  2 tools: search, status
+  github_v3_rest_api.json       15 tools: issues CRUD, labels, comments
+  httpbin_service.json          15 tools: inspect, auth, redirect
+  open_library.json             2 tools: books, affiliate links
+  pokeapi.json                  1 tool: get Pokemon
+  .running.json          (runtime) list of live servers; restored on dashboard startup
+  .stats.json            (runtime) per-schema total call counts; persisted across restarts
 
 evals/
   score.py               CLI eval runner
@@ -177,6 +191,8 @@ POST /messages/   receives client messages (tool calls)
 *                 404
 ```
 
+`create_mcp_app` accepts an optional `on_call(tool_name, ok, duration_ms)` callback. The dashboard passes a closure that writes to a capped ring buffer (`_events`, 500 entries). The frontend polls `/api/events?stem=X&since=N` every 2 seconds using sequence numbers for incremental updates, showing live tool calls in the Log tab.
+
 ### Eval Suite
 
 `evals/score.py` re-runs LLM condensation on each ground truth schema and scores coverage and conciseness. Ground truth schemas are in `evals/`.
@@ -204,6 +220,26 @@ Condensing to agent tools ...
 
 Saved -> schemas\httpbin_service.json
 ```
+
+### Path B — Bundlephobia (no public API, 6 tools from one site)
+
+```
+$ python discover.py --url https://bundlephobia.com --traffic
+
+Discovering https://bundlephobia.com ...
+  [B] Traffic sniffing via headless browser ...
+  [traffic] 6 same-domain XHR calls captured
+  [OK] Captured - 6 endpoints inferred
+
+Condensing to agent tools ...
+  [OK] 6 tools:
+     get_package_size, check_tree_shaking, get_package_history,
+     get_recent_packages, get_similar_packages, get_exports_sizes
+
+Saved -> schemas\bundlephobia.json
+```
+
+`get_package_size` and `check_tree_shaking` both map to `/api/size` but use `response_fields` to filter the response to the subset relevant to each question: size/gzip/dependencyCount vs hasJSModule/hasSideEffects/isModuleType.
 
 ### Path B — HN Algolia (React SPA, API on different TLD, no public spec)
 
@@ -278,3 +314,9 @@ Output:
 | 2026-05-21 | Railway `$PORT` not expanding in start command | `startCommand` in `railway.toml` does not shell-expand env vars | Moved to Dockerfile `CMD` with `sh -c` |
 | 2026-05-22 | JS used stale CSS class names after HTML redesign | Old class names left in `renderGrid` and `renderAuth` | Updated all template strings to match current CSS |
 | 2026-05-22 | Favicon and logo were a placeholder emoji | No image asset wired up | Logo base64-encoded at module load, injected as `<img>` and `<link rel="icon">` |
+| 2026-06-09 | Evals tab still visible after removal | Tab button, panel HTML, CSS classes, JS constant, and `renderEvals()` all survived the partial removal | Removed all five artefacts; updated `showTab` array |
+| 2026-06-09 | `liveMap` refactor broke footer and auth URLs | `liveMap` changed to return `{stem, calls, uptime}` objects; callers still did `const stem = lm[file]` expecting a string, producing `[object Object]` in template literals | Updated callers to destructure `const info = lm[file]` |
+| 2026-06-09 | Info tab did not deactivate Log/Auth on click | `showTab` array was `['log','auth']`; Info tab added but array not updated | Fixed to `['log','info','auth']` |
+| 2026-06-09 | Tool search broken after tools became objects | Search filter called `t.toLowerCase()` after tools changed from strings to `{name, description}` | Fixed to `(t.name\|\|t).toLowerCase()` |
+| 2026-06-09 | npm Trends traffic sniff captured zero endpoints | Proxy API lives on `uidotdev.workers.dev`; brand filter discarded it as a different domain | Called proxy API directly; it is publicly accessible without auth |
+| 2026-06-09 | Bundlephobia `/api/exports` timed out | Endpoint computes bundle on-demand; only fast when Playwright pre-warms the cache | Excluded from schema; used `/api/exports-sizes` (pre-cached) instead |
