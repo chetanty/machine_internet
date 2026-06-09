@@ -62,7 +62,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # stem -> live ASGI MCP app (in-process, no subprocesses)
 _mcp_apps: dict[str, Any] = {}
-# stem -> {started_at: float, last_used: float}  (monotonic clock)
+# stem -> {started_at: float, last_used: float, calls: int}  (monotonic clock)
 _server_meta: dict[str, dict] = {}
 
 async def _cleanup_loop() -> None:
@@ -115,7 +115,10 @@ class _MCPDispatch:
             mcp_app = _mcp_apps.get(stem)
             if mcp_app:
                 if stem in _server_meta:
-                    _server_meta[stem]["last_used"] = time.monotonic()
+                    now = time.monotonic()
+                    _server_meta[stem]["last_used"] = now
+                    if scope["type"] == "http" and scope.get("method") == "POST":
+                        _server_meta[stem]["calls"] += 1
                 await mcp_app(scope, receive, send)
                 return
         await self._inner(scope, receive, send)
@@ -155,8 +158,18 @@ def list_schemas():
 
 @app.get("/api/servers")
 def list_servers():
-    return {stem: {"schema": f"{stem}.json", "mcp_path": f"/mcp/{stem}"}
-            for stem in _mcp_apps}
+    now = time.monotonic()
+    out = {}
+    for stem in _mcp_apps:
+        meta = _server_meta.get(stem, {})
+        started = meta.get("started_at", now)
+        out[stem] = {
+            "schema": f"{stem}.json",
+            "mcp_path": f"/mcp/{stem}",
+            "calls": meta.get("calls", 0),
+            "uptime_seconds": int(now - started),
+        }
+    return out
 
 
 class StartReq(BaseModel):
@@ -175,7 +188,7 @@ def start_server(req: StartReq):
         schema_data = json.loads(schema_path.read_text(encoding="utf-8"))
         _mcp_apps[stem] = _make_mcp_asgi(stem, schema_data)
         now = time.monotonic()
-        _server_meta[stem] = {"started_at": now, "last_used": now}
+        _server_meta[stem] = {"started_at": now, "last_used": now, "calls": 0}
         _save_state()
     return {"stem": stem, "mcp_path": f"/mcp/{stem}"}
 
@@ -423,6 +436,9 @@ html[data-theme="light"] .p-live{background:var(--green-bg);color:#15803d;border
 }
 .btn-copy-sm:hover{color:var(--text);background:var(--border)}
 
+.card-stats{display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:var(--muted);margin-top:.1rem}
+.stat-item{font-variant-numeric:tabular-nums}
+.stat-sep{opacity:.4}
 .card-actions{display:flex;gap:.4rem}
 .btn-sm{
   padding:.35rem .75rem;font-size:.75rem;font-weight:500;border-radius:var(--r-sm);
@@ -908,8 +924,13 @@ async function refresh() {
 // srvs: {stem: {schema, mcp_path}} — maps schema filename -> stem
 function liveMap(srvs) {
   const m = {};
-  for (const [stem, info] of Object.entries(srvs)) m[info.schema] = stem;
+  for (const [stem, info] of Object.entries(srvs)) m[info.schema] = {stem, calls: info.calls||0, uptime: info.uptime_seconds||0};
   return m;
+}
+function fmtUptime(s) {
+  if (s < 60) return `${s}s`;
+  if (s < 3600) return `${Math.floor(s/60)}m`;
+  return `${Math.floor(s/3600)}h ${Math.floor((s%3600)/60)}m`;
 }
 
 function onSearch(q) {
@@ -944,7 +965,8 @@ function renderGrid(schemas, srvs) {
   }
   const lm = liveMap(srvs);
   grid.innerHTML = filtered.map(s => {
-    const stem = lm[s.file];
+    const info = lm[s.file];
+    const stem = info ? info.stem : null;
     const live = !!stem;
     const sel  = _selectedFile === s.file;
     const path = s.discovery_method === 'traffic' ? 'B' : 'A';
@@ -958,6 +980,13 @@ function renderGrid(schemas, srvs) {
       <div class="mcp-row">
         <span class="mcp-url">${esc(mcpUrl)}</span>
         <button class="btn-copy-sm" onclick="cp('${esc(mcpUrl)}',event)" title="Copy">⎘</button>
+      </div>` : '';
+
+    const statsRow = live ? `
+      <div class="card-stats">
+        <span class="stat-item" title="Tool calls received">${info.calls} calls</span>
+        <span class="stat-sep">·</span>
+        <span class="stat-item" title="Time running">${fmtUptime(info.uptime)}</span>
       </div>` : '';
 
     const actionBtn = live
@@ -974,6 +1003,7 @@ function renderGrid(schemas, srvs) {
         <span class="pill p-tools">${s.tool_count} tools</span>
         ${livePill}
       </div>
+      ${statsRow}
       ${mcpRow}
       <div class="card-actions">${actionBtn}</div>
     </div>`;

@@ -1,0 +1,154 @@
+{
+  "base_url": "https://npm-trends-proxy.uidotdev.workers.dev",
+  "service_name": "npm_trends",
+  "service_description": "API for comparing npm package download trends, registry metadata, and GitHub stats. Powers npmtrends.com. Use this to compare package popularity, track download growth, and evaluate packages before adopting them.",
+  "tools": [
+    {
+      "name": "get_package_info",
+      "description": "Get npm registry metadata for a package: description, latest version, homepage, repository URL, and release timeline. Use this to understand what a package does and when it was last updated.",
+      "parameters": [
+        {
+          "name": "package",
+          "type": "string",
+          "required": true,
+          "description": "The npm package name (e.g., 'react', 'lodash', '@angular/core').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/npm/registry/{package}",
+          "parameter_mappings": [
+            {
+              "tool_param": "package",
+              "endpoint_param": "package",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": ["name", "description", "dist-tags.latest", "homepage", "repository.url"]
+    },
+    {
+      "name": "get_weekly_downloads",
+      "description": "Get the total download count for an npm package over the last 7 days. Use this for a quick snapshot of current popularity.",
+      "parameters": [
+        {
+          "name": "package",
+          "type": "string",
+          "required": true,
+          "description": "The npm package name (e.g., 'react', 'lodash').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/npm/downloads/point/last-week/{package}",
+          "parameter_mappings": [
+            {
+              "tool_param": "package",
+              "endpoint_param": "package",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": ["package", "downloads", "start", "end"]
+    },
+    {
+      "name": "get_download_trends",
+      "description": "Get daily download counts for one or more npm packages over a date range. For a single package returns {start, end, package, downloads[{day, downloads}]}. For multiple comma-separated packages returns an object keyed by package name. Use this to compare popularity trends or see growth over time.",
+      "parameters": [
+        {
+          "name": "packages",
+          "type": "string",
+          "required": true,
+          "description": "One package name or a comma-separated list for comparison (e.g., 'react' or 'react,vue,svelte'). No spaces.",
+          "enum": null
+        },
+        {
+          "name": "date_range",
+          "type": "string",
+          "required": true,
+          "description": "Date range in YYYY-MM-DD:YYYY-MM-DD format (e.g., '2025-01-01:2026-01-01'). Use a full year for meaningful trend data.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/npm/downloads/range/{date_range}/{packages}",
+          "parameter_mappings": [
+            {
+              "tool_param": "date_range",
+              "endpoint_param": "date_range",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "packages",
+              "endpoint_param": "packages",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_github_stats",
+      "description": "Get GitHub repository stats for an npm package: star count, fork count, and open issue count. Use this alongside download trends to assess community health and momentum.",
+      "parameters": [
+        {
+          "name": "owner",
+          "type": "string",
+          "required": true,
+          "description": "The GitHub repository owner (e.g., 'facebook' for facebook/react).",
+          "enum": null
+        },
+        {
+          "name": "repo",
+          "type": "string",
+          "required": true,
+          "description": "The GitHub repository name (e.g., 'react' for facebook/react).",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/github/repos/{owner}/{repo}",
+          "parameter_mappings": [
+            {
+              "tool_param": "owner",
+              "endpoint_param": "owner",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "repo",
+              "endpoint_param": "repo",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-06-09T00:00:00.000000+00:00",
+  "source_url": "https://npmtrends.com/react-vs-vue",
+  "discovery_method": "traffic"
+}

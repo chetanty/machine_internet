@@ -1,0 +1,112 @@
+{
+  "base_url": "https://regex101.com",
+  "service_name": "regex101",
+  "service_description": "API for the regex101.com community regex library. Browse, search, and retrieve saved regular expressions shared by the developer community across PCRE, Python, JavaScript, and other flavors.",
+  "tools": [
+    {
+      "name": "browse_regex_library",
+      "description": "Browse the regex101 community library of shared regular expressions. Returns up to 50 entries per page with title, description, regex flavor (pcre, python, javascript, etc.), upvotes, and permalink. Use this to discover common patterns for tasks like email validation, URL parsing, or date matching.",
+      "parameters": [
+        {
+          "name": "cursor",
+          "type": "string",
+          "required": false,
+          "description": "Pagination cursor from the previous response's nextCursor field. Omit for the first page.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/library",
+          "parameter_mappings": [
+            {
+              "tool_param": "cursor",
+              "endpoint_param": "cursor",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_saved_regex",
+      "description": "Retrieve a specific saved regex from regex101 by its permalink fragment and version number. Returns the full regex pattern, test string, flags, flavor (pcre/python/javascript/etc.), title, description, and any unit tests. Use this after finding a permalink in browse_regex_library results.",
+      "parameters": [
+        {
+          "name": "permalink",
+          "type": "string",
+          "required": true,
+          "description": "The permalink fragment from the regex101 URL or library result (e.g., 'vY5eL1').",
+          "enum": null
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "required": false,
+          "description": "The version number of the saved regex. Defaults to 1 if omitted.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/regex/{permalink}/{version}",
+          "parameter_mappings": [
+            {
+              "tool_param": "permalink",
+              "endpoint_param": "permalink",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "version",
+              "endpoint_param": "version",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": ["permalinkFragment", "version", "regex", "flags", "flavor", "testString", "title", "libraryTitle", "libraryDescription", "libraryAuthor", "tags", "unitTests"]
+    },
+    {
+      "name": "list_regex_versions",
+      "description": "List all saved versions of a regex by its permalink fragment. Returns version numbers and editor mode. Use this to find the latest version before calling get_saved_regex.",
+      "parameters": [
+        {
+          "name": "permalink",
+          "type": "string",
+          "required": true,
+          "description": "The permalink fragment from the regex101 URL or library result (e.g., 'vY5eL1').",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/regex/{permalink}",
+          "parameter_mappings": [
+            {
+              "tool_param": "permalink",
+              "endpoint_param": "permalink",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-06-09T00:00:00.000000+00:00",
+  "source_url": "https://regex101.com",
+  "discovery_method": "traffic"
+}

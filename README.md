@@ -50,8 +50,10 @@ Or wrap any API yourself at [machine-internet.onrender.com](https://machine-inte
 | [GitHub Issues](https://docs.github.com/en/rest/issues/issues) | `/mcp/github_v3_rest_api` | 15: list, create, update, comment, label |
 | [HN Algolia Search](https://hn.algolia.com/api) | `/mcp/algolia_api_hacker_news` | 2: search articles, status |
 | [httpbin](https://httpbin.org) | `/mcp/httpbin_service` | 15: inspect, auth, redirect |
+| [npm Trends](https://npmtrends.com) | `/mcp/npm_trends` | 4: package info, weekly downloads, trend comparison, GitHub stats |
 | [Open Library](https://openlibrary.org) | `/mcp/open_library` | 2: books, affiliate links |
 | [PokéAPI](https://pokeapi.co) | `/mcp/pokeapi` | 1: get Pokemon |
+| [regex101](https://regex101.com) | `/mcp/regex101` | 3: browse library, get saved regex, list versions |
 
 All endpoints are live and free. Base URL: `https://machine-internet.onrender.com`
 
@@ -134,8 +136,10 @@ python serve.py --schema schemas/httpbin_service.json --port 8100
 | [Bundlephobia](https://bundlephobia.com) | Path B traffic sniff | No public API. 6 tools: size, tree-shaking check, history, similar packages, per-export sizes, recent |
 | [caniuse.com](https://caniuse.com) | Path B traffic sniff | No public API. 4 tools: search, browser support, feature details, news |
 | [HN Algolia](https://hn.algolia.com/api) | Path B traffic sniff | SPA, API lives on a different TLD than the website |
+| [npm Trends](https://npmtrends.com) | Path B traffic sniff | Proxy API. 4 tools: registry info, weekly downloads, trend range, GitHub stats |
 | [PokéAPI](https://pokeapi.co) | Path B traffic sniff | No spec exists anywhere |
 | [Open Library](https://openlibrary.org) | Path B traffic sniff | Mostly server-rendered, search page works |
+| [regex101](https://regex101.com) | Path B traffic sniff | Community library API. 3 tools: browse, get regex, list versions |
 | [GitHub Issues API](https://docs.github.com/en/rest/issues/issues) | Path A + `--spec --tags issues` | 1,186 endpoint spec, filtered to issues |
 | [httpbin.org](https://httpbin.org) | Path A auto-detected | Spec at `/spec.json` |
 

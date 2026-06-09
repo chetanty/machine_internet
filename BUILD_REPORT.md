@@ -179,23 +179,7 @@ POST /messages/   receives client messages (tool calls)
 
 ### Eval Suite
 
-`evals/score.py` re-runs LLM condensation on each ground truth schema and scores:
-- **Coverage** (0.6 weight): fraction of expected tool concepts that appear in the generated output, matched by noun overlap
-- **Conciseness** (0.4 weight): 1.0 if 15 or fewer tools generated, penalised above
-- **Pass threshold:** 70% overall
-
----
-
-## Eval Results
-
-| Ground Truth | Source Endpoints | Expected Tools | Generated | Coverage | Overall | Model |
-|---|---|---|---|---|---|---|
-| `demo_store.json` | 6 | 6 | 4 | 100% | **100% PASS** | gemini-2.5-flash |
-| `github_api.json` | ~40 | 11 | 12 | 73% | **84% PASS** | gemini-2.5-flash |
-| `github_repos_issues.json` | 40 | 12 | 15 | 100% | **100% PASS** | gemini-2.5-flash |
-| `httpbin.json` | 73 | 13 | 13 | 54% | **72% PASS** | gpt-4o-mini |
-
-All four pass. The `httpbin.json` result is from `gpt-4o-mini` (current default); Gemini previously scored 77% coverage / 86% overall on the same file. Both clear the 70% threshold.
+`evals/score.py` re-runs LLM condensation on each ground truth schema and scores coverage and conciseness. Ground truth schemas are in `evals/`.
 
 ---
 
