@@ -21,17 +21,21 @@ Works with Claude Desktop, Cursor, Cline, and any MCP-compatible client.
 ```json
 {
   "mcpServers": {
+    "bundlephobia": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/bundlephobia", "--transport", "sse-only"]
+    },
+    "caniuse": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/caniuse", "--transport", "sse-only"]
+    },
+    "npm-trends": {
+      "command": "npx",
+      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/npm_trends", "--transport", "sse-only"]
+    },
     "github": {
       "command": "npx",
       "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/github_v3_rest_api", "--transport", "sse-only"]
-    },
-    "hn-search": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/algolia_api_hacker_news", "--transport", "sse-only"]
-    },
-    "httpbin": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/httpbin_service", "--transport", "sse-only"]
     }
   }
 }
@@ -57,7 +61,7 @@ Or wrap any API yourself at [machine-internet.onrender.com](https://machine-inte
 
 All endpoints are live and free. Base URL: `https://machine-internet.onrender.com`
 
-Want an API that isn't listed? Wrap it yourself on the dashboard. Path A (OpenAPI spec detected): under 30 seconds. Path B (traffic sniffing): 1-3 minutes depending on site complexity.
+Want an API that isn't listed? Wrap it yourself on the dashboard. Path A (OpenAPI spec detected) is instant. Path B (traffic sniffing) takes 1-3 minutes depending on site complexity.
 
 ---
 
@@ -136,7 +140,7 @@ python serve.py --schema schemas/httpbin_service.json --port 8100
 | [Bundlephobia](https://bundlephobia.com) | Path B traffic sniff | No public API. 6 tools: size, tree-shaking check, history, similar packages, per-export sizes, recent |
 | [caniuse.com](https://caniuse.com) | Path B traffic sniff | No public API. 4 tools: search, browser support, feature details, news |
 | [HN Algolia](https://hn.algolia.com/api) | Path B traffic sniff | SPA, API lives on a different TLD than the website |
-| [npm Trends](https://npmtrends.com) | Path B traffic sniff | Proxy API. 4 tools: registry info, weekly downloads, trend range, GitHub stats |
+| [npm Trends](https://npmtrends.com) | Path B + direct proxy | Proxy API. 4 tools: registry info, weekly downloads, trend range, GitHub stats |
 | [PokéAPI](https://pokeapi.co) | Path B traffic sniff | No spec exists anywhere |
 | [Open Library](https://openlibrary.org) | Path B traffic sniff | Mostly server-rendered, search page works |
 | [regex101](https://regex101.com) | Path B traffic sniff | Community library API. 3 tools: browse, get regex, list versions |
