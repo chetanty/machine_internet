@@ -94,12 +94,24 @@ async def discover_via_traffic(url: str, timeout: int = 30) -> Optional[RawSchem
     return schema
 
 
+def _observed_body_format(traffic: list["_TrafficEntry"], method: str, path_template: str) -> str:
+    """'form' if the page sent this endpoint a form-encoded body, else 'json'."""
+    pattern = re.compile("^" + re.sub(r"\\{\w+\\}", "[^/]+", re.escape(path_template.split("?")[0])) + "$")
+    for e in traffic:
+        if e.method.upper() != method.upper() or not pattern.search(urlparse(e.url).path):
+            continue
+        ct = {k.lower(): v for k, v in e.request_headers.items()}.get("content-type", "")
+        if "x-www-form-urlencoded" in ct:
+            return "form"
+    return "json"
+
+
 _KEY_NAME_RE = re.compile(
     r"(api[-_]?key|apikey|app(lication)?[-_]?id|client[-_]?id|"
-    r"^x-[\w-]*(key|app|id)$|x-algolia-agent)",
+    r"^x-[\w-]*(key|app)$|x-algolia-agent)",
     re.IGNORECASE,
 )
-_NEVER_REPLAY_RE = re.compile(r"(cookie|authorization|csrf|xsrf|session|token|secret|password)", re.IGNORECASE)
+_NEVER_REPLAY_RE = re.compile(r"(cookie|authorization|csrf|xsrf|session|token|secret|password|request|trace|correlation|span|nonce|device)", re.IGNORECASE)
 
 
 def _public_keys(entries: list["_TrafficEntry"], base_url: str) -> tuple[dict[str, str], dict[str, str]]:
@@ -341,8 +353,10 @@ Rules:
                 required=p.get("required", False),
                 type=p.get("type", "string"),
                 description=p.get("description", ""),
+                default=p.get("default") if p.get("default") not in ("", "null", "an observed value or null") else None,
             ))
         endpoints.append(Endpoint(
+            body_format=_observed_body_format(traffic, ep.get("method", "GET"), ep.get("path", "")),
             path=ep.get("path", ""),
             method=ep.get("method", "GET"),
             summary=ep.get("summary", ""),

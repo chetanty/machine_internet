@@ -1,4 +1,5 @@
 from __future__ import annotations
+import re
 from typing import Any, Optional
 
 import httpx
@@ -24,6 +25,8 @@ class ToolExecutor:
         if not tool.endpoint_mappings:
             return {"error": f"No endpoint mappings for '{tool.name}'"}
 
+        # Fill in declared defaults for anything the caller left out
+        arguments = {**{p.name: p.default for p in tool.parameters if p.default is not None}, **arguments}
         mapping = self._select_mapping(tool.endpoint_mappings, arguments)
         url, query, headers, body = self._build_request(mapping, arguments)
 
@@ -37,7 +40,8 @@ class ToolExecutor:
                 url=url,
                 params=query or None,
                 headers=headers or None,
-                json=body or None,
+                json=body if body and mapping.body_format != "form" else None,
+                data=body if body and mapping.body_format == "form" else None,
             )
             resp.raise_for_status()
 
@@ -128,4 +132,7 @@ class ToolExecutor:
                 if k not in mapped and v is not None:
                     body[k] = v
 
+        missing = re.findall(r"\{(\w+)\}", path)
+        if missing:
+            raise ValueError(f"Missing value for URL path parameter(s): {', '.join(missing)}")
         return f"{self.base_url}{path}", query, headers, body or None

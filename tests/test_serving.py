@@ -109,3 +109,59 @@ def test_executor_response_field_filtering():
     filtered = {k: v for k, v in full_response.items() if k in tool.response_fields}
     assert set(filtered.keys()) == {"id", "name"}
     assert "email" not in filtered
+
+
+async def _capture_request(executor, tool, args):
+    """Run executor.execute against a mocked HTTP client and return the request kwargs."""
+    seen = {}
+    mock_resp = MagicMock()
+    mock_resp.json.return_value = {"ok": True}
+    mock_resp.raise_for_status = MagicMock()
+
+    async def mock_request(method, url, **kwargs):
+        seen.update(method=method, url=url, **kwargs)
+        return mock_resp
+
+    with patch("machine_internet.serving.executor.httpx.AsyncClient") as mock_cls:
+        mock_client = AsyncMock()
+        mock_client.request = AsyncMock(side_effect=mock_request)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+        mock_cls.return_value = mock_client
+        await executor.execute(tool, args)
+    return seen
+
+
+@pytest.mark.asyncio
+async def test_form_body_and_static_keys():
+    tool = AgentTool(name="support", description="d",
+                     parameters=[ToolParameter(name="ids", required=True)],
+                     endpoint_mappings=[EndpointMapping(
+                         method="POST", path="/data.php", body_format="form",
+                         static_params={"type": "support"},
+                         parameter_mappings=[ParameterMapping(tool_param="ids", endpoint_param="feats",
+                                                              location=ParameterLocation.BODY)])])
+    ex = ToolExecutor("https://site.example", static_headers={"x-app-key": "pub"}, static_query={"k": "1"})
+    seen = await _capture_request(ex, tool, {"ids": "css-grid"})
+    assert seen["data"] == {"feats": "css-grid"} and seen["json"] is None
+    assert seen["params"] == {"k": "1", "type": "support"}
+    assert seen["headers"] == {"x-app-key": "pub"}
+
+
+@pytest.mark.asyncio
+async def test_parameter_default_fills_path():
+    tool = AgentTool(name="get", description="d",
+                     parameters=[ToolParameter(name="slug", required=True), ToolParameter(name="version", type="integer", default=1)],
+                     endpoint_mappings=[EndpointMapping(method="GET", path="/r/{slug}/{version}", parameter_mappings=[
+                         ParameterMapping(tool_param="slug", endpoint_param="slug", location=ParameterLocation.PATH),
+                         ParameterMapping(tool_param="version", endpoint_param="version", location=ParameterLocation.PATH)])])
+    seen = await _capture_request(ToolExecutor("https://site.example"), tool, {"slug": "abc"})
+    assert seen["url"] == "https://site.example/r/abc/1"
+
+
+@pytest.mark.asyncio
+async def test_unfilled_path_placeholder_is_a_clear_error():
+    tool = AgentTool(name="get", description="d", parameters=[],
+                     endpoint_mappings=[EndpointMapping(method="GET", path="/r/{slug}")])
+    with pytest.raises(ValueError, match="slug"):
+        await _capture_request(ToolExecutor("https://site.example"), tool, {})

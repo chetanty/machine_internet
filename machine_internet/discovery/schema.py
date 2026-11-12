@@ -40,6 +40,7 @@ class Endpoint(BaseModel):
     request_body_schema: Optional[dict[str, Any]] = None
     response_schema: Optional[dict[str, Any]] = None
     tags: list[str] = Field(default_factory=list)
+    body_format: str = "json"  # "json" or "form" (application/x-www-form-urlencoded)
 
 
 class RawSchema(BaseModel):
@@ -68,6 +69,7 @@ class EndpointMapping(BaseModel):
     path: str
     parameter_mappings: list[ParameterMapping] = Field(default_factory=list)
     static_params: dict[str, Any] = Field(default_factory=dict)
+    body_format: str = "json"  # "json" or "form" (application/x-www-form-urlencoded)
 
 
 class ToolParameter(BaseModel):
@@ -76,6 +78,7 @@ class ToolParameter(BaseModel):
     required: bool = False
     description: str = ""
     enum: Optional[list[str]] = None
+    default: Optional[Any] = None
 
 
 class AgentTool(BaseModel):

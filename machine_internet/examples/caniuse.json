@@ -58,7 +58,8 @@
           ],
           "static_params": {
             "type": "support-data"
-          }
+          },
+          "body_format": "form"
         }
       ],
       "response_fields": null

@@ -1,0 +1,56 @@
+{
+  "base_url": "https://huggingface.co/api",
+  "service_name": "huggingface",
+  "service_description": "Search across Hugging Face models, datasets, spaces, and organizations for discovery.",
+  "tools": [
+    {
+      "name": "search_hugging_face",
+      "description": "Performs a quick search across the Hugging Face platform to find models, datasets, spaces, or organizations based on a query.",
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "description": "The search term to look for.",
+          "enum": null
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "required": false,
+          "description": "Optional category filter. Can be 'models', 'datasets', 'spaces', or 'orgs'.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/quicksearch",
+          "parameter_mappings": [
+            {
+              "tool_param": "query",
+              "endpoint_param": "q",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "type",
+              "endpoint_param": "type",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-11-12T23:09:38.969817+00:00",
+  "source_url": "https://huggingface.co/models?search=llama",
+  "static_headers": {},
+  "static_query": {},
+  "discovery_method": "traffic"
+}

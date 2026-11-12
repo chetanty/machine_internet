@@ -30,6 +30,8 @@ def _input_schema(tool: AgentTool) -> dict[str, Any]:
         }
         if p.enum:
             prop["enum"] = p.enum
+        if p.default is not None:
+            prop["default"] = p.default
         props[p.name] = prop
         if p.required:
             required.append(p.name)

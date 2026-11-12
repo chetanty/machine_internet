@@ -160,38 +160,11 @@ Return ONLY valid JSON. Maximum 15 tools."""
 
     tools: list[AgentTool] = []
     for t in data.get("tools", []):
-        params = [
-            ToolParameter(
-                name=p["name"],
-                type=p.get("type", "string"),
-                required=p.get("required", False),
-                description=p.get("description", ""),
-            )
-            for p in t.get("parameters", [])
-        ]
-        mappings = [
-            EndpointMapping(
-                method=em["method"],
-                path=em["path"],
-                parameter_mappings=[
-                    ParameterMapping(
-                        tool_param=pm["tool_param"],
-                        endpoint_param=pm["endpoint_param"],
-                        location=ParameterLocation(pm.get("location", "query")),
-                    )
-                    for pm in em.get("parameter_mappings", [])
-                ],
-                static_params=em.get("static_params", {}),
-            )
-            for em in t.get("endpoint_mappings", [])
-        ]
-        tools.append(AgentTool(
-            name=t["name"],
-            description=t["description"],
-            parameters=params,
-            endpoint_mappings=mappings,
-            response_fields=t.get("response_fields"),
-        ))
+        # One malformed tool from the LLM should not sink the whole run
+        try:
+            tools.append(_build_tool(t))
+        except (KeyError, TypeError, ValueError) as exc:
+            print(f"  [condense] skipped malformed tool {t.get('name', '?') if isinstance(t, dict) else '?'}: {str(exc)[:100]}")
 
     tools = [_repair_tool(t, raw) for t in tools]
     if not tools:
@@ -212,6 +185,47 @@ Return ONLY valid JSON. Maximum 15 tools."""
     )
 
 
+def _build_tool(t: dict) -> AgentTool:
+    params = [
+        ToolParameter(
+            name=p["name"],
+            type=p.get("type", "string"),
+            required=p.get("required", False),
+            description=p.get("description", ""),
+            default=p.get("default"),
+        )
+        for p in t.get("parameters", [])
+    ]
+    mappings = [
+        EndpointMapping(
+            method=em["method"],
+            path=em["path"],
+            parameter_mappings=[
+                ParameterMapping(
+                    tool_param=pm["tool_param"],
+                    endpoint_param=pm["endpoint_param"],
+                    location=ParameterLocation(pm.get("location", "query")),
+                )
+                for pm in em.get("parameter_mappings", [])
+            ],
+            static_params=em.get("static_params", {}),
+        )
+        for em in t.get("endpoint_mappings", [])
+    ]
+    response_fields = t.get("response_fields")
+    if isinstance(response_fields, list):
+        response_fields = [f["name"] if isinstance(f, dict) and "name" in f else str(f) for f in response_fields]
+    else:
+        response_fields = None
+    return AgentTool(
+        name=t["name"],
+        description=t.get("description", ""),
+        parameters=params,
+        endpoint_mappings=mappings,
+        response_fields=response_fields or None,
+    )
+
+
 _PLACEHOLDER_RE = re.compile(r"\{(\w+)\}")
 
 
@@ -225,6 +239,9 @@ def _repair_tool(tool: AgentTool, raw: RawSchema) -> AgentTool:
     raw_params: dict[tuple[str, str], dict[str, EndpointParameter]] = {
         (ep.method.upper(), ep.path): {p.name: p for p in ep.parameters} for ep in raw.endpoints
     }
+    raw_formats = {(ep.method.upper(), ep.path): ep.body_format for ep in raw.endpoints}
+    for m in tool.endpoint_mappings:
+        m.body_format = raw_formats.get((m.method.upper(), m.path), m.body_format)
     tool_param_names = {p.name for p in tool.parameters}
     for m in tool.endpoint_mappings:
         filled = {pm.endpoint_param for pm in m.parameter_mappings if pm.location == ParameterLocation.PATH}

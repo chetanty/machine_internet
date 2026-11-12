@@ -19,7 +19,7 @@ Machine Internet opens the site in a headless browser, watches the hidden API ca
 
 ## Try it in 30 seconds (no API key)
 
-Five sites with no public API come pre-wrapped. Add one to your Claude Desktop or Cursor config:
+Ten sites come pre-wrapped, most with no public API. Add one to your Claude Desktop or Cursor config:
 
 ```json
 {
@@ -37,10 +37,15 @@ Restart your client and ask: *"How big is react-dom gzipped, and is lodash-es tr
 | Example | Site | Tools |
 |---|---|---|
 | `bundlephobia` | [bundlephobia.com](https://bundlephobia.com) | 6: package size, tree-shaking check, size history, similar packages, per-export sizes, recent |
-| `caniuse` | [caniuse.com](https://caniuse.com) | 4: search features, browser support, feature details, news |
-| `npm_trends` | [npmtrends.com](https://npmtrends.com) | 4: package info, weekly downloads, trend comparison, GitHub stats |
+| `caniuse` | [caniuse.com](https://caniuse.com) | 4: search features, browser support data, feature details, news |
+| `npm_trends` | [npmtrends.com](https://npmtrends.com) | 4: package info, weekly downloads, download trends, GitHub stats |
+| `deps_dev` | [deps.dev](https://deps.dev) | 7: versions, dependencies, dependency graph, dependents, requirements, stats |
+| `crates_io` | [crates.io](https://crates.io) | 6: search crates, crate info, versions, version details, stats, summary |
+| `huggingface` | [huggingface.co](https://huggingface.co) | 1: search models, datasets and Spaces |
+| `hacker_news` | [hn.algolia.com](https://hn.algolia.com) | 1: full-text search of HN stories and comments |
+| `archive_org` | [archive.org](https://archive.org) | 3: search the archive, item metadata, item favorites |
+| `ossinsight` | [ossinsight.io](https://ossinsight.io) | 2: search GitHub repos, users and orgs, live GitHub event stats |
 | `regex101` | [regex101.com](https://regex101.com) | 3: browse the community library, get a saved regex, list versions |
-| `hacker_news` | [hn.algolia.com](https://hn.algolia.com) | 2: search stories and comments, status |
 
 You need [uv](https://docs.astral.sh/uv/) for `uvx`. Or install it once with `pip install machine-internet` (or straight from GitHub: `pip install git+https://github.com/chetanty/machine_internet`) and use `machine-internet` as the command.
 
@@ -112,6 +117,22 @@ Wrapped servers are saved to `~/.machine-internet/schemas/`.
 **APIs that need auth:** credentials are read from the environment when the server runs: `MI_TOKEN` (bearer), `MI_API_KEY` (plus `MI_API_KEY_NAME`, `MI_API_KEY_IN=header|query`), `MI_USERNAME` / `MI_PASSWORD`, or `MI_TOKEN_URL` / `MI_CLIENT_ID` / `MI_CLIENT_SECRET` for OAuth2 client credentials. Put them in the `env` block of your MCP client config.
 
 ---
+
+## What it works on
+
+It works on sites whose pages load their data with API calls from the browser: most single-page apps, search pages, dashboards and developer tools. It does not work on sites that render pages on the server, or that block headless browsers.
+
+Results from pointing `wrap` at 15 popular sites, with each generated tool then called for real:
+
+| Result | Sites |
+|---|---|
+| Works | crates.io, deps.dev, Hugging Face, archive.org, HN Search (Algolia), OSS Insight |
+| Partly works | Open Library (1 of 2 tools) |
+| No hidden API found (server-rendered) | IMDb, Reddit, GitHub Trending, npmjs.com |
+| Blocked or only trackers seen | Product Hunt, lichess, packagephobia |
+| Nothing useful captured | dev.to (only a session-token call) |
+
+So roughly half of the arbitrary sites tried. When it fails, it says why and suggests a page that is more likely to work.
 
 ## Limitations
 

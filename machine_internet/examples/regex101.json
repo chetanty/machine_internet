@@ -48,7 +48,8 @@
           "type": "integer",
           "required": false,
           "description": "The version number of the saved regex. Defaults to 1 if omitted.",
-          "enum": null
+          "enum": null,
+          "default": 1
         }
       ],
       "endpoint_mappings": [
@@ -72,7 +73,20 @@
           "static_params": {}
         }
       ],
-      "response_fields": ["permalinkFragment", "version", "regex", "flags", "flavor", "testString", "title", "libraryTitle", "libraryDescription", "libraryAuthor", "tags", "unitTests"]
+      "response_fields": [
+        "permalinkFragment",
+        "version",
+        "regex",
+        "flags",
+        "flavor",
+        "testString",
+        "title",
+        "libraryTitle",
+        "libraryDescription",
+        "libraryAuthor",
+        "tags",
+        "unitTests"
+      ]
     },
     {
       "name": "list_regex_versions",

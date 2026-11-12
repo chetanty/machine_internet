@@ -1,0 +1,98 @@
+{
+  "base_url": "https://ossinsight.io",
+  "service_name": "ossinsight",
+  "service_description": "Provides analytics and search capabilities for GitHub organizations, repositories, users, and pre-defined SQL data sets.",
+  "tools": [
+    {
+      "name": "search_github",
+      "description": "Searches for GitHub entities including repositories, organizations, or users by keyword.",
+      "parameters": [
+        {
+          "name": "entity_type",
+          "type": "string",
+          "required": true,
+          "description": "The type of entity to search for: 'repos', 'organizations', or 'users'.",
+          "enum": null
+        },
+        {
+          "name": "keyword",
+          "type": "string",
+          "required": true,
+          "description": "The search term to filter results.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/gh/{entity_type}/search",
+          "parameter_mappings": [
+            {
+              "tool_param": "entity_type",
+              "endpoint_param": "entity_type",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "keyword",
+              "endpoint_param": "keyword",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "run_analytics",
+      "description": "Executes a predefined SQL analytical query to retrieve structured GitHub data.",
+      "parameters": [
+        {
+          "name": "query_id",
+          "type": "string",
+          "required": true,
+          "description": "The identifier of the analytical query to execute.",
+          "enum": null
+        },
+        {
+          "name": "timestamp",
+          "type": "integer",
+          "required": false,
+          "description": "Optional timestamp for filtering time-series events.",
+          "enum": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/q/{query_id}",
+          "parameter_mappings": [
+            {
+              "tool_param": "query_id",
+              "endpoint_param": "query_id",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "timestamp",
+              "endpoint_param": "ts",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {}
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-11-12T23:08:58.401266+00:00",
+  "source_url": "https://ossinsight.io/analyze/facebook/react",
+  "static_headers": {},
+  "static_query": {},
+  "discovery_method": "traffic"
+}
