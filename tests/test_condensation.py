@@ -1,6 +1,6 @@
 import json
 import pytest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from machine_internet.condensation.condenser import condense
 from machine_internet.discovery.schema import (
@@ -67,7 +67,7 @@ _MOCK_RESPONSE = {
 async def test_condense_returns_valid_schema():
     raw = _make_raw_schema()
 
-    with patch("machine_internet.ai.client.FallbackAIClient.generate", new=AsyncMock(return_value=json.dumps(_MOCK_RESPONSE))):
+    with patch("machine_internet.condensation.condenser.get_ai_client", return_value=MagicMock(generate=AsyncMock(return_value=json.dumps(_MOCK_RESPONSE)))):
         condensed = await condense(raw, source_url="https://api.crm.example.com")
 
     assert condensed.service_name == "crm_api"
@@ -80,7 +80,7 @@ async def test_condense_returns_valid_schema():
 async def test_condense_tool_parameters():
     raw = _make_raw_schema()
 
-    with patch("machine_internet.ai.client.FallbackAIClient.generate", new=AsyncMock(return_value=json.dumps(_MOCK_RESPONSE))):
+    with patch("machine_internet.condensation.condenser.get_ai_client", return_value=MagicMock(generate=AsyncMock(return_value=json.dumps(_MOCK_RESPONSE)))):
         condensed = await condense(raw)
 
     get_customer = next(t for t in condensed.tools if t.name == "get_customer")
