@@ -1,12 +1,14 @@
 # Machine Internet
 
-> MCP endpoints for APIs that will never have documentation.
+**Turn any website into an MCP server. No API needed.**
 
-Most of the internet has no OpenAPI spec and never will. Every SPA, every internal tool, every API that only a browser has ever seen. Machine Internet connects AI agents to all of it. Paste a URL, get a working MCP endpoint.
+```bash
+uvx machine-internet wrap https://bundlephobia.com/package/react
+```
 
-[Bundlephobia](https://bundlephobia.com) has no public API. [caniuse.com](https://caniuse.com) has no public API. Machine Internet wraps both.
+Machine Internet opens the site in a headless browser, watches the hidden API calls the page makes, and turns them into a small set of clean tools that Claude, Cursor or any MCP client can call directly.
 
-**Live:** [machine-internet.onrender.com](https://machine-internet.onrender.com)
+<!-- TODO: demo GIF here. Show: wrap a URL -> paste config -> Claude answers a question with the new tools. Keep it under 30 seconds. -->
 
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -14,192 +16,131 @@ Most of the internet has no OpenAPI spec and never will. Every SPA, every intern
 
 ---
 
-## Use a hosted endpoint right now
+## Try it in 30 seconds (no API key)
 
-Works with Claude Desktop, Cursor, Cline, and any MCP-compatible client.
+Five sites with no public API come pre-wrapped. Add one to your Claude Desktop or Cursor config:
 
 ```json
 {
   "mcpServers": {
     "bundlephobia": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/bundlephobia", "--transport", "sse-only"]
-    },
-    "caniuse": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/caniuse", "--transport", "sse-only"]
-    },
-    "npm-trends": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/npm_trends", "--transport", "sse-only"]
-    },
-    "github": {
-      "command": "npx",
-      "args": ["mcp-remote", "https://machine-internet.onrender.com/mcp/github_v3_rest_api", "--transport", "sse-only"]
+      "command": "uvx",
+      "args": ["machine-internet", "serve", "bundlephobia"]
     }
   }
 }
 ```
 
-Or wrap any API yourself at [machine-internet.onrender.com](https://machine-internet.onrender.com). Paste a URL, get an endpoint.
+Restart your client and ask: *"How big is react-dom gzipped, and is lodash-es tree-shakeable?"*
 
----
-
-## Available hosted endpoints
-
-| API | Endpoint | Tools |
+| Example | Site | Tools |
 |---|---|---|
-| [Bundlephobia](https://bundlephobia.com) | `/mcp/bundlephobia` | 6: size, tree-shaking check, history, similar, per-export sizes, recent |
-| [caniuse.com](https://caniuse.com) | `/mcp/caniuse` | 4: search features, browser support, feature details, news |
-| [GitHub Issues](https://docs.github.com/en/rest/issues/issues) | `/mcp/github_v3_rest_api` | 15: list, create, update, comment, label |
-| [HN Algolia Search](https://hn.algolia.com/api) | `/mcp/algolia_api_hacker_news` | 2: search articles, status |
-| [httpbin](https://httpbin.org) | `/mcp/httpbin_service` | 15: inspect, auth, redirect |
-| [npm Trends](https://npmtrends.com) | `/mcp/npm_trends` | 4: package info, weekly downloads, trend comparison, GitHub stats |
-| [Open Library](https://openlibrary.org) | `/mcp/open_library` | 2: books, affiliate links |
-| [PokéAPI](https://pokeapi.co) | `/mcp/pokeapi` | 1: get Pokemon |
-| [regex101](https://regex101.com) | `/mcp/regex101` | 3: browse library, get saved regex, list versions |
+| `bundlephobia` | [bundlephobia.com](https://bundlephobia.com) | 6: package size, tree-shaking check, size history, similar packages, per-export sizes, recent |
+| `caniuse` | [caniuse.com](https://caniuse.com) | 4: search features, browser support, feature details, news |
+| `npm_trends` | [npmtrends.com](https://npmtrends.com) | 4: package info, weekly downloads, trend comparison, GitHub stats |
+| `regex101` | [regex101.com](https://regex101.com) | 3: browse the community library, get a saved regex, list versions |
+| `hacker_news` | [hn.algolia.com](https://hn.algolia.com) | 2: search stories and comments, status |
 
-All endpoints are live and free. Base URL: `https://machine-internet.onrender.com`
-
-Want an API that isn't listed? Wrap it yourself on the dashboard. Path A (OpenAPI spec detected) is instant. Path B (traffic sniffing) takes 1-3 minutes depending on site complexity.
+You need [uv](https://docs.astral.sh/uv/) for `uvx`. Or `pip install machine-internet` and use `machine-internet` as the command.
 
 ---
 
-## Demo
+## Wrap your own site
 
-![Machine Internet Dashboard](assets/dashboard.png)
-*The Machine Internet dashboard. Wrapped services, live MCP endpoints, one-click URL copy.*
+Set an LLM key (any one of these works):
 
-![Claude calling GitHub data via MCP](assets/claude_mcp.png)
-*Claude calling live [GitHub](https://github.com/microsoft/vscode) data through a Machine Internet MCP endpoint. 17,938 open issues as of today.*
+```bash
+export ANTHROPIC_API_KEY=...   # or OPENAI_API_KEY, or GEMINI_API_KEY
+```
+
+Then point it at a page that loads data as you use it:
+
+```bash
+uvx machine-internet wrap https://bundlephobia.com/package/react
+```
+
+```
+Wrapping https://bundlephobia.com/package/react
+  Checking for an OpenAPI spec ...
+  Sniffing network traffic in a headless browser ...
+  [OK] Inferred 4 endpoints
+  Condensing into agent tools ...
+  [OK] 4 tools:
+       get_package_size: Use this tool to get detailed size information for a JavaScript packag
+       get_package_history: Use this tool to retrieve the historical versions of a specific JavaSc
+       ...
+
+Add this to your MCP client config (Claude Desktop, Cursor, ...):
+{ "mcpServers": { "bundlephobia_api": { "command": "uvx", "args": ["machine-internet", "serve", "bundlephobia_api"] } } }
+```
+
+The first run downloads headless Chromium once (about 150 MB). Wrapping takes 1 to 3 minutes and costs a few cents of LLM usage. Serving afterwards needs no LLM at all.
+
+**Tips**
+- Pick a page that fetches data: a search results page or an item page works better than a static landing page.
+- If the site publishes an OpenAPI spec, it is used automatically and nothing is sniffed. Point at one directly with `--spec <url>`.
+- Large specs: keep only some areas with `--tags repos,issues`.
 
 ---
 
 ## How it works
 
-**Path B: Traffic sniffing (the hard part)**
-When no spec exists, launches headless Chromium, observes the XHR and fetch calls the page makes while navigating and scrolling, and uses an LLM to infer a clean schema from the captured traffic. Works on any SPA, any internal tool, any API that has no public documentation. This is the part nobody else does.
-
-**Path A: OpenAPI spec detection**
-Probes 20 standard locations for an OpenAPI or Swagger spec. If found, parses the entire API surface automatically. Zero LLM cost. Useful for documented APIs where you want an MCP endpoint without writing any code.
-
-**Condensation**
-Raw specs can have hundreds of endpoints. An LLM collapses them into 10-15 clean tools with `verb_noun` names and descriptions that tell agents exactly when to use each one. A 400-endpoint CRM becomes `get_customer`, `create_deal`, `log_interaction`.
-
-**Serving**
-The condensed schema is served as a standard SSE-based MCP server. Any MCP-compatible client connects immediately and makes real calls against the real service.
+1. **Spec check.** Probes about 20 standard locations (`/openapi.json`, `/swagger.json`, ...). If a real spec exists, it is parsed directly.
+2. **Traffic sniffing.** Otherwise, launches headless Chromium, loads the page, scrolls and clicks through it, and records every same-site JSON request. Analytics and ad trackers are filtered out.
+3. **Inference.** An LLM reads the captured requests and responses and infers each endpoint's path, parameters and types.
+4. **Condensation.** An LLM collapses the endpoints into at most 15 `verb_noun` tools, with descriptions written so an agent knows when to use each one.
+5. **Serving.** The result is a small JSON file. `machine-internet serve` exposes it as a standard MCP server (stdio by default, SSE with `--sse`) that makes real calls to the real site.
 
 ---
 
-## Who this is for
-
-**Agent developers** who need to connect to an API that has no MCP server, no OpenAPI spec, and no plans to publish either.
-
-**Claude Desktop and Cursor users** who want to add any tool to their agent without writing integration code.
-
-**Teams with internal APIs** behind a firewall, documented only in someone's head or a Confluence page nobody reads.
-
-**Anyone building agents** who hits the wall where the tool they need has never heard of MCP.
-
----
-
-## Wrap your own API
-
-Using the hosted dashboard (no install):
-
-1. Visit [machine-internet.onrender.com](https://machine-internet.onrender.com)
-2. Paste any URL into the wrap bar
-3. Copy the MCP endpoint URL
-4. Add it to your agent config
-
-Using the CLI (self-hosted):
+## Commands
 
 ```bash
-# Any API with an OpenAPI spec
-python discover.py --url http://httpbin.org
-
-# Large specs: use --spec and --tags to focus
-python discover.py \
-  --url https://api.github.com \
-  --spec https://raw.githubusercontent.com/github/rest-api-description/main/descriptions/api.github.com/api.github.com.json \
-  --tags issues
-
-# No spec: use traffic sniffing
-python discover.py --url https://hn.algolia.com --traffic
-
-# Serve the result
-python serve.py --schema schemas/httpbin_service.json --port 8100
+machine-internet wrap <url> [--name NAME] [--spec URL] [--tags a,b] [--sniff] [-o FILE]
+machine-internet serve <name-or-file.json> [--sse --port 8000]
+machine-internet list                  # bundled examples and servers you have wrapped
+machine-internet config <name>         # print the MCP client config block
 ```
 
----
+Wrapped servers are saved to `~/.machine-internet/schemas/`.
 
-## Verified on
-
-| Service | Method | Notes |
-|---|---|---|
-| [Bundlephobia](https://bundlephobia.com) | Path B traffic sniff | No public API. 6 tools: size, tree-shaking check, history, similar packages, per-export sizes, recent |
-| [caniuse.com](https://caniuse.com) | Path B traffic sniff | No public API. 4 tools: search, browser support, feature details, news |
-| [HN Algolia](https://hn.algolia.com/api) | Path B traffic sniff | SPA, API lives on a different TLD than the website |
-| [npm Trends](https://npmtrends.com) | Path B + direct proxy | Proxy API. 4 tools: registry info, weekly downloads, trend range, GitHub stats |
-| [PokéAPI](https://pokeapi.co) | Path B traffic sniff | No spec exists anywhere |
-| [Open Library](https://openlibrary.org) | Path B traffic sniff | Mostly server-rendered, search page works |
-| [regex101](https://regex101.com) | Path B traffic sniff | Community library API. 3 tools: browse, get regex, list versions |
-| [GitHub Issues API](https://docs.github.com/en/rest/issues/issues) | Path A + `--spec --tags issues` | 1,186 endpoint spec, filtered to issues |
-| [httpbin.org](https://httpbin.org) | Path A auto-detected | Spec at `/spec.json` |
+**APIs that need auth:** credentials are read from the environment when the server runs: `MI_TOKEN` (bearer), `MI_API_KEY` (plus `MI_API_KEY_NAME`, `MI_API_KEY_IN=header|query`), `MI_USERNAME` / `MI_PASSWORD`, or `MI_TOKEN_URL` / `MI_CLIENT_ID` / `MI_CLIENT_SECRET` for OAuth2 client credentials. Put them in the `env` block of your MCP client config.
 
 ---
 
-## Self-hosted setup
+## Limitations
+
+- **Internal APIs change without notice.** A wrapped site can break when it ships a new frontend. Re-run `wrap` to refresh it.
+- **It only sees what the page does while loading and being clicked.** Actions behind logins, multi-step forms or heavy anti-bot protection usually are not captured.
+- **LLM output varies.** If the tools look wrong, run `wrap` again or narrow the page you point it at.
+
+## Use responsibly
+
+Undocumented APIs are still someone else's service. Check the site's terms before wrapping it, keep request volume reasonable, and do not use this to get around access controls or rate limits.
+
+---
+
+## How it compares
+
+| | Machine Internet | OpenAPI-to-MCP converters | Browser agents |
+|---|---|---|---|
+| Works without an API spec | Yes | No | Yes |
+| Agent calls the API directly (fast, cheap per call) | Yes | Yes | No, drives a browser every time |
+| One command from URL to MCP server | Yes | Needs a spec | No |
+
+Related work worth knowing: [Integuru](https://github.com/Integuru-AI/Integuru) generates integration code from captured traffic, and [mitmproxy2swagger](https://github.com/alufers/mitmproxy2swagger) builds OpenAPI specs from recorded traffic. Machine Internet's focus is going straight from a URL to a running MCP server.
+
+---
+
+## Development
 
 ```bash
 git clone https://github.com/chetanty/machine_internet
 cd machine_internet
-pip install -r requirements.txt
-playwright install chromium
-cp .env.example .env
+pip install -e ".[dev]"
+pytest
+python evals/score.py      # condensation quality evals (needs an LLM key)
 ```
-
-Add at least one key to `.env`:
-
-```
-OPENAI_API_KEY=sk-...        # recommended, no daily quota
-GEMINI_API_KEY=your-key      # free tier, 20 req/day on flash
-```
-
-The AI client tries OpenAI first, then falls back through multiple Gemini models automatically on quota exhaustion.
-
-Run the dashboard:
-
-```bash
-python dashboard.py   # http://localhost:7000
-```
-
----
-
-## Project structure
-
-```
-discover.py       discover any API, save condensed schema
-serve.py          serve a schema as a live MCP endpoint
-dashboard.py      web UI: wrap, start, stop, manage services
-src/
-  discovery/      Path A (OpenAPI) and Path B (traffic sniffing)
-  condensation/   LLM condensation and eval runner
-  serving/        pure ASGI SSE MCP server and smart executor
-  auth/           Fernet-encrypted credential vault
-  ai/             OpenAI + Gemini fallback client
-evals/            ground truth schemas and scoring scripts
-```
-
-Full technical breakdown: architecture decisions, eval results, build log: [BUILD_REPORT.md](BUILD_REPORT.md)
-
----
-
-## Contributing
-
-Issues and PRs welcome. If you wrap an API that works well, open a PR to add the schema to the `schemas/` directory and the endpoint to this README.
-
----
 
 ## License
 

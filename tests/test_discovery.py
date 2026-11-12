@@ -3,8 +3,8 @@ import pytest
 import pytest_asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.discovery.openapi import discover_openapi, _parse_spec
-from src.discovery.schema import RawSchema, AuthScheme
+from machine_internet.discovery.openapi import discover_openapi, _parse_spec
+from machine_internet.discovery.schema import RawSchema, AuthScheme
 
 
 PETSTORE_SPEC = {
@@ -91,7 +91,7 @@ def test_parse_spec_request_body():
 
 @pytest.mark.asyncio
 async def test_discover_openapi_success():
-    with patch("src.discovery.openapi.httpx.AsyncClient") as mock_client_cls:
+    with patch("machine_internet.discovery.openapi.httpx.AsyncClient") as mock_client_cls:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.headers = {"content-type": "application/json"}
@@ -111,7 +111,7 @@ async def test_discover_openapi_success():
 
 @pytest.mark.asyncio
 async def test_discover_openapi_returns_none_when_no_spec():
-    with patch("src.discovery.openapi.httpx.AsyncClient") as mock_client_cls:
+    with patch("machine_internet.discovery.openapi.httpx.AsyncClient") as mock_client_cls:
         mock_resp = MagicMock()
         mock_resp.status_code = 404
 
@@ -122,5 +122,25 @@ async def test_discover_openapi_returns_none_when_no_spec():
         mock_client_cls.return_value = mock_client
 
         schema = await discover_openapi("https://no-spec.example.com")
+
+    assert schema is None
+
+
+@pytest.mark.asyncio
+async def test_discover_openapi_skips_spa_html_shell():
+    """SPAs serve index.html for every path; that must read as 'no spec', not a parse error."""
+    with patch("machine_internet.discovery.openapi.httpx.AsyncClient") as mock_client_cls:
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.headers = {"content-type": "text/html; charset=utf-8"}
+        mock_resp.text = "<!doctype html><html><body><div id=root></div></body></html>"
+
+        mock_client = AsyncMock()
+        mock_client.get = AsyncMock(return_value=mock_resp)
+        mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+        mock_client.__aexit__ = AsyncMock(return_value=None)
+        mock_client_cls.return_value = mock_client
+
+        schema = await discover_openapi("https://spa.example.com")
 
     assert schema is None

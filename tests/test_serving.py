@@ -2,7 +2,7 @@ import json
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.discovery.schema import (
+from machine_internet.discovery.schema import (
     AgentTool,
     CondensedSchema,
     EndpointMapping,
@@ -11,7 +11,7 @@ from src.discovery.schema import (
     ToolParameter,
     AuthScheme,
 )
-from src.serving.executor import ToolExecutor
+from machine_internet.serving.executor import ToolExecutor
 
 
 def _make_schema() -> CondensedSchema:
@@ -57,7 +57,7 @@ async def test_executor_builds_correct_url():
         captured_url = url
         return mock_resp
 
-    with patch("src.serving.executor.httpx.AsyncClient") as mock_cls:
+    with patch("machine_internet.serving.executor.httpx.AsyncClient") as mock_cls:
         mock_client = AsyncMock()
         mock_client.request = AsyncMock(side_effect=mock_request)
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
