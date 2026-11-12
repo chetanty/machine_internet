@@ -144,3 +144,18 @@ async def test_discover_openapi_skips_spa_html_shell():
         schema = await discover_openapi("https://spa.example.com")
 
     assert schema is None
+
+
+def test_public_keys_replays_constant_keys_but_never_secrets():
+    from machine_internet.discovery.traffic import _TrafficEntry, _public_keys
+
+    def entry(q):
+        return _TrafficEntry("POST", f"https://abc-dsn.algolia.net/1/indexes/x/query?{q}", None, "{}", 200,
+                             {"x-algolia-api-key": "pub123", "x-algolia-application-id": "ABC",
+                              "cookie": "s=1", "x-csrf-token": "t", "x-request-id": q})
+
+    headers, query = _public_keys([entry("a=1"), entry("a=2")], "https://abc-dsn.algolia.net")
+    assert headers == {"x-algolia-api-key": "pub123", "x-algolia-application-id": "ABC"}
+    assert "cookie" not in headers and "x-csrf-token" not in headers
+    assert "x-request-id" not in headers  # differs between requests
+    assert query == {}

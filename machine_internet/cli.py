@@ -69,6 +69,12 @@ def _client_config(name: str, target: str | None = None) -> str:
 @click.version_option(package_name="machine-internet")
 def main() -> None:
     """Turn any website into an MCP server. No API needed."""
+    # Windows consoles default to cp1252 and crash on API responses containing non-ASCII text
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError):
+            pass
 
 
 # --------------------------------------------------------------------------- wrap
@@ -145,7 +151,8 @@ async def _wrap(url, name, spec_url, filter_tags, force_traffic, no_condense, ou
     # Path B: sniff the API calls the site makes in a headless browser
     if raw is None:
         click.echo("  Sniffing network traffic in a headless browser ...")
-        base = url.rstrip("/")
+        parsed = urlparse(url)
+        base = f"{parsed.scheme}://{parsed.netloc}"
         try:
             raw = await discover_via_traffic(url)
             click.echo(f"  [OK] Inferred {len(raw.endpoints)} endpoints")
@@ -156,20 +163,29 @@ async def _wrap(url, name, spec_url, filter_tags, force_traffic, no_condense, ou
         except NoXHRCapturedError:
             _fail(
                 "[FAIL] The page made no API calls while loading.",
-                "  It is probably server-rendered. Try a page that loads data as you use it:",
+                "  It is probably server-rendered, so there is no hidden API to find.",
+                "  If the site has search or filters, try a page that loads data as you use it:",
                 f"    machine-internet wrap \"{base}/search?q=test\"",
                 f"    machine-internet wrap {base}/items/1",
             )
         except AllTrackersFilteredError:
             _fail(
-                "[FAIL] The only API calls were analytics and ad trackers.",
-                f"  Try a more dynamic page, e.g. machine-internet wrap \"{base}/search?q=test\"",
+                "[FAIL] The page made no API calls of its own, only analytics, ads or bot checks.",
+                "  It is probably server-rendered or behind bot protection.",
+                f"  If it has search or filters, try that page, e.g. machine-internet wrap \"{base}/search?q=test\"",
             )
         except BrandFilteredError as exc:
             _fail(
                 f"[FAIL] API calls went to other domains ({', '.join(exc.seen_brands[:5])}).",
                 f"  Try the API domain directly: machine-internet wrap https://api.{exc.base_brand}.com",
             )
+        except (LLMInvalidResponseError, LLMEmptySchemaError):
+            _fail(
+                "[FAIL] Traffic was captured, but the LLM could not turn it into endpoints.",
+                "  Run again (LLM output varies), or point at a page with less going on.",
+            )
+        except LLMQuotaError:
+            _fail("[FAIL] LLM quota exhausted on every configured provider. Add another key or retry later.")
         except DiscoveryError:
             _fail("[FAIL] Discovery failed.")
 
@@ -327,7 +343,7 @@ def call(schema, tool, args):
     if creds:
         injector = AuthInjector(s.auth_type, creds)
     try:
-        result = asyncio.run(ToolExecutor(s.base_url, injector).execute(t, arguments))
+        result = asyncio.run(ToolExecutor(s.base_url, injector, s.static_headers, s.static_query).execute(t, arguments))
     except Exception as exc:
         raise click.ClickException(f"{type(exc).__name__}: {exc}")
     click.echo(json.dumps(result, indent=2, ensure_ascii=False) if isinstance(result, (dict, list)) else str(result))

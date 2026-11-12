@@ -49,7 +49,7 @@ def build_server(schema: CondensedSchema, on_call=None) -> Server:
         if creds:
             auth_injector = AuthInjector(schema.auth_type, creds)
 
-    executor = ToolExecutor(schema.base_url, auth_injector)
+    executor = ToolExecutor(schema.base_url, auth_injector, schema.static_headers, schema.static_query)
     tool_map = {t.name: t for t in schema.tools}
 
     @server.list_tools()

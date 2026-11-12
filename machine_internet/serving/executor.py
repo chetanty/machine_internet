@@ -8,9 +8,17 @@ from ..auth.injector import AuthInjector
 
 
 class ToolExecutor:
-    def __init__(self, base_url: str, auth_injector: Optional[AuthInjector] = None) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        auth_injector: Optional[AuthInjector] = None,
+        static_headers: Optional[dict[str, str]] = None,
+        static_query: Optional[dict[str, str]] = None,
+    ) -> None:
         self.base_url = base_url.rstrip("/")
         self.auth_injector = auth_injector
+        self.static_headers = static_headers or {}
+        self.static_query = static_query or {}
 
     async def execute(self, tool: AgentTool, arguments: dict[str, Any]) -> Any:
         if not tool.endpoint_mappings:
@@ -96,8 +104,8 @@ class ToolExecutor:
         arguments: dict[str, Any],
     ) -> tuple[str, dict[str, Any], dict[str, str], Optional[dict[str, Any]]]:
         path = mapping.path
-        query: dict[str, Any] = dict(mapping.static_params)
-        headers: dict[str, str] = {}
+        query: dict[str, Any] = {**self.static_query, **mapping.static_params}
+        headers: dict[str, str] = dict(self.static_headers)
         body: dict[str, Any] = {}
 
         mapped: set[str] = set()

@@ -8,6 +8,7 @@ from ..discovery.schema import (
     AgentTool,
     AuthScheme,
     CondensedSchema,
+    EndpointParameter,
     EndpointMapping,
     ParameterLocation,
     ParameterMapping,
@@ -192,6 +193,7 @@ Return ONLY valid JSON. Maximum 15 tools."""
             response_fields=t.get("response_fields"),
         ))
 
+    tools = [_repair_tool(t, raw) for t in tools]
     if not tools:
         raise LLMEmptySchemaError()
 
@@ -205,4 +207,39 @@ Return ONLY valid JSON. Maximum 15 tools."""
         auth_type=auth_type,
         created_at=datetime.now(timezone.utc).isoformat(),
         source_url=source_url,
+        static_headers=raw.static_headers,
+        static_query=raw.static_query,
     )
+
+
+_PLACEHOLDER_RE = re.compile(r"\{(\w+)\}")
+
+
+def _repair_tool(tool: AgentTool, raw: RawSchema) -> AgentTool:
+    """Fix the most common LLM slip: a {placeholder} in a path that no tool parameter fills.
+
+    If discovery observed a value for it, bake that value into the path. Otherwise expose
+    it as a required tool parameter so the agent can supply it, instead of calling a URL
+    with a literal "{placeholder}" in it.
+    """
+    raw_params: dict[tuple[str, str], dict[str, EndpointParameter]] = {
+        (ep.method.upper(), ep.path): {p.name: p for p in ep.parameters} for ep in raw.endpoints
+    }
+    tool_param_names = {p.name for p in tool.parameters}
+    for m in tool.endpoint_mappings:
+        filled = {pm.endpoint_param for pm in m.parameter_mappings if pm.location == ParameterLocation.PATH}
+        for name in _PLACEHOLDER_RE.findall(m.path):
+            if name in filled:
+                continue
+            observed = raw_params.get((m.method.upper(), m.path), {}).get(name)
+            if observed is not None and observed.default not in (None, ""):
+                m.path = m.path.replace("{" + name + "}", str(observed.default))
+                continue
+            if name not in tool_param_names:
+                desc = observed.description if observed and observed.description else f"Value for {{{name}}} in the URL path."
+                tool.parameters.append(ToolParameter(name=name, type="string", required=True, description=desc))
+                tool_param_names.add(name)
+            m.parameter_mappings.append(
+                ParameterMapping(tool_param=name, endpoint_param=name, location=ParameterLocation.PATH)
+            )
+    return tool

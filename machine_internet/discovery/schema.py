@@ -50,6 +50,10 @@ class RawSchema(BaseModel):
     endpoints: list[Endpoint] = Field(default_factory=list)
     auth_schemes: list[AuthScheme] = Field(default_factory=list)
     discovery_method: str = "unknown"
+    # Constant public keys the site's own frontend sends (e.g. Algolia app id + search key),
+    # replayed on every call. Never cookies, auth headers or CSRF tokens.
+    static_headers: dict[str, str] = Field(default_factory=dict)
+    static_query: dict[str, str] = Field(default_factory=dict)
 
 
 class ParameterMapping(BaseModel):
@@ -91,3 +95,7 @@ class CondensedSchema(BaseModel):
     auth_config: dict[str, Any] = Field(default_factory=dict)
     created_at: str = ""
     source_url: str = ""
+    # Constant public keys the site's own frontend sends (e.g. Algolia app id + search key),
+    # replayed on every call. Never cookies, auth headers or CSRF tokens.
+    static_headers: dict[str, str] = Field(default_factory=dict)
+    static_query: dict[str, str] = Field(default_factory=dict)

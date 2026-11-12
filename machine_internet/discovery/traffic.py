@@ -10,7 +10,8 @@ _TRACKER_RE = re.compile(
     r"analytics|tracking|telemetry|segment\.io|mixpanel|amplitude|"
     r"hotjar|intercom|onetrust|moatads|pubmatic|adnxs|criteo|"
     r"taboola|outbrain|bidswitch|scorecard|quantserve|adsystem|"
-    r"cdn\.jsdelivr|unpkg\.com|cdnjs\.cloudflare)",
+    r"cdn\.jsdelivr|unpkg\.com|cdnjs\.cloudflare|/cdn-cgi/|challenges\.cloudflare|"
+    r"cloudflareinsights|sentry\.io|newrelic|nr-data|datadoghq|clarity\.ms|recaptcha)",
     re.IGNORECASE,
 )
 
@@ -30,6 +31,8 @@ def _brand(url: str) -> str:
 
 from .errors import (
     AllTrackersFilteredError,
+    LLMEmptySchemaError,
+    LLMInvalidResponseError,
     BrandFilteredError,
     NoXHRCapturedError,
     PlaywrightNotInstalledError,
@@ -53,7 +56,9 @@ class _TrafficEntry:
         request_body: Optional[str],
         response_body: Optional[str],
         status_code: int,
+        request_headers: Optional[dict] = None,
     ) -> None:
+        self.request_headers = request_headers or {}
         self.method = method
         self.url = url
         self.request_body = request_body
@@ -78,8 +83,50 @@ async def discover_via_traffic(url: str, timeout: int = 30) -> Optional[RawSchem
         if brands:
             raise BrandFilteredError(base_brand, sorted(set(brands)))
         raise AllTrackersFilteredError()
-    print(f"  [traffic] {len(entries)} same-domain XHR calls captured")
-    return await _infer_schema(url, entries)
+    print(f"  [traffic] {len(entries)} same-domain XHR calls captured", flush=True)
+    schema = await _infer_schema(url, entries)
+    if schema is None or not schema.endpoints:
+        raise LLMEmptySchemaError()
+    schema.static_headers, schema.static_query = _public_keys(entries, schema.base_url)
+    if schema.static_headers or schema.static_query:
+        names = sorted(schema.static_headers) + sorted(schema.static_query)
+        print(f"  [traffic] replaying public keys the site sends: {', '.join(names)}", flush=True)
+    return schema
+
+
+_KEY_NAME_RE = re.compile(
+    r"(api[-_]?key|apikey|app(lication)?[-_]?id|client[-_]?id|"
+    r"^x-[\w-]*(key|app|id)$|x-algolia-agent)",
+    re.IGNORECASE,
+)
+_NEVER_REPLAY_RE = re.compile(r"(cookie|authorization|csrf|xsrf|session|token|secret|password)", re.IGNORECASE)
+
+
+def _public_keys(entries: list["_TrafficEntry"], base_url: str) -> tuple[dict[str, str], dict[str, str]]:
+    """Headers and query params that look like public keys and are identical on every
+    request the page made to base_url's host."""
+    from urllib.parse import parse_qsl
+
+    host = urlparse(base_url).netloc
+    relevant = [e for e in entries if urlparse(e.url).netloc == host] or entries
+
+    def constant(pairs_per_entry: list[dict[str, str]]) -> dict[str, str]:
+        found: dict[str, str] = {}
+        seen_in: dict[str, int] = {}
+        conflicting: set[str] = set()
+        for pairs in pairs_per_entry:
+            for k, v in pairs.items():
+                if not _KEY_NAME_RE.search(k) or _NEVER_REPLAY_RE.search(k) or not v:
+                    continue
+                if k in found and found[k] != v:
+                    conflicting.add(k)
+                found.setdefault(k, v)
+                seen_in[k] = seen_in.get(k, 0) + 1
+        return {k: v for k, v in found.items() if k not in conflicting and seen_in[k] == len(pairs_per_entry)}
+
+    headers = constant([{k.lower(): v for k, v in e.request_headers.items()} for e in relevant])
+    query = constant([dict(parse_qsl(urlparse(e.url).query)) for e in relevant])
+    return headers, query
 
 
 def _install_chromium() -> None:
@@ -124,12 +171,14 @@ async def _capture_traffic(url: str, timeout: int) -> tuple[list[_TrafficEntry],
                 if rt not in ("xhr", "fetch"):
                     return
                 stats["total_xhr"] += 1
+                # Trackers first, so a page that only phones home to analytics reads as
+                # "only trackers", not "API lives on another domain"
+                if _TRACKER_RE.search(rurl):
+                    stats["tracker_blocked"] += 1
+                    return
                 resp_brand = _brand(rurl)
                 if resp_brand != base_brand:
                     stats["brand_blocked"].append(resp_brand)
-                    return
-                if _TRACKER_RE.search(rurl):
-                    stats["tracker_blocked"] += 1
                     return
                 if "json" not in ct:
                     return
@@ -147,6 +196,7 @@ async def _capture_traffic(url: str, timeout: int) -> tuple[list[_TrafficEntry],
                     request_body=req_body,
                     response_body=body,
                     status_code=response.status,
+                    request_headers=dict(response.request.headers),
                 ))
             except Exception:
                 pass
@@ -243,7 +293,7 @@ Return JSON only:
       "summary": "...",
       "description": "...",
       "parameters": [
-        {{"name": "x", "location": "query", "required": false, "type": "string", "description": ""}}
+        {{"name": "x", "location": "query", "required": false, "type": "string", "description": "", "default": "an observed value or null"}}
       ]
     }}
   ]
@@ -253,14 +303,22 @@ Rules:
 - Only include endpoints that look like real data API calls (returning structured data).
 - Skip analytics, tracking, metrics, or configuration payloads.
 - Normalise numeric/UUID path segments to {{id}} or a descriptive name.
+- Keep a path segment literal when it was identical in every captured request; only make it a {{param}} if it varied or is clearly an ID.
+- Every {{param}} in a path must appear in "parameters" with location "path"; set its "default" to a value you observed.
 - Infer parameter types from observed values.
 - Return ONLY valid JSON, no commentary."""
 
-    raw = await get_ai_client().generate(prompt, max_tokens=4096)
+    # Room for many endpoints; 4096 truncated the JSON on busy sites
+    raw = await get_ai_client().generate(prompt, max_tokens=16384)
     try:
         data = _extract_json(raw)
     except (ValueError, json.JSONDecodeError):
-        return None
+        # One retry: LLM output is non-deterministic and a second pass usually parses
+        raw = await get_ai_client().generate(prompt, max_tokens=16384)
+        try:
+            data = _extract_json(raw)
+        except (ValueError, json.JSONDecodeError) as exc:
+            raise LLMInvalidResponseError() from exc
 
     _LOC_NORM = {
         "body_json": "body", "json": "body", "form": "body",

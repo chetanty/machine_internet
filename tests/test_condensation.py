@@ -92,3 +92,21 @@ async def test_condense_tool_parameters():
     assert mapping.method == "GET"
     assert mapping.path == "/customers/{customer_id}"
     assert mapping.parameter_mappings[0].location == ParameterLocation.PATH
+
+
+def test_repair_bakes_observed_path_value_or_exposes_param():
+    from machine_internet.condensation.condenser import _repair_tool
+    from machine_internet.discovery.schema import AgentTool, EndpointMapping
+
+    raw = RawSchema(base_url="https://x", endpoints=[Endpoint(
+        path="/1/indexes/{index_name}/query", method="POST",
+        parameters=[EndpointParameter(name="index_name", location=ParameterLocation.PATH, default="Item_dev")])])
+    tool = AgentTool(name="search", description="d", parameters=[], endpoint_mappings=[
+        EndpointMapping(method="POST", path="/1/indexes/{index_name}/query", parameter_mappings=[])])
+    assert _repair_tool(tool, raw).endpoint_mappings[0].path == "/1/indexes/Item_dev/query"
+
+    tool2 = AgentTool(name="get", description="d", parameters=[], endpoint_mappings=[
+        EndpointMapping(method="GET", path="/users/{user}", parameter_mappings=[])])
+    fixed = _repair_tool(tool2, RawSchema(base_url="https://x"))
+    assert [p.name for p in fixed.parameters] == ["user"] and fixed.parameters[0].required
+    assert fixed.endpoint_mappings[0].parameter_mappings[0].location == ParameterLocation.PATH
