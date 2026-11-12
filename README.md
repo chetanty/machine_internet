@@ -49,7 +49,7 @@ Restart your client and ask: *"How big is react-dom gzipped, and is lodash-es tr
 
 You need [uv](https://docs.astral.sh/uv/) for `uvx`. Or install it once with `pip install machine-internet` (or straight from GitHub: `pip install git+https://github.com/chetanty/machine_internet`) and use `machine-internet` as the command.
 
-**Hosted, nothing to install:** every example is also live at [machine-internet.vercel.app](https://machine-internet.vercel.app) as a remote MCP endpoint, e.g. `https://machine-internet.vercel.app/mcp/bundlephobia`. Clients with remote MCP support take the URL directly; others can use `npx mcp-remote <url>`.
+**Hosted, nothing to install:** every example is also live at [machine-internet.vercel.app](https://machine-internet.vercel.app) as a remote MCP endpoint, e.g. `https://machine-internet.vercel.app/mcp/bundlephobia`. Clients with remote MCP support take the URL directly; others can use `npx mcp-remote <url>`. Some sites rate-limit requests from cloud servers (npm's download stats do), so for heavy use run `serve` locally, which calls the site from your own connection.
 
 ---
 

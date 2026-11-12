@@ -51,7 +51,9 @@ class ToolExecutor:
             result = {"text": resp.text}
 
         if tool.response_fields and isinstance(result, dict):
-            result = {k: v for k, v in result.items() if k in tool.response_fields}
+            trimmed = {k: v for k, v in result.items() if k in tool.response_fields}
+            # If none of the expected fields came back (e.g. an error body), show what did
+            result = trimmed or result
 
         return result
 
