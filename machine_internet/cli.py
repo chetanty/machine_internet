@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import json
 import sys
+import textwrap
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -198,7 +199,7 @@ async def _wrap(url, name, spec_url, filter_tags, force_traffic, no_condense, ou
             condensed.service_name = name
         click.echo(f"  [OK] {len(condensed.tools)} tools:")
         for t in condensed.tools:
-            click.echo(f"       {t.name}: {t.description[:70]}")
+            click.echo(f"       {t.name}: {textwrap.shorten(t.description, 78, placeholder=' ...')}")
         data = json.loads(condensed.model_dump_json())
         data["discovery_method"] = raw.discovery_method
         default_name = condensed.service_name
@@ -263,6 +264,73 @@ def list_schemas():
             except Exception:
                 click.echo(f"  {f.stem:<20} (unreadable)")
     click.echo()
+
+
+def _coerce(value: str, typ: str):
+    """Turn a key=value string from the command line into the tool parameter's type."""
+    try:
+        if typ == "integer":
+            return int(value)
+        if typ == "number":
+            return float(value)
+        if typ == "boolean":
+            return value.lower() in ("1", "true", "yes", "y")
+        if typ in ("object", "array"):
+            return json.loads(value)
+    except (ValueError, json.JSONDecodeError):
+        pass
+    return value
+
+
+@main.command()
+@click.argument("schema")
+def tools(schema):
+    """Show the tools in SCHEMA and their parameters."""
+    s = CondensedSchema(**json.loads(_resolve_schema(schema).read_text(encoding="utf-8")))
+    click.echo(f"\n{s.service_name}  ({s.base_url})\n")
+    for t in s.tools:
+        click.echo(click.style(t.name, bold=True))
+        click.echo(f"  {t.description}")
+        for p in t.parameters:
+            req = "required" if p.required else "optional"
+            click.echo(f"    {p.name} ({p.type}, {req}): {p.description}")
+        click.echo()
+
+
+@main.command()
+@click.argument("schema")
+@click.argument("tool")
+@click.argument("args", nargs=-1)
+def call(schema, tool, args):
+    """Call one TOOL directly, e.g.:  machine-internet call bundlephobia get_package_size package=react"""
+    from .auth.injector import AuthInjector, credentials_from_env
+    from .serving.executor import ToolExecutor
+
+    s = CondensedSchema(**json.loads(_resolve_schema(schema).read_text(encoding="utf-8")))
+    t = next((x for x in s.tools if x.name == tool), None)
+    if t is None:
+        raise click.ClickException(f"No tool '{tool}'. Available: {', '.join(x.name for x in s.tools)}")
+
+    types_by_name = {p.name: p.type for p in t.parameters}
+    arguments = {}
+    for a in args:
+        if "=" not in a:
+            raise click.ClickException(f"Arguments look like key=value, got '{a}'")
+        k, v = a.split("=", 1)
+        arguments[k] = _coerce(v, types_by_name.get(k, "string"))
+    missing = [p.name for p in t.parameters if p.required and p.name not in arguments]
+    if missing:
+        raise click.ClickException(f"Missing required argument(s): {', '.join(f'{m}=...' for m in missing)}")
+
+    injector = None
+    creds = credentials_from_env(s.auth_type) if s.auth_type.value != "none" else None
+    if creds:
+        injector = AuthInjector(s.auth_type, creds)
+    try:
+        result = asyncio.run(ToolExecutor(s.base_url, injector).execute(t, arguments))
+    except Exception as exc:
+        raise click.ClickException(f"{type(exc).__name__}: {exc}")
+    click.echo(json.dumps(result, indent=2, ensure_ascii=False) if isinstance(result, (dict, list)) else str(result))
 
 
 @main.command()

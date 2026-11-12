@@ -8,8 +8,9 @@ uvx machine-internet wrap https://bundlephobia.com/package/react
 
 Machine Internet opens the site in a headless browser, watches the hidden API calls the page makes, and turns them into a small set of clean tools that Claude, Cursor or any MCP client can call directly.
 
-<!-- TODO: demo GIF here. Show: wrap a URL -> paste config -> Claude answers a question with the new tools. Keep it under 30 seconds. -->
+![Demo: wrapping bundlephobia.com and calling the new tool](assets/demo.gif)
 
+[![CI](https://github.com/chetanty/machine_internet/actions/workflows/ci.yml/badge.svg)](https://github.com/chetanty/machine_internet/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![MCP](https://img.shields.io/badge/MCP-compatible-orange)
@@ -41,7 +42,7 @@ Restart your client and ask: *"How big is react-dom gzipped, and is lodash-es tr
 | `regex101` | [regex101.com](https://regex101.com) | 3: browse the community library, get a saved regex, list versions |
 | `hacker_news` | [hn.algolia.com](https://hn.algolia.com) | 2: search stories and comments, status |
 
-You need [uv](https://docs.astral.sh/uv/) for `uvx`. Or `pip install machine-internet` and use `machine-internet` as the command.
+You need [uv](https://docs.astral.sh/uv/) for `uvx`. Or install it once with `pip install machine-internet` (or straight from GitHub: `pip install git+https://github.com/chetanty/machine_internet`) and use `machine-internet` as the command.
 
 **Hosted, nothing to install:** every example is also live at [machine-internet.vercel.app](https://machine-internet.vercel.app) as a remote MCP endpoint, e.g. `https://machine-internet.vercel.app/mcp/bundlephobia`. Clients with remote MCP support take the URL directly; others can use `npx mcp-remote <url>`.
 
@@ -101,6 +102,8 @@ The first run downloads headless Chromium once (about 150 MB). Wrapping takes 1 
 machine-internet wrap <url> [--name NAME] [--spec URL] [--tags a,b] [--sniff] [-o FILE]
 machine-internet serve <name-or-file.json> [--sse --port 8000]
 machine-internet list                  # bundled examples and servers you have wrapped
+machine-internet tools <name>          # show a server's tools and parameters
+machine-internet call <name> <tool> key=value ...   # call a tool from the terminal
 machine-internet config <name>         # print the MCP client config block
 ```
 

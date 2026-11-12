@@ -1,0 +1,23 @@
+name: Release to PyPI
+
+# Push a tag like v0.2.0 to publish. Uses PyPI trusted publishing, so no token is stored here.
+# One-time setup on pypi.org: Account > Publishing > add a (pending) publisher with
+#   project: machine-internet, owner: chetanty, repo: machine_internet,
+#   workflow: release.yml, environment: pypi
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build && python -m build
+      - uses: pypa/gh-action-pypi-publish@release/v1
