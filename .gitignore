@@ -10,3 +10,7 @@ build/
 venv/
 .claude/
 schemas/
+
+.vercel
+.env*
+!.env.example

@@ -67,6 +67,20 @@ async def _send(send, status: int, body: bytes, content_type: str, extra: list |
     await send({"type": "http.response.body", "body": body})
 
 
+def _restore_rewritten_path(scope) -> dict:
+    """Vercel's catch-all rewrite turns every request path into /api/index.
+    vercel.json passes the original path as ?__path=..., so put it back."""
+    from urllib.parse import parse_qsl, urlencode
+
+    params = parse_qsl((scope.get("query_string") or b"").decode(), keep_blank_values=True)
+    original = next((v for k, v in params if k == "__path"), None)
+    if original is None:
+        return scope
+    rest = urlencode([(k, v) for k, v in params if k != "__path"]).encode()
+    path = "/" + original.lstrip("/")
+    return dict(scope, path=path, raw_path=path.encode(), query_string=rest)
+
+
 def _base_url(scope) -> str:
     headers = dict(scope.get("headers") or [])
     host = headers.get(b"x-forwarded-host") or headers.get(b"host") or b"localhost"
@@ -136,6 +150,7 @@ async def app(scope, receive, send):
     if scope["type"] != "http":
         return
 
+    scope = _restore_rewritten_path(scope)
     path = scope.get("path", "/").rstrip("/") or "/"
     method = scope.get("method", "GET")
 
