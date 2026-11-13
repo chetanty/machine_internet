@@ -102,12 +102,16 @@ def wrap(url, name, spec_url, tags, force_traffic, no_condense, output, debug):
             get_ai_client()
         except NoAPIKeyError:
             _fail(
-                "[FAIL] No LLM API key found.",
+                "[FAIL] wrap needs an LLM API key (serving and the bundled examples do not).",
                 "",
-                "  Set any one of these (environment variable or a .env file in this folder):",
-                "    ANTHROPIC_API_KEY=...",
-                "    OPENAI_API_KEY=...",
-                "    GEMINI_API_KEY=...",
+                "  Free option: get a Gemini key at https://aistudio.google.com/apikey",
+                "  (free tier, no credit card), then run one of these and try again:",
+                "",
+                "    macOS / Linux:   export GEMINI_API_KEY=your-key",
+                "    Windows (PS):    $env:GEMINI_API_KEY=\"your-key\"",
+                "    Windows (cmd):   set GEMINI_API_KEY=your-key",
+                "",
+                "  ANTHROPIC_API_KEY or OPENAI_API_KEY work too. A .env file in this folder also works.",
             )
 
     try:
@@ -176,12 +180,19 @@ async def _wrap(url, name, spec_url, filter_tags, force_traffic, no_condense, ou
             )
         except BrandFilteredError as exc:
             _fail(
-                f"[FAIL] API calls went to other domains ({', '.join(exc.seen_brands[:5])}).",
-                f"  Try the API domain directly: machine-internet wrap https://api.{exc.base_brand}.com",
+                f"[FAIL] The page's data calls all went to other services ({', '.join(exc.seen_brands[:5])}),",
+                "  not to the site itself, so there was nothing of the site's own to wrap.",
+                "  If one of those is really the site's API, wrap a page on that domain instead.",
             )
-        except (LLMInvalidResponseError, LLMEmptySchemaError):
+        except LLMEmptySchemaError:
             _fail(
-                "[FAIL] Traffic was captured, but the LLM could not turn it into endpoints.",
+                "[FAIL] The page made calls, but none of them returned real data (only page or config payloads).",
+                "  The page is probably rendered on the server. Pages that load results as you search,",
+                "  filter or scroll work best.",
+            )
+        except LLMInvalidResponseError:
+            _fail(
+                "[FAIL] Traffic was captured, but the LLM's answer could not be parsed.",
                 "  Run again (LLM output varies), or point at a page with less going on.",
             )
         except LLMQuotaError:
@@ -343,7 +354,7 @@ def call(schema, tool, args):
     if creds:
         injector = AuthInjector(s.auth_type, creds)
     try:
-        result = asyncio.run(ToolExecutor(s.base_url, injector, s.static_headers, s.static_query).execute(t, arguments))
+        result = asyncio.run(ToolExecutor(s.base_url, injector, s.static_headers, s.static_query, s.source_url).execute(t, arguments))
     except Exception as exc:
         raise click.ClickException(f"{type(exc).__name__}: {exc}")
     click.echo(json.dumps(result, indent=2, ensure_ascii=False) if isinstance(result, (dict, list)) else str(result))

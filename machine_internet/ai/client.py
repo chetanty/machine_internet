@@ -94,6 +94,9 @@ async def _call_gemini(prompt: str, system: Optional[str], max_tokens: int, agen
         contents=prompt,
         config=genai_types.GenerateContentConfig(**cfg_kwargs),
     )
+    if not response.text:
+        # Happens when thinking uses the whole budget or a safety filter blocks the output
+        raise RuntimeError("Gemini returned an empty response (unavailable), trying next")
     return response.text.strip()
 
 
@@ -127,7 +130,8 @@ class FallbackAIClient:
                     _log(f"  [ai] used fallback {agent['provider']}:{agent['model']}")
                 return result
             except Exception as exc:
-                if _is_retryable(exc):
+                # A missing SDK package for one provider should not stop the others from being tried
+                if _is_retryable(exc) or isinstance(exc, ImportError):
                     last_exc = exc
                     _log(f"  [ai] {agent['provider']}:{agent['model']} failed ({str(exc)[:120]}), trying next")
                     continue

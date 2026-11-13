@@ -1,0 +1,81 @@
+{
+  "base_url": "https://marketplace.visualstudio.com",
+  "service_name": "vscode_marketplace",
+  "service_description": "An API for searching and retrieving details about extensions available in the Visual Studio Marketplace.",
+  "tools": [
+    {
+      "name": "search_extensions",
+      "description": "Searches for VSCode extensions using text queries, publisher names, or specific extension IDs.",
+      "parameters": [
+        {
+          "name": "search_text",
+          "type": "string",
+          "required": true,
+          "description": "The search term to find extensions (e.g., 'python', 'git').",
+          "enum": null,
+          "default": null
+        },
+        {
+          "name": "page_size",
+          "type": "integer",
+          "required": false,
+          "description": "Number of results to return per page. Defaults to 50.",
+          "enum": null,
+          "default": 10
+        },
+        {
+          "name": "page_number",
+          "type": "integer",
+          "required": false,
+          "description": "The page number for paginated results.",
+          "enum": null,
+          "default": 1
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/_apis/public/gallery/extensionquery",
+          "parameter_mappings": [
+            {
+              "tool_param": "search_text",
+              "endpoint_param": "filters[0].criteria[1].value",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "page_size",
+              "endpoint_param": "filters[0].pageSize",
+              "location": "body",
+              "transform": null
+            },
+            {
+              "tool_param": "page_number",
+              "endpoint_param": "filters[0].pageNumber",
+              "location": "body",
+              "transform": null
+            }
+          ],
+          "static_params": {
+            "filters[0].criteria[0].filterType": 8,
+            "filters[0].criteria[0].value": "Microsoft.VisualStudio.Code",
+            "filters[0].criteria[1].filterType": 10,
+            "filters[0].sortBy": 0,
+            "flags": 914
+          },
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-11-13T09:27:11.897679+00:00",
+  "source_url": "https://marketplace.visualstudio.com/search?term=python&target=VSCode&category=All%20categories&sortBy=Relevance",
+  "static_headers": {
+    "accept": "application/json;api-version=7.2-preview.1"
+  },
+  "static_query": {},
+  "discovery_method": "traffic"
+}

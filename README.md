@@ -3,12 +3,14 @@
 **Turn any website into an MCP server. No API needed.**
 
 ```bash
-uvx machine-internet wrap https://bundlephobia.com/package/react
+uvx machine-internet wrap https://www.ycombinator.com/companies
 ```
 
 Machine Internet opens the site in a headless browser, watches the hidden API calls the page makes, and turns them into a small set of clean tools that Claude, Cursor or any MCP client can call directly.
 
-![Demo: wrapping bundlephobia.com and calling the new tool](assets/demo.gif)
+![Demo: wrapping the YC company directory and calling the new tool](assets/demo.gif)
+
+**Try it in your browser, nothing to install:** [machine-internet.vercel.app](https://machine-internet.vercel.app) runs every tool below against the real site.
 
 [![CI](https://github.com/chetanty/machine_internet/actions/workflows/ci.yml/badge.svg)](https://github.com/chetanty/machine_internet/actions/workflows/ci.yml)
 ![License](https://img.shields.io/badge/license-Apache%202.0-blue)
@@ -19,70 +21,78 @@ Machine Internet opens the site in a headless browser, watches the hidden API ca
 
 ## Try it in 30 seconds (no API key)
 
-Ten sites come pre-wrapped, most with no public API. Add one to your Claude Desktop or Cursor config:
+Eight sites come pre-wrapped. None of them offers a public API for this data. Add one to your Claude Desktop or Cursor config:
 
 ```json
 {
   "mcpServers": {
-    "bundlephobia": {
+    "yc": {
       "command": "uvx",
-      "args": ["machine-internet", "serve", "bundlephobia"]
+      "args": ["machine-internet", "serve", "yc_companies"]
     }
   }
 }
 ```
 
-Restart your client and ask: *"How big is react-dom gzipped, and is lodash-es tree-shakeable?"*
+Restart your client and ask: *"Which YC companies from the last two batches are building robotics, and what do they do?"*
 
 | Example | Site | Tools |
 |---|---|---|
-| `bundlephobia` | [bundlephobia.com](https://bundlephobia.com) | 6: package size, tree-shaking check, size history, similar packages, per-export sizes, recent |
-| `caniuse` | [caniuse.com](https://caniuse.com) | 4: search features, browser support data, feature details, news |
+| `yc_companies` | [YC company directory](https://www.ycombinator.com/companies) | search every YC company by keyword, batch, industry, status, team size |
+| `openrouter` | [OpenRouter rankings](https://openrouter.ai/rankings) | 15: top models and apps by real token usage, market share, benchmarks, spend by task, providers |
+| `luma` | [Luma events](https://luma.com/discover) | 6: cities, upcoming events in a city, calendars, categories |
+| `vscode_marketplace` | [VS Code Marketplace](https://marketplace.visualstudio.com/vscode) | search extensions with install counts and ratings |
+| `bundlephobia` | [bundlephobia.com](https://bundlephobia.com) | 6: package size, tree-shaking check, size history, similar packages, per-export sizes |
+| `caniuse` | [caniuse.com](https://caniuse.com) | 4: search features, browser support data, feature bugs, notes and links |
 | `npm_trends` | [npmtrends.com](https://npmtrends.com) | 4: package info, weekly downloads, download trends, GitHub stats |
-| `deps_dev` | [deps.dev](https://deps.dev) | 7: versions, dependencies, dependency graph, dependents, requirements, stats |
-| `crates_io` | [crates.io](https://crates.io) | 6: search crates, crate info, versions, version details, stats, summary |
-| `huggingface` | [huggingface.co](https://huggingface.co) | 1: search models, datasets and Spaces |
-| `hacker_news` | [hn.algolia.com](https://hn.algolia.com) | 1: full-text search of HN stories and comments |
-| `archive_org` | [archive.org](https://archive.org) | 3: search the archive, item metadata, item favorites |
-| `ossinsight` | [ossinsight.io](https://ossinsight.io) | 2: search GitHub repos, users and orgs, live GitHub event stats |
 | `regex101` | [regex101.com](https://regex101.com) | 3: browse the community library, get a saved regex, list versions |
+
+Each one was made with `wrap`. A few needed small hand fixes afterwards (the VS Code request body, caniuse's form encoding, some parameter defaults); the tables below are honest about what `wrap` gets right on its own.
 
 You need [uv](https://docs.astral.sh/uv/) for `uvx`. Or install it once with `pip install machine-internet` (or straight from GitHub: `pip install git+https://github.com/chetanty/machine_internet`) and use `machine-internet` as the command.
 
-**Hosted, nothing to install:** every example is also live at [machine-internet.vercel.app](https://machine-internet.vercel.app) as a remote MCP endpoint, e.g. `https://machine-internet.vercel.app/mcp/bundlephobia`. Clients with remote MCP support take the URL directly; others can use `npx mcp-remote <url>`. Some sites rate-limit requests from cloud servers (npm's download stats do), so for heavy use run `serve` locally, which calls the site from your own connection.
+**Hosted, nothing to install:** every example is also live at [machine-internet.vercel.app](https://machine-internet.vercel.app) as a remote MCP endpoint, e.g. `https://machine-internet.vercel.app/mcp/yc_companies`. Clients with remote MCP support take the URL directly; others can use `npx mcp-remote <url>`. Some sites rate-limit requests from cloud servers (npm's download stats do), so for heavy use run `serve` locally, which calls the site from your own connection.
 
 ---
 
 ## Wrap your own site
 
-Set an LLM key (any one of these works):
+**What you need:** [uv](https://docs.astral.sh/uv/) and one LLM API key. That's it. The headless browser downloads itself on the first run.
+
+The easiest key is Gemini's: [get one free at aistudio.google.com/apikey](https://aistudio.google.com/apikey) (free tier, no credit card). Anthropic and OpenAI keys work too.
 
 ```bash
-export ANTHROPIC_API_KEY=...   # or OPENAI_API_KEY, or GEMINI_API_KEY
+export GEMINI_API_KEY=your-key        # Windows PowerShell: $env:GEMINI_API_KEY="your-key"
 ```
 
 Then point it at a page that loads data as you use it:
 
 ```bash
-uvx machine-internet wrap https://bundlephobia.com/package/react
+uvx machine-internet wrap https://www.ycombinator.com/companies --name yc
 ```
 
 ```
-Wrapping https://bundlephobia.com/package/react
+Wrapping https://www.ycombinator.com/companies
   Checking for an OpenAPI spec ...
   Sniffing network traffic in a headless browser ...
-  [OK] Inferred 4 endpoints
+  [traffic] 6 same-domain XHR calls captured
+  [traffic] replaying public keys the site sends: x-algolia-agent, x-algolia-api-key, x-algolia-application-id
+  [OK] Inferred 1 endpoints
   Condensing into agent tools ...
-  [OK] 4 tools:
-       get_package_size: Use this tool to get detailed size information for a JavaScript packag
-       get_package_history: Use this tool to retrieve the historical versions of a specific JavaSc
-       ...
+  [OK] 1 tools:
+       search_companies: Searches for Y Combinator companies using keywords, filters, and facets. ...
 
 Add this to your MCP client config (Claude Desktop, Cursor, ...):
-{ "mcpServers": { "bundlephobia_api": { "command": "uvx", "args": ["machine-internet", "serve", "bundlephobia_api"] } } }
+{ "mcpServers": { "yc": { "command": "uvx", "args": ["machine-internet", "serve", "yc"] } } }
 ```
 
-The first run downloads headless Chromium once (about 150 MB). Wrapping takes 1 to 3 minutes and costs a few cents of LLM usage. Serving afterwards needs no LLM at all.
+Then try it straight from the terminal:
+
+```bash
+uvx machine-internet call yc search_companies query=robotics 'filters=batch:"Winter 2025"'
+```
+
+The first run downloads headless Chromium automatically (one time, about 150 MB). Wrapping takes 1 to 3 minutes and costs a few cents of LLM usage, or nothing on Gemini's free tier. Serving afterwards needs no LLM at all.
 
 **Tips**
 - Pick a page that fetches data: a search results page or an item page works better than a static landing page.
@@ -122,17 +132,18 @@ Wrapped servers are saved to `~/.machine-internet/schemas/`.
 
 It works on sites whose pages load their data with API calls from the browser: most single-page apps, search pages, dashboards and developer tools. It does not work on sites that render pages on the server, or that block headless browsers.
 
-Results from pointing `wrap` at 15 popular sites, with each generated tool then called for real:
+Results from pointing `wrap` at 24 sites, with each generated tool then called for real:
 
 | Result | Sites |
 |---|---|
-| Works | crates.io, deps.dev, Hugging Face, archive.org, HN Search (Algolia), OSS Insight |
-| Partly works | Open Library (1 of 2 tools) |
-| No hidden API found (server-rendered) | IMDb, Reddit, GitHub Trending, npmjs.com |
-| Blocked or only trackers seen | Product Hunt, lichess, packagephobia |
-| Nothing useful captured | dev.to (only a session-token call) |
+| Works | YC company directory, OpenRouter rankings, Luma, crates.io, deps.dev, Hugging Face, archive.org, HN Search, OSS Insight, bundlephobia, npm trends, regex101 |
+| Works after a hand fix | VS Code Marketplace (nested request body), caniuse (form-encoded body) |
+| Partly works | Open Library (1 of 2 tools), ESPN (side data only; the scores are server-rendered) |
+| No data API found (server-rendered) | Docker Hub, IMDb, Reddit, GitHub Trending, npmjs.com |
+| Blocked by bot protection | Devpost, LMArena, Printables, Product Hunt, lichess, packagephobia |
+| Unusable internal format | Google Fonts (Google's batchexecute RPC), dev.to (only a session-token call) |
 
-So roughly half of the arbitrary sites tried. When it fails, it says why and suggests a page that is more likely to work.
+So about half of arbitrary sites, and most single-page apps. When it fails, it says why: server-rendered, blocked, or data on another service.
 
 ## Limitations
 

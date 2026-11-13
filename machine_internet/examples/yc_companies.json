@@ -1,0 +1,73 @@
+{
+  "base_url": "https://45bwzj1sgc-dsn.algolia.net",
+  "service_name": "yc_companies",
+  "service_description": "Provides programmatic search and filtering capabilities for the database of Y Combinator companies.",
+  "tools": [
+    {
+      "name": "search_companies",
+      "description": "Searches for Y Combinator companies using keywords, filters, and facets. Use this to find companies based on names, industries, batches, or tags.",
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": false,
+          "description": "The search term (e.g., company name or keywords).",
+          "enum": null,
+          "default": null
+        },
+        {
+          "name": "filters",
+          "type": "string",
+          "required": false,
+          "description": "Algolia filter string. Fields include batch, industry, status, regions, isHiring, tags. Quote values with spaces, e.g. 'batch:\"Winter 2025\"' or 'industry:Fintech AND status:Active AND isHiring:true'.",
+          "enum": null,
+          "default": null
+        },
+        {
+          "name": "facets",
+          "type": "array",
+          "required": false,
+          "description": "Attributes to count results by, e.g. [\"batch\", \"industry\", \"status\"].",
+          "enum": null,
+          "default": null
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "required": false,
+          "description": "The page number to retrieve for paginated results.",
+          "enum": null,
+          "default": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "POST",
+          "path": "/1/indexes/*/queries",
+          "parameter_mappings": [],
+          "static_params": {
+            "requests": [
+              {
+                "indexName": "YCCompany_production",
+                "params": "query={query}&filters={filters}&facets={facets}&page={page}&hitsPerPage=20&attributesToRetrieve=%5B%22name%22%2C%22slug%22%2C%22website%22%2C%22one_liner%22%2C%22batch%22%2C%22industry%22%2C%22subindustry%22%2C%22status%22%2C%22team_size%22%2C%22regions%22%2C%22isHiring%22%2C%22launched_at%22%5D&attributesToHighlight=%5B%5D&attributesToSnippet=%5B%5D"
+              }
+            ]
+          },
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-11-13T09:42:07.589740+00:00",
+  "source_url": "https://www.ycombinator.com/companies",
+  "static_headers": {},
+  "static_query": {
+    "x-algolia-agent": "Algolia for JavaScript (3.35.1); Browser; JS Helper (3.16.1)",
+    "x-algolia-application-id": "45BWZJ1SGC",
+    "x-algolia-api-key": "MmNmOTJjMTNlZjYyYjNhZjc4MzgwMDU2NTZiZjhiNDVjMTNlNTZhZDQ0MDVkNDBhM2Y2M2UzNzg3NjliOWM5ZGFuYWx5dGljc1RhZ3M9eWNkYyZyZXN0cmljdEluZGljZXM9WUNDb21wYW55X3Byb2R1Y3Rpb24lMkNZQ0NvbXBhbnlfQnlfTGF1bmNoX0RhdGVfcHJvZHVjdGlvbiZ0YWdGaWx0ZXJzPSU1QiUyMnljZGNfcHVibGljJTIyJTVEJnZhbGlkVW50aWw9MTc5NDY0OTI4NQ=="
+  },
+  "discovery_method": "traffic"
+}

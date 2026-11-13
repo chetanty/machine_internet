@@ -19,4 +19,14 @@ def test_scope_without_rewrite_is_untouched():
 
 
 def test_all_examples_are_hosted():
-    assert {"bundlephobia", "caniuse"} <= set(SCHEMAS)
+    assert {"bundlephobia", "caniuse", "yc_companies", "openrouter", "luma", "vscode_marketplace"} <= set(SCHEMAS)
+
+
+def test_every_tool_has_a_working_playground_preset_shape():
+    from api.index import PRESETS, _servers_json
+    for srv in _servers_json("https://x"):
+        for tool in srv["tools"]:
+            required = tool["input_schema"].get("required", [])
+            missing = [r for r in required if r not in tool["example"]]
+            assert not missing, f"{srv['name']}.{tool['name']} preset lacks {missing}"
+    assert set(PRESETS) <= {s["name"] for s in _servers_json("https://x")}

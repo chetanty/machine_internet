@@ -165,3 +165,64 @@ async def test_unfilled_path_placeholder_is_a_clear_error():
                      endpoint_mappings=[EndpointMapping(method="GET", path="/r/{slug}")])
     with pytest.raises(ValueError, match="slug"):
         await _capture_request(ToolExecutor("https://site.example"), tool, {})
+
+
+@pytest.mark.asyncio
+async def test_nested_body_paths_and_site_keys_win():
+    # Shape the YC directory needs: Algolia multi-query body built from dotted paths
+    tool = AgentTool(name="search", description="d",
+                     parameters=[ToolParameter(name="q", required=True), ToolParameter(name="n", type="integer")],
+                     endpoint_mappings=[EndpointMapping(
+                         method="POST", path="/1/indexes/*/queries",
+                         static_params={"requestBody.requests[0].indexName": "Companies", "x-api-key": "stale"},
+                         parameter_mappings=[
+                             ParameterMapping(tool_param="q", endpoint_param="request_body.requests[0].params.query",
+                                              location=ParameterLocation.BODY),
+                             ParameterMapping(tool_param="n", endpoint_param="requests[0].params.hitsPerPage",
+                                              location=ParameterLocation.BODY)])])
+    ex = ToolExecutor("https://abc-dsn.algolia.net", static_query={"x-api-key": "checked"})
+    seen = await _capture_request(ex, tool, {"q": "robotics", "n": 2})
+    # Algolia rejects "params" as an object, so it is flattened into each request
+    assert seen["json"] == {"requests": [{"indexName": "Companies", "query": "robotics", "hitsPerPage": 2}]}
+    assert seen["params"] == {"x-api-key": "checked"}
+
+
+def _secured_key(valid_until: int, scope: str = "restrictIndices=Companies") -> str:
+    import base64
+    return base64.b64encode(f"{'a' * 64}{scope}&validUntil={valid_until}".encode()).decode()
+
+
+@pytest.mark.asyncio
+async def test_expired_public_key_is_refreshed_from_the_site_page():
+    import httpx
+    import time
+    from machine_internet.serving import executor as ex_mod
+
+    old, fresh = _secured_key(int(time.time()) - 10), _secured_key(int(time.time()) + 86400)
+    other = _secured_key(int(time.time()) + 99999, scope="restrictIndices=Other")
+    page = f'<script>window.cfg={{"key":"{fresh}","otherKey":"{other}"}}</script>'
+
+    def handler(request):
+        return httpx.Response(200, text=page)
+
+    ex = ToolExecutor("https://abc-dsn.algolia.net", static_query={"key": old}, key_source_url="https://site.example/")
+    ex_mod._FRESH_KEYS.clear()
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        assert await ex._refresh_expiring_keys(client)
+    # Picks the key with the same scope, not just the longest-lived one
+    assert ex.static_query["key"] == fresh
+
+
+@pytest.mark.asyncio
+async def test_templated_static_body_is_filled_and_missing_pairs_dropped():
+    tool = AgentTool(name="search", description="d",
+                     parameters=[ToolParameter(name="query"), ToolParameter(name="page", type="integer"),
+                                 ToolParameter(name="facets", type="array")],
+                     endpoint_mappings=[EndpointMapping(method="POST", path="/1/indexes/*/queries", static_params={
+                         "requests": [{"indexName": "Companies",
+                                       "params": "query={query}&facets={facets}&page={page}"}]})])
+    seen = await _capture_request(ToolExecutor("https://abc-dsn.algolia.net"), tool,
+                                  {"query": "ai robots", "facets": ["batch"]})
+    assert seen["json"] == {"requests": [{"indexName": "Companies",
+                                          "params": "query=ai%20robots&facets=%5B%22batch%22%5D"}]}
+    assert not seen["params"]

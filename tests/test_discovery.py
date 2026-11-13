@@ -159,3 +159,13 @@ def test_public_keys_replays_constant_keys_but_never_secrets():
     assert "cookie" not in headers and "x-csrf-token" not in headers
     assert "x-request-id" not in headers  # differs between requests
     assert query == {}
+
+
+def test_json_body_sent_as_form_content_type_is_detected_as_json():
+    from machine_internet.discovery.traffic import _TrafficEntry, _observed_body_format
+    algolia = _TrafficEntry("POST", "https://x-dsn.algolia.net/1/indexes/*/queries", '{"requests": []}', "{}", 200,
+                            {"content-type": "application/x-www-form-urlencoded"})
+    form = _TrafficEntry("POST", "https://caniuse.com/process/query.php", "search=grid", "{}", 200,
+                         {"content-type": "application/x-www-form-urlencoded"})
+    assert _observed_body_format([algolia], "POST", "/1/indexes/*/queries") == "json"
+    assert _observed_body_format([form], "POST", "/process/query.php") == "form"

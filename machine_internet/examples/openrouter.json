@@ -1,0 +1,439 @@
+{
+  "base_url": "https://openrouter.ai/api/frontend",
+  "service_name": "openrouter",
+  "service_description": "Provides access to OpenRouter's AI model catalog, performance rankings, and usage statistics for AI agents.",
+  "tools": [
+    {
+      "name": "get_model_details",
+      "description": "Retrieves detailed information for specific AI models by their unique identifiers (slugs). Use this tool when you need to know specific attributes or metadata about one or more AI models, such as their capabilities, pricing, or associated providers.",
+      "parameters": [
+        {
+          "name": "slug",
+          "type": "array",
+          "required": false,
+          "description": "Model or provider slugs as a list, e.g. [\"anthropic/claude-opus-5.5\"] or [\"anthropic\"].",
+          "enum": null,
+          "default": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/catalog/models",
+          "parameter_mappings": [
+            {
+              "tool_param": "slug",
+              "endpoint_param": "slug",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_provider_details",
+      "description": "Retrieves detailed information for specific AI model providers (authors) by their unique identifiers (slugs). Use this tool when you need to know specific attributes or metadata about one or more AI providers.",
+      "parameters": [
+        {
+          "name": "slug",
+          "type": "array",
+          "required": false,
+          "description": "Model or provider slugs as a list, e.g. [\"anthropic/claude-opus-5.5\"] or [\"anthropic\"].",
+          "enum": null,
+          "default": null
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/catalog/authors",
+          "parameter_mappings": [
+            {
+              "tool_param": "slug",
+              "endpoint_param": "slug",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "list_all_providers",
+      "description": "Retrieves a comprehensive list of all available AI model providers, including their details and data policies. Use this tool when you need to see a full catalog of all providers without filtering.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/all-providers",
+          "parameter_mappings": [],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_ranked_applications",
+      "description": "Retrieves a list of applications ranked by usage or other relevant criteria. Use this tool when you need to know which AI applications are currently most popular or highly performing.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/apps",
+          "parameter_mappings": [],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_ranked_models",
+      "description": "Retrieves a list of AI models ranked by usage or performance over a specified time window. Use this tool when you need to identify top-performing models across the entire OpenRouter catalog.",
+      "parameters": [
+        {
+          "name": "view",
+          "type": "string",
+          "required": false,
+          "description": "Time window: 'week' or 'month'.",
+          "enum": null,
+          "default": "week"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/models",
+          "parameter_mappings": [
+            {
+              "tool_param": "view",
+              "endpoint_param": "view",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_ranked_routers",
+      "description": "Retrieves historical ranking data for AI routing mechanisms over a specified time window. Use this tool when you need to evaluate the performance and popularity of different AI routing strategies.",
+      "parameters": [
+        {
+          "name": "view",
+          "type": "string",
+          "required": false,
+          "description": "Time window: 'week' or 'month'.",
+          "enum": null,
+          "default": "week"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/routers",
+          "parameter_mappings": [
+            {
+              "tool_param": "view",
+              "endpoint_param": "view",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_ranked_modality_models",
+      "description": "Retrieves a list of AI models ranked within a specific content modality (e.g., image, text, speech) over a specified time window. Use this tool when you need to identify top-performing models specifically for a certain modality.",
+      "parameters": [
+        {
+          "name": "route_segment",
+          "type": "string",
+          "required": false,
+          "description": "Modality to rank: 'image' or 'speech' ('text' is not a segment here; use get_ranked_models for text).",
+          "enum": null,
+          "default": "image"
+        },
+        {
+          "name": "view",
+          "type": "string",
+          "required": false,
+          "description": "Time window: 'week' or 'month'.",
+          "enum": null,
+          "default": "week"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/modality-models",
+          "parameter_mappings": [
+            {
+              "tool_param": "route_segment",
+              "endpoint_param": "routeSegment",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "view",
+              "endpoint_param": "view",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_modality_category_rankings",
+      "description": "Retrieves rankings and spend share for models within a specific AI modality category, broken down by a given dimension. Use this tool when you need to understand performance distribution within a modality across different categories or dimensions.",
+      "parameters": [
+        {
+          "name": "dimension",
+          "type": "string",
+          "required": false,
+          "description": "Break down by 'domain' (use case) or 'language'.",
+          "enum": null,
+          "default": "domain"
+        },
+        {
+          "name": "route_segment",
+          "type": "string",
+          "required": false,
+          "description": "Modality to rank: 'image' or 'speech' ('text' is not a segment here; use get_ranked_models for text).",
+          "enum": null,
+          "default": "image"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/modality-category-rankings",
+          "parameter_mappings": [
+            {
+              "tool_param": "dimension",
+              "endpoint_param": "dimension",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "route_segment",
+              "endpoint_param": "routeSegment",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_modality_market_share",
+      "description": "Retrieves market share data for models within a specific AI modality category, filtered by category and dimension. Use this tool when you need to analyze the market distribution and dominance of models within a particular AI modality based on usage or spend.",
+      "parameters": [
+        {
+          "name": "category",
+          "type": "string",
+          "required": false,
+          "description": "A filter for the category, e.g., 'en' for English language models.",
+          "enum": null,
+          "default": null
+        },
+        {
+          "name": "dimension",
+          "type": "string",
+          "required": false,
+          "description": "Break down by 'domain' (use case) or 'language'.",
+          "enum": null,
+          "default": "domain"
+        },
+        {
+          "name": "route_segment",
+          "type": "string",
+          "required": false,
+          "description": "Modality to rank: 'image' or 'speech' ('text' is not a segment here; use get_ranked_models for text).",
+          "enum": null,
+          "default": "image"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/modality-category-share",
+          "parameter_mappings": [
+            {
+              "tool_param": "category",
+              "endpoint_param": "category",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "dimension",
+              "endpoint_param": "dimension",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "route_segment",
+              "endpoint_param": "routeSegment",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_model_rankings_chart_data",
+      "description": "Retrieves historical ranking data for various AI models, formatted for chart display. Use this tool when you need to visualize the evolution of model rankings over time.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/model-rankings-chart",
+          "parameter_mappings": [],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_modality_chart_data",
+      "description": "Retrieves historical usage or performance data for a specific content modality, suitable for chart display. Use this tool when you need to visualize trends or statistics related to a particular AI modality over time.",
+      "parameters": [
+        {
+          "name": "route_segment",
+          "type": "string",
+          "required": false,
+          "description": "Modality to rank: 'image' or 'speech' ('text' is not a segment here; use get_ranked_models for text).",
+          "enum": null,
+          "default": "image"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/modality-chart",
+          "parameter_mappings": [
+            {
+              "tool_param": "route_segment",
+              "endpoint_param": "routeSegment",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_model_benchmarks",
+      "description": "Retrieves benchmark scores and related data for various AI models. Use this tool when you need to compare models based on standardized performance metrics and objective evaluations.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/benchmarks",
+          "parameter_mappings": [],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_task_spend_breakdown",
+      "description": "Retrieves a breakdown of spend across different AI task categories (e.g., 'code', 'data', 'agent', or 'general'). Use this tool when you need to analyze cost distribution and resource allocation by specific types of AI tasks.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/task-spend",
+          "parameter_mappings": [],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_session_cost_data",
+      "description": "Retrieves cost data per session for various AI models and applications. Use this tool when you need to understand the cost efficiency and average expenditure associated with individual AI interaction sessions.",
+      "parameters": [],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/session-cost",
+          "parameter_mappings": [],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    },
+    {
+      "name": "get_modality_category_options",
+      "description": "Retrieves available dimensions and options for filtering or categorizing content within a specific AI modality. Use this tool when you need to discover what categories, languages, or other criteria are available for a given modality (e.g., 'text', 'image').",
+      "parameters": [
+        {
+          "name": "route_segment",
+          "type": "string",
+          "required": false,
+          "description": "Modality to rank: 'image' or 'speech' ('text' is not a segment here; use get_ranked_models for text).",
+          "enum": null,
+          "default": "image"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/v1/rankings/modality-category-options",
+          "parameter_mappings": [
+            {
+              "tool_param": "route_segment",
+              "endpoint_param": "routeSegment",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-11-13T09:29:45.950175+00:00",
+  "source_url": "https://openrouter.ai/rankings",
+  "static_headers": {},
+  "static_query": {},
+  "discovery_method": "traffic"
+}

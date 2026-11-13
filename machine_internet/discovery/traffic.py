@@ -5,6 +5,10 @@ import re
 from typing import Optional
 from urllib.parse import urlparse
 
+# Hosted search backends that sites query straight from the browser with a public key.
+# Their responses are the site's own data, so they count as same-site (e.g. YC's company directory).
+_DATA_BACKENDS = {"algolia", "algolianet", "typesense"}
+
 _TRACKER_RE = re.compile(
     r"(google-analytics|googletagmanager|doubleclick|facebook\.net|"
     r"analytics|tracking|telemetry|segment\.io|mixpanel|amplitude|"
@@ -102,7 +106,11 @@ def _observed_body_format(traffic: list["_TrafficEntry"], method: str, path_temp
             continue
         ct = {k.lower(): v for k, v in e.request_headers.items()}.get("content-type", "")
         if "x-www-form-urlencoded" in ct:
-            return "form"
+            # Some clients (Algolia's, to skip CORS preflights) send JSON with a form content-type
+            try:
+                json.loads(e.request_body or "")
+            except (ValueError, TypeError):
+                return "form"
     return "json"
 
 
@@ -173,7 +181,14 @@ async def _capture_traffic(url: str, timeout: int) -> tuple[list[_TrafficEntry],
         context = await browser.new_context()
         page = await context.new_page()
 
-        base_brand = _brand(url)
+        # The site's own brand, plus wherever the page redirects to (lu.ma -> luma.com)
+        site_brands = {_brand(url)}
+
+        def on_navigated(frame):
+            if frame == page.main_frame and frame.url.startswith("http"):
+                site_brands.add(_brand(frame.url))
+
+        page.on("framenavigated", on_navigated)
 
         async def on_response(response):
             try:
@@ -189,7 +204,7 @@ async def _capture_traffic(url: str, timeout: int) -> tuple[list[_TrafficEntry],
                     stats["tracker_blocked"] += 1
                     return
                 resp_brand = _brand(rurl)
-                if resp_brand != base_brand:
+                if resp_brand not in site_brands and resp_brand not in _DATA_BACKENDS:
                     stats["brand_blocked"].append(resp_brand)
                     return
                 if "json" not in ct:
@@ -318,6 +333,9 @@ Rules:
 - Keep a path segment literal when it was identical in every captured request; only make it a {{param}} if it varied or is clearly an ID.
 - Every {{param}} in a path must appear in "parameters" with location "path"; set its "default" to a value you observed.
 - Infer parameter types from observed values.
+- All endpoints must live on one host (base_url). If traffic spans several hosts, pick the host that serves
+  the page's main data (search results, items, records), even if it is a search service like Algolia,
+  and drop endpoints on other hosts. Page-navigation JSON (component/props page payloads) is not data.
 - Return ONLY valid JSON, no commentary."""
 
     # Room for many endpoints; 4096 truncated the JSON on busy sites
