@@ -1,4 +1,6 @@
-# Machine Internet
+<p align="center"><img src="https://raw.githubusercontent.com/chetanty/machine_internet/main/assets/logo.png" width="110" alt="Machine Internet logo"></p>
+
+<h1 align="center">Machine Internet</h1>
 
 **Turn any website into an MCP server. No API needed.**
 
@@ -8,7 +10,7 @@ uvx machine-internet wrap https://www.ycombinator.com/companies
 
 Machine Internet opens the site in a headless browser, watches the hidden API calls the page makes, and turns them into a small set of clean tools that Claude, Cursor or any MCP client can call directly.
 
-![Demo: wrapping the YC company directory and calling the new tool](assets/demo.gif)
+![Demo: wrapping the YC company directory and calling the new tool](https://raw.githubusercontent.com/chetanty/machine_internet/main/assets/demo.gif)
 
 **Try it in your browser, nothing to install:** [machine-internet.vercel.app](https://machine-internet.vercel.app) runs every tool below against the real site.
 

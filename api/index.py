@@ -27,6 +27,9 @@ SCHEMAS: dict[str, CondensedSchema] = {
 }
 REPO = "https://github.com/chetanty/machine_internet"
 
+# Logo (180px PNG), inlined so the page needs no extra files
+LOGO = "data:image/png;base64,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"
+
 # Example arguments so "Run" works with one click in the playground
 PRESETS: dict[str, dict[str, dict]] = {
     "yc_companies": {"search_companies": {"query": "robotics", "filters": "batch:\"Winter 2025\""}},
@@ -99,6 +102,8 @@ button:hover{border-color:var(--accent)}
 .tools{margin:0;padding-left:18px;color:var(--muted);font-size:.9rem}
 a{color:var(--accent)}
 .note{color:var(--muted);font-size:.9rem}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;margin:0 0 22px;font-size:1.05rem}
+.brand img{display:block}
 .play{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:0 0 8px}
 .play .row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
 .play select,.play input{font:inherit;font-size:.95rem;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
@@ -245,8 +250,10 @@ def _landing(base: str) -> bytes:
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Machine Internet</title>
+<link rel="icon" type="image/png" href="{LOGO}"><link rel="apple-touch-icon" href="{LOGO}">
 <meta name="description" content="Turn any website into an MCP server. No API needed.">
 <style>{_CSS}</style></head><body><main>
+<div class="brand"><img src="{LOGO}" alt="" width="40" height="40"><span>Machine Internet</span></div>
 <h1>Turn any website into an MCP server.</h1>
 <p class="lede">No API needed. Machine Internet watches the hidden API calls a site makes and turns them
 into tools your agent can call. None of the sites below offers a public API for this data.
