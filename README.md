@@ -23,7 +23,7 @@ Machine Internet opens the site in a headless browser, watches the hidden API ca
 
 ## Try it in 30 seconds (no API key)
 
-Three sites come pre-wrapped. None has an official public API or MCP server for this data; the tools hit the same endpoints the site's own page uses. Add one to your Claude Desktop or Cursor config:
+Five sites come pre-wrapped. None has an official public API or MCP server for this data; the tools hit the same endpoints the site's own page uses. Add one to your Claude Desktop or Cursor config:
 
 ```json
 {
@@ -41,6 +41,8 @@ Restart your client and ask: *"Which YC companies from the last two batches are 
 | Example | Site | Tools |
 |---|---|---|
 | `yc_companies` | [YC company directory](https://www.ycombinator.com/companies) | search every YC company by keyword, batch, industry, status, team size |
+| `spotify_podcasts` | [Spotify Podcast Charts](https://podcastcharts.byspotify.com) | top shows, top episodes and trending shows in any country |
+| `substack` | [Substack search](https://substack.com) | search posts and writers across every Substack |
 | `vscode_marketplace` | [VS Code Marketplace](https://marketplace.visualstudio.com/vscode) | search extensions with install counts and ratings |
 | `bundlephobia` | [bundlephobia.com](https://bundlephobia.com) | 6: package size, tree-shaking check, size history, similar packages, per-export sizes |
 
@@ -129,18 +131,20 @@ Wrapped servers are saved to `~/.machine-internet/schemas/`.
 
 It works on sites whose pages load their data with API calls from the browser: most single-page apps, search pages, dashboards and developer tools. It does not work on sites that render pages on the server, or that block headless browsers.
 
-Results from pointing `wrap` at 24 sites, with each generated tool then called for real:
+Results from pointing `wrap` at 41 sites, with each generated tool then called for real:
 
 | Result | Sites |
 |---|---|
-| Works | YC company directory, OpenRouter rankings, Luma, crates.io, deps.dev, Hugging Face, archive.org, HN Search, OSS Insight, bundlephobia, npm trends, regex101 |
+| Works | YC company directory, Spotify Podcast Charts, Substack search, Fontshare, OpenRouter rankings, Luma, crates.io, deps.dev, Hugging Face, archive.org, HN Search, OSS Insight, bundlephobia, npm trends, regex101 |
 | Works after a hand fix | VS Code Marketplace (nested request body), caniuse (form-encoded body) |
+| Wrong data found | IKEA (only the category tree; search runs on another domain), Raycast Store and Rotten Tomatoes (only session or layout calls) |
+| Search key locked to the site | Michelin Guide (its Algolia key only works from guide.michelin.com, so it is left alone) |
 | Partly works | Open Library (1 of 2 tools), ESPN (side data only; the scores are server-rendered) |
-| No data API found (server-rendered) | Docker Hub, IMDb, Reddit, GitHub Trending, npmjs.com |
-| Blocked by bot protection | Devpost, LMArena, Printables, Product Hunt, lichess, packagephobia |
+| No data API found (server-rendered) | Docker Hub, IMDb, Reddit, GitHub Trending, npmjs.com, Metacritic, Resident Advisor, HowLongToBeat |
+| Blocked by bot protection | Devpost, LMArena, Printables, Product Hunt, lichess, packagephobia, Bandcamp, Kickstarter |
 | Unusable internal format | Google Fonts (Google's batchexecute RPC), dev.to (only a session-token call) |
 
-So about half of arbitrary sites, and most single-page apps. When it fails, it says why: server-rendered, blocked, or data on another service.
+So about 4 in 10 arbitrary sites work fully, and most single-page apps do. When it fails, it says why: server-rendered, blocked, or data on another service.
 
 ## Limitations
 

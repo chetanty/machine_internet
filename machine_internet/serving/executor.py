@@ -62,10 +62,16 @@ class ToolExecutor:
         except Exception:
             result = {"text": resp.text}
 
-        if tool.response_fields and isinstance(result, dict):
-            trimmed = {k: v for k, v in result.items() if k in tool.response_fields}
+        if tool.response_fields and isinstance(result, (dict, list)):
+            # Plain names keep top-level keys; dotted paths like "items[].post.title" reach inside
+            trimmed = _project(result, tool.response_fields)
             # If none of the expected fields came back (e.g. an error body), show what did
-            result = trimmed or result
+            result = trimmed if trimmed not in (None, {}, []) else result
+
+        # Many sites ignore a page-size parameter and return everything; honour it here
+        limit = arguments.get("limit")
+        if isinstance(result, list) and isinstance(limit, int) and not isinstance(limit, bool) and limit > 0:
+            result = result[:limit]
 
         return result
 
@@ -310,3 +316,52 @@ def _algolia_flatten(body: dict) -> None:
     for req in body.get("requests") or []:
         if isinstance(req, dict) and isinstance(req.get("params"), dict):
             req.update(req.pop("params"))
+
+
+_NOTHING = object()
+
+
+def _pick(obj: Any, tokens: list[str]) -> Any:
+    """Keep only the part of obj named by a path like ["items[]", "post", "title"]."""
+    if not tokens:
+        return obj
+    token, rest = tokens[0], tokens[1:]
+    is_list = token.endswith("[]")
+    key = token[:-2] if is_list else token
+    value = obj if key == "" else (obj.get(key, _NOTHING) if isinstance(obj, dict) else _NOTHING)
+    if value is _NOTHING:
+        return _NOTHING
+    if is_list:
+        if not isinstance(value, list):
+            return _NOTHING
+        picked = [_pick(item, rest) for item in value]
+        picked = [None if p is _NOTHING else p for p in picked]
+    else:
+        picked = _pick(value, rest)
+        if picked is _NOTHING:
+            return _NOTHING
+    return picked if key == "" else {key: picked}
+
+
+def _merge(a: Any, b: Any) -> Any:
+    if a is None or a is _NOTHING:
+        return b
+    if b is None or b is _NOTHING:
+        return a
+    if isinstance(a, dict) and isinstance(b, dict):
+        out = dict(a)
+        for k, v in b.items():
+            out[k] = _merge(out.get(k), v)
+        return out
+    if isinstance(a, list) and isinstance(b, list) and len(a) == len(b):
+        return [_merge(x, y) for x, y in zip(a, b)]
+    return a
+
+
+def _project(result: Any, fields: list[str]) -> Any:
+    out = None
+    for field in fields:
+        out = _merge(out, _pick(result, field.split(".")))
+    if isinstance(out, list):
+        out = [x for x in out if x not in (None, {})]
+    return out

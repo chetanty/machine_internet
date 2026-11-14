@@ -19,7 +19,7 @@ def test_scope_without_rewrite_is_untouched():
 
 
 def test_all_examples_are_hosted():
-    assert {"yc_companies", "vscode_marketplace", "bundlephobia"} == set(SCHEMAS)
+    assert {"yc_companies", "spotify_podcasts", "substack", "vscode_marketplace", "bundlephobia"} == set(SCHEMAS)
 
 
 def test_every_tool_has_a_working_playground_preset_shape():

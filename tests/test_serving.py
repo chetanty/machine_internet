@@ -226,3 +226,23 @@ async def test_templated_static_body_is_filled_and_missing_pairs_dropped():
     assert seen["json"] == {"requests": [{"indexName": "Companies",
                                           "params": "query=ai%20robots&facets=%5B%22batch%22%5D"}]}
     assert not seen["params"]
+
+
+
+@pytest.mark.asyncio
+async def test_limit_is_applied_when_the_site_ignores_it(monkeypatch):
+    import httpx
+    tool = AgentTool(name="charts", description="d",
+                     parameters=[ToolParameter(name="limit", type="integer")],
+                     endpoint_mappings=[EndpointMapping(method="GET", path="/charts")])
+    transport = httpx.MockTransport(lambda req: httpx.Response(200, json=list(range(200))))
+    real = httpx.AsyncClient
+    monkeypatch.setattr(httpx, "AsyncClient", lambda *a, **kw: real(*a, transport=transport, **kw))
+    assert await ToolExecutor("https://x.test").execute(tool, {"limit": 3}) == [0, 1, 2]
+
+
+def test_response_fields_can_reach_inside_lists():
+    from machine_internet.serving.executor import _project
+    data = {"items": [{"post": {"title": "a", "junk": 1}, "x": 2}, {"post": {"title": "b"}}], "more": True}
+    assert _project(data, ["items[].post.title", "more"]) == {"items": [{"post": {"title": "a"}}, {"post": {"title": "b"}}], "more": True}
+    assert _project({"a": 1, "b": 2}, ["a"]) == {"a": 1}

@@ -33,6 +33,8 @@ LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAMAAAAKE/YAAAAA/1
 # Example arguments so "Run" works with one click in the playground
 PRESETS: dict[str, dict[str, dict]] = {
     "yc_companies": {"search_companies": {"query": "robotics", "filters": "batch:\"Winter 2025\""}},
+    "spotify_podcasts": {"get_podcast_charts": {"chart": "top-podcasts", "region": "us", "limit": 10}},
+    "substack": {"search_posts": {"query": "AI policy", "sort": "top"}, "search_writers": {"query": "noah"}},
     "vscode_marketplace": {"search_extensions": {"search_text": "docker", "page_size": 5}},
     "bundlephobia": {
         "get_package_size": {"package": "zod"},
@@ -45,7 +47,7 @@ PRESETS: dict[str, dict[str, dict]] = {
 }
 
 # Shown first in the playground and the landing page: the most "no API for this" examples
-ORDER = ["yc_companies", "vscode_marketplace", "bundlephobia"]
+ORDER = ["yc_companies", "spotify_podcasts", "substack", "vscode_marketplace", "bundlephobia"]
 
 _CSS = """
 :root{--bg:#fff;--fg:#202122;--muted:#54595d;--card:#f8f9fa;--line:#a2a9b1;--soft:#eaecf0;--link:#3366cc;--code:#f8f9fa;--err:#d33;color-scheme:light}

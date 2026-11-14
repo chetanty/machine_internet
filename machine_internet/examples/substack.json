@@ -1,0 +1,135 @@
+{
+  "base_url": "https://substack.com/api/v1",
+  "service_name": "substack",
+  "service_description": "Search across Substack content including top-ranked posts, recent activity, publications, and user profiles.",
+  "tools": [
+    {
+      "name": "search_posts",
+      "description": "Search Substack posts, writers and publications by keyword. Use sort='top' for the most popular matches or 'recent' for the newest posts.",
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "description": "Keyword or topic to search for, e.g. 'AI policy'.",
+          "enum": null,
+          "default": null
+        },
+        {
+          "name": "sort",
+          "type": "string",
+          "required": false,
+          "description": "'top' for the most popular matches, 'recent' for the newest.",
+          "enum": [
+            "top",
+            "recent"
+          ],
+          "default": "top"
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/{sort}/search",
+          "parameter_mappings": [
+            {
+              "tool_param": "query",
+              "endpoint_param": "query",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "sort",
+              "endpoint_param": "sort",
+              "location": "path",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": [
+        "items[].type",
+        "items[].post.title",
+        "items[].post.subtitle",
+        "items[].post.canonical_url",
+        "items[].post.post_date",
+        "items[].post.reactions",
+        "items[].post.restacks",
+        "items[].publication.name",
+        "items[].publication.subdomain",
+        "items[].comment.body",
+        "items[].comment.date",
+        "items[].context.users[].name",
+        "items[].context.users[].handle",
+        "items[].results[].name",
+        "items[].results[].handle",
+        "items[].results[].bio",
+        "items[].results[].subscriberCountString"
+      ]
+    },
+    {
+      "name": "search_writers",
+      "description": "Find Substack writers by name or handle. Returns their profile, bio and handle.",
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "description": "The user handle or display name.",
+          "enum": null,
+          "default": null
+        },
+        {
+          "name": "page",
+          "type": "integer",
+          "required": false,
+          "description": "Page of results, starting at 0.",
+          "enum": null,
+          "default": 0
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/profile/search",
+          "parameter_mappings": [
+            {
+              "tool_param": "query",
+              "endpoint_param": "query",
+              "location": "query",
+              "transform": null
+            },
+            {
+              "tool_param": "page",
+              "endpoint_param": "page",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": [
+        "results[].name",
+        "results[].handle",
+        "results[].bio",
+        "results[].subscriberCountString",
+        "results[].followerCount",
+        "results[].primaryPublication.name",
+        "results[].primaryPublication.subdomain",
+        "more"
+      ]
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-11-14T05:00:17.469480+00:00",
+  "source_url": "https://substack.com",
+  "static_headers": {},
+  "static_query": {},
+  "discovery_method": "traffic",
+  "name": "substack"
+}

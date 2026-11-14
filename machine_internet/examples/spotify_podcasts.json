@@ -1,0 +1,72 @@
+{
+  "base_url": "https://podcastcharts.byspotify.com",
+  "service_name": "spotify_podcasts",
+  "service_description": "Provides a list of top-performing podcasts by geographical region and chart performance.",
+  "tools": [
+    {
+      "name": "get_podcast_charts",
+      "description": "Get Spotify's official podcast charts for a country: the top shows, the top episodes, or the shows trending right now. Each entry has the show name, publisher, description, Spotify URI and whether it moved up or down.",
+      "parameters": [
+        {
+          "name": "chart",
+          "type": "string",
+          "required": false,
+          "description": "Which chart: 'top-podcasts', 'top-episodes' or 'trending'.",
+          "enum": [
+            "top-podcasts",
+            "top-episodes",
+            "trending"
+          ],
+          "default": "top-podcasts"
+        },
+        {
+          "name": "region",
+          "type": "string",
+          "required": false,
+          "description": "Two-letter country code in lowercase, e.g. 'us', 'gb', 'de', 'br', 'in'.",
+          "enum": null,
+          "default": "us"
+        },
+        {
+          "name": "limit",
+          "type": "integer",
+          "required": false,
+          "description": "How many entries to return, from 1 to 200.",
+          "enum": null,
+          "default": 20
+        }
+      ],
+      "endpoint_mappings": [
+        {
+          "method": "GET",
+          "path": "/api/charts/{chart}",
+          "parameter_mappings": [
+            {
+              "tool_param": "chart",
+              "endpoint_param": "chart",
+              "location": "path",
+              "transform": null
+            },
+            {
+              "tool_param": "region",
+              "endpoint_param": "region",
+              "location": "query",
+              "transform": null
+            }
+          ],
+          "static_params": {},
+          "body_format": "json"
+        }
+      ],
+      "response_fields": null
+    }
+  ],
+  "auth_type": "none",
+  "auth_config": {},
+  "created_at": "2026-11-14T05:06:40.277523+00:00",
+  "source_url": "https://podcastcharts.byspotify.com/",
+  "static_headers": {},
+  "static_query": {},
+  "discovery_method": "traffic",
+  "name": "spotify_podcasts"
+}
