@@ -81,41 +81,51 @@ PRESETS: dict[str, dict[str, dict]] = {
 ORDER = ["yc_companies", "openrouter", "luma", "vscode_marketplace", "bundlephobia", "caniuse", "npm_trends", "regex101"]
 
 _CSS = """
-:root{--bg:#fafaf9;--fg:#1c1917;--muted:#78716c;--card:#fff;--line:#e7e5e4;--accent:#c2410c;--code:#f5f5f4}
-@media (prefers-color-scheme:dark){:root{--bg:#0c0a09;--fg:#f5f5f4;--muted:#a8a29e;--card:#1c1917;--line:#292524;--accent:#fb923c;--code:#292524}}
+:root{--bg:#fff;--fg:#202122;--muted:#54595d;--card:#f8f9fa;--line:#a2a9b1;--soft:#eaecf0;--link:#3366cc;--code:#f8f9fa;--err:#d33;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101418;--fg:#eaecf0;--muted:#a2a9b1;--card:#1b1f24;--line:#54595d;--soft:#2e3338;--link:#88a3e8;--code:#1b1f24;--err:#fd7865;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#101418;--fg:#eaecf0;--muted:#a2a9b1;--card:#1b1f24;--line:#54595d;--soft:#2e3338;--link:#88a3e8;--code:#1b1f24;--err:#fd7865;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:960px;margin:0 auto;padding:56px 16px 80px}
-h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.1;margin:0 0 12px;letter-spacing:-.02em}
-.lede{font-size:1.15rem;color:var(--muted);margin:0 0 28px;max-width:640px}
-code,pre{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
-pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:14px 16px;overflow-x:auto;margin:0 0 12px}
-h2{font-size:1.1rem;margin:44px 0 14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
-.card h3{margin:0;font-size:1rem}
-.card header a{color:var(--muted);font-size:.85rem;word-break:break-all;text-decoration:none}
-.url{display:flex;gap:8px;align-items:center;margin:12px 0;background:var(--code);border-radius:8px;padding:6px 6px 6px 10px}
-.url code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-button{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:.8rem}
-button:hover{border-color:var(--accent)}
-.tools{margin:0;padding-left:18px;color:var(--muted);font-size:.9rem}
-a{color:var(--accent)}
-.note{color:var(--muted);font-size:.9rem}
-.brand{display:flex;align-items:center;gap:10px;font-weight:600;margin:0 0 22px;font-size:1.05rem}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+main{max-width:960px;margin:0 auto;padding:16px 16px 64px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:24px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:1rem}
 .brand img{display:block}
-.play{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin:0 0 8px}
-.play .row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px}
-.play select,.play input{font:inherit;font-size:.95rem;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+.top nav{display:flex;align-items:center;gap:14px;font-size:.9rem}
+h1,h2{font-family:"Linux Libertine",Georgia,"Times New Roman",serif;font-weight:normal;border-bottom:1px solid var(--line);line-height:1.25}
+h1{font-size:1.9rem;margin:0 0 12px;padding-bottom:4px}
+h2{font-size:1.45rem;margin:32px 0 12px;padding-bottom:2px}
+h3{margin:0;font-size:1rem}
+.lede{margin:0 0 20px;max-width:720px}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+code,pre{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+code{background:var(--soft);padding:1px 4px;border-radius:2px}
+pre{background:var(--code);border:1px solid var(--soft);border-radius:2px;padding:12px 14px;overflow-x:auto;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:2px;padding:12px 14px;min-width:0}
+.card header a{font-size:.85rem;word-break:break-all}
+.url{display:flex;gap:8px;align-items:center;margin:10px 0}
+.url code{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:4px 6px}
+button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:2px;padding:3px 10px;cursor:pointer;font-size:.85rem}
+button:hover{background:var(--soft)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--link);outline-offset:1px}
+.tools{margin:0;padding-left:20px;font-size:.9rem}
+.tools code{background:none;padding:0}
+.note{color:var(--muted);font-size:.9rem}
+.play{background:var(--card);border:1px solid var(--line);border-radius:2px;padding:14px 16px;margin:0 0 8px}
+.play .row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.play select,.play input{font:inherit;font-size:.95rem;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:2px;padding:6px 8px;min-width:0}
 .play select{flex:1 1 220px}
 .play label{display:block;font-size:.85rem;color:var(--muted);margin:10px 0 4px}
-.play label b{color:var(--fg);font-family:ui-monospace,Menlo,monospace;font-weight:600}
+.play label b{color:var(--fg);font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:600}
 .play .field input{width:100%}
 .play .desc{color:var(--muted);font-size:.9rem;margin:2px 0 6px}
-.play .run{background:var(--accent);color:#fff;border-color:var(--accent);font-size:.95rem;padding:9px 18px;margin-top:14px;font-weight:600}
+.play .run{background:var(--link);color:var(--bg);border-color:var(--link);font-size:.95rem;padding:6px 16px;margin-top:14px;font-weight:600}
+.play .run:hover{background:var(--link);filter:brightness(1.1)}
+.play .run:disabled{opacity:.6;cursor:default}
 .play .meta{color:var(--muted);font-size:.85rem;margin-left:10px}
-.play pre{max-height:420px;margin-top:14px;white-space:pre-wrap;word-break:break-word}
-.play pre.err{border-color:#dc2626}
+.play pre{max-height:420px;margin-top:14px;white-space:pre-wrap;word-break:break-word;background:var(--bg)}
+.play pre.err{border-color:var(--err)}
 """
 
 _JS = r"""
@@ -178,6 +188,16 @@ async function run() {
 SERVERS.forEach(function (s) { var o = document.createElement('option'); o.textContent = s.name + '  (' + s.source.replace(/^https?:\/\//, '').split('/')[0] + ')'; srvSel.appendChild(o); });
 srvSel.addEventListener('change', fillTools); toolSel.addEventListener('change', fillForm);
 $('p-run').addEventListener('click', run); fillTools();
+function isDark() { var t = document.documentElement.dataset.theme;
+  return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
+function syncTheme() { $('theme').textContent = isDark() ? 'Light mode' : 'Dark mode'; }
+$('theme').addEventListener('click', function () {
+  var t = isDark() ? 'light' : 'dark'; document.documentElement.dataset.theme = t;
+  try { localStorage.setItem('theme', t); } catch (e) {}
+  syncTheme();
+});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', syncTheme);
+syncTheme();
 document.querySelectorAll('button[data-copy]').forEach(function (b) {
   b.addEventListener('click', async function () {
     try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied';
@@ -252,8 +272,10 @@ def _landing(base: str) -> bytes:
 <title>Machine Internet</title>
 <link rel="icon" type="image/png" href="{LOGO}"><link rel="apple-touch-icon" href="{LOGO}">
 <meta name="description" content="Turn any website into an MCP server. No API needed.">
+<script>try{{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>
 <style>{_CSS}</style></head><body><main>
-<div class="brand"><img src="{LOGO}" alt="" width="40" height="40"><span>Machine Internet</span></div>
+<div class="top"><div class="brand"><img src="{LOGO}" alt="" width="32" height="32"><span>Machine Internet</span></div>
+<nav><a href="{REPO}">GitHub</a><button id="theme" type="button" aria-label="Toggle dark mode">Dark mode</button></nav></div>
 <h1>Turn any website into an MCP server.</h1>
 <p class="lede">No API needed. Machine Internet watches the hidden API calls a site makes and turns them
 into tools your agent can call. None of the sites below offers a public API for this data.
