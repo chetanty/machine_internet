@@ -7,19 +7,19 @@ from api.index import SCHEMAS, _restore_rewritten_path  # noqa: E402
 
 
 def test_rewritten_path_is_restored_and_other_params_kept():
-    scope = {"path": "/api/index", "query_string": b"__path=mcp/caniuse&x=1"}
+    scope = {"path": "/api/index", "query_string": b"__path=mcp/bundlephobia&x=1"}
     out = _restore_rewritten_path(scope)
-    assert out["path"] == "/mcp/caniuse"
+    assert out["path"] == "/mcp/bundlephobia"
     assert out["query_string"] == b"x=1"
 
 
 def test_scope_without_rewrite_is_untouched():
-    scope = {"path": "/mcp/caniuse", "query_string": b""}
+    scope = {"path": "/mcp/bundlephobia", "query_string": b""}
     assert _restore_rewritten_path(scope) is scope
 
 
 def test_all_examples_are_hosted():
-    assert {"bundlephobia", "caniuse", "yc_companies", "openrouter", "luma", "vscode_marketplace"} <= set(SCHEMAS)
+    assert {"yc_companies", "openrouter", "vscode_marketplace", "bundlephobia", "regex101"} == set(SCHEMAS)
 
 
 def test_every_tool_has_a_working_playground_preset_shape():

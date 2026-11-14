@@ -45,13 +45,6 @@ PRESETS: dict[str, dict[str, dict]] = {
         "get_modality_category_options": {"route_segment": "image"},
     },
     "vscode_marketplace": {"search_extensions": {"search_text": "docker", "page_size": 5}},
-    "luma": {
-        "get_place_events": {"discover_place_api_id": "discplace-FQ4E58PeBMHGTKK", "pagination_limit": 5},
-        "get_place_calendars": {"discover_place_api_id": "discplace-FQ4E58PeBMHGTKK"},
-        "get_place_details": {"discover_place_api_id": "discplace-FQ4E58PeBMHGTKK"},
-        "get_place_map_points": {"discover_place_api_id": "discplace-FQ4E58PeBMHGTKK"},
-        "list_categories": {"pagination_limit": 10},
-    },
     "bundlephobia": {
         "get_package_size": {"package": "zod"},
         "check_tree_shaking": {"package": "lodash-es"},
@@ -60,17 +53,6 @@ PRESETS: dict[str, dict[str, dict]] = {
         "get_similar_packages": {"package": "moment"},
         "get_exports_sizes": {"package": "date-fns"},
     },
-    "caniuse": {
-        "search_features": {"search_term": "container queries"},
-        "get_feature_support_data": {"feature_ids": "css-grid,css-subgrid"},
-        "get_feature_details": {"feature_id": "flexbox", "data_type": "bugs"},
-    },
-    "npm_trends": {
-        "get_package_info": {"package": "react"},
-        "get_weekly_downloads": {"package": "react"},
-        "get_download_trends": {"packages": "react,vue,svelte", "date_range": "2025-11-01:2026-11-01"},
-        "get_github_stats": {"owner": "facebook", "repo": "react"},
-    },
     "regex101": {
         "get_saved_regex": {"permalink": "vY5eL1", "version": 1},
         "list_regex_versions": {"permalink": "vY5eL1"},
@@ -78,7 +60,7 @@ PRESETS: dict[str, dict[str, dict]] = {
 }
 
 # Shown first in the playground and the landing page: the most "no API for this" examples
-ORDER = ["yc_companies", "openrouter", "luma", "vscode_marketplace", "bundlephobia", "caniuse", "npm_trends", "regex101"]
+ORDER = ["yc_companies", "openrouter", "vscode_marketplace", "bundlephobia", "regex101"]
 
 _CSS = """
 :root{--bg:#fff;--fg:#202122;--muted:#54595d;--card:#f8f9fa;--line:#a2a9b1;--soft:#eaecf0;--link:#3366cc;--code:#f8f9fa;--err:#d33;color-scheme:light}
@@ -96,6 +78,7 @@ h1{font-size:1.9rem;margin:0 0 12px;padding-bottom:4px}
 h2{font-size:1.45rem;margin:32px 0 12px;padding-bottom:2px}
 h3{margin:0;font-size:1rem}
 .lede{margin:0 0 20px;max-width:720px}
+.demo{display:block;max-width:100%;height:auto;border:1px solid var(--line)}
 a{color:var(--link);text-decoration:none}
 a:hover{text-decoration:underline}
 code,pre{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
@@ -278,8 +261,10 @@ def _landing(base: str) -> bytes:
 <nav><a href="{REPO}">GitHub</a><button id="theme" type="button" aria-label="Toggle dark mode">Dark mode</button></nav></div>
 <h1>Turn any website into an MCP server.</h1>
 <p class="lede">No API needed. Machine Internet watches the hidden API calls a site makes and turns them
-into tools your agent can call. None of the sites below offers a public API for this data.
-Try them right here, or connect your agent to the live MCP endpoints.</p>
+into tools your agent can call. The examples below have no official public API for this data:
+the tools hit the same endpoints the site's own page uses. Try them right here, or connect your agent
+to the live MCP endpoints.</p>
+<p><img class="demo" src="https://raw.githubusercontent.com/chetanty/machine_internet/main/assets/demo.gif" alt="Demo: wrapping the YC company directory, then Claude calling the new tool" width="1160" height="600" loading="lazy"></p>
 <h2>Try it right here</h2>
 <div class="play">
   <div class="row"><select id="p-srv" aria-label="Server"></select><select id="p-tool" aria-label="Tool"></select></div>

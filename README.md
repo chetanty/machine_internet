@@ -23,7 +23,7 @@ Machine Internet opens the site in a headless browser, watches the hidden API ca
 
 ## Try it in 30 seconds (no API key)
 
-Eight sites come pre-wrapped. None of them offers a public API for this data. Add one to your Claude Desktop or Cursor config:
+Five sites come pre-wrapped. None has an official public API for this data; the tools hit the same endpoints the site's own page uses. Add one to your Claude Desktop or Cursor config:
 
 ```json
 {
@@ -42,18 +42,15 @@ Restart your client and ask: *"Which YC companies from the last two batches are 
 |---|---|---|
 | `yc_companies` | [YC company directory](https://www.ycombinator.com/companies) | search every YC company by keyword, batch, industry, status, team size |
 | `openrouter` | [OpenRouter rankings](https://openrouter.ai/rankings) | 15: top models and apps by real token usage, market share, benchmarks, spend by task, providers |
-| `luma` | [Luma events](https://luma.com/discover) | 6: cities, upcoming events in a city, calendars, categories |
 | `vscode_marketplace` | [VS Code Marketplace](https://marketplace.visualstudio.com/vscode) | search extensions with install counts and ratings |
 | `bundlephobia` | [bundlephobia.com](https://bundlephobia.com) | 6: package size, tree-shaking check, size history, similar packages, per-export sizes |
-| `caniuse` | [caniuse.com](https://caniuse.com) | 4: search features, browser support data, feature bugs, notes and links |
-| `npm_trends` | [npmtrends.com](https://npmtrends.com) | 4: package info, weekly downloads, download trends, GitHub stats |
 | `regex101` | [regex101.com](https://regex101.com) | 3: browse the community library, get a saved regex, list versions |
 
-Each one was made with `wrap`. A few needed small hand fixes afterwards (the VS Code request body, caniuse's form encoding, some parameter defaults); the tables below are honest about what `wrap` gets right on its own.
+Each one was made with `wrap`. A few needed small hand fixes afterwards (the VS Code request body, some parameter defaults); the tables below are honest about what `wrap` gets right on its own.
 
 You need [uv](https://docs.astral.sh/uv/) for `uvx`. Or install it once with `pip install machine-internet` (or straight from GitHub: `pip install git+https://github.com/chetanty/machine_internet`) and use `machine-internet` as the command.
 
-**Hosted, nothing to install:** every example is also live at [machine-internet.vercel.app](https://machine-internet.vercel.app) as a remote MCP endpoint, e.g. `https://machine-internet.vercel.app/mcp/yc_companies`. Clients with remote MCP support take the URL directly; others can use `npx mcp-remote <url>`. Some sites rate-limit requests from cloud servers (npm's download stats do), so for heavy use run `serve` locally, which calls the site from your own connection.
+**Hosted, nothing to install:** every example is also live at [machine-internet.vercel.app](https://machine-internet.vercel.app) as a remote MCP endpoint, e.g. `https://machine-internet.vercel.app/mcp/yc_companies`. Clients with remote MCP support take the URL directly; others can use `npx mcp-remote <url>`. Some sites rate-limit requests from cloud servers, so for heavy use run `serve` locally, which calls the site from your own connection.
 
 ---
 

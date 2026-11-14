@@ -21,10 +21,10 @@ def test_list_shows_examples():
 
 
 def test_config_prints_valid_client_json():
-    result = CliRunner().invoke(main, ["config", "caniuse"])
+    result = CliRunner().invoke(main, ["config", "bundlephobia"])
     assert result.exit_code == 0
     cfg = json.loads(result.output)
-    assert cfg["mcpServers"]["caniuse"]["args"] == ["machine-internet", "serve", "caniuse"]
+    assert cfg["mcpServers"]["bundlephobia"]["args"] == ["machine-internet", "serve", "bundlephobia"]
 
 
 def test_unknown_schema_is_a_clean_error():
