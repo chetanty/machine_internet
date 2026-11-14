@@ -33,17 +33,6 @@ LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAMAAAAKE/YAAAAA/1
 # Example arguments so "Run" works with one click in the playground
 PRESETS: dict[str, dict[str, dict]] = {
     "yc_companies": {"search_companies": {"query": "robotics", "filters": "batch:\"Winter 2025\""}},
-    "openrouter": {
-        "get_model_details": {"slug": ["anthropic/claude-opus-5.5"]},
-        "get_provider_details": {"slug": ["anthropic"]},
-        "get_ranked_models": {"view": "week"},
-        "get_ranked_routers": {"view": "week"},
-        "get_ranked_modality_models": {"route_segment": "image", "view": "week"},
-        "get_modality_category_rankings": {"route_segment": "image", "dimension": "domain"},
-        "get_modality_market_share": {"route_segment": "image", "dimension": "domain", "category": "general"},
-        "get_modality_chart_data": {"route_segment": "image"},
-        "get_modality_category_options": {"route_segment": "image"},
-    },
     "vscode_marketplace": {"search_extensions": {"search_text": "docker", "page_size": 5}},
     "bundlephobia": {
         "get_package_size": {"package": "zod"},
@@ -53,14 +42,10 @@ PRESETS: dict[str, dict[str, dict]] = {
         "get_similar_packages": {"package": "moment"},
         "get_exports_sizes": {"package": "date-fns"},
     },
-    "regex101": {
-        "get_saved_regex": {"permalink": "vY5eL1", "version": 1},
-        "list_regex_versions": {"permalink": "vY5eL1"},
-    },
 }
 
 # Shown first in the playground and the landing page: the most "no API for this" examples
-ORDER = ["yc_companies", "openrouter", "vscode_marketplace", "bundlephobia", "regex101"]
+ORDER = ["yc_companies", "vscode_marketplace", "bundlephobia"]
 
 _CSS = """
 :root{--bg:#fff;--fg:#202122;--muted:#54595d;--card:#f8f9fa;--line:#a2a9b1;--soft:#eaecf0;--link:#3366cc;--code:#f8f9fa;--err:#d33;color-scheme:light}

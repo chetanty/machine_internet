@@ -8,7 +8,7 @@ from machine_internet.discovery.schema import CondensedSchema
 
 def test_every_bundled_example_is_a_valid_schema():
     files = list(EXAMPLES_DIR.glob("*.json"))
-    assert len(files) >= 5
+    assert len(files) >= 3
     for f in files:
         schema = CondensedSchema(**json.loads(f.read_text(encoding="utf-8")))
         assert schema.tools, f"{f.name} has no tools"

@@ -23,7 +23,7 @@ Machine Internet opens the site in a headless browser, watches the hidden API ca
 
 ## Try it in 30 seconds (no API key)
 
-Five sites come pre-wrapped. None has an official public API for this data; the tools hit the same endpoints the site's own page uses. Add one to your Claude Desktop or Cursor config:
+Three sites come pre-wrapped. None has an official public API or MCP server for this data; the tools hit the same endpoints the site's own page uses. Add one to your Claude Desktop or Cursor config:
 
 ```json
 {
@@ -41,10 +41,8 @@ Restart your client and ask: *"Which YC companies from the last two batches are 
 | Example | Site | Tools |
 |---|---|---|
 | `yc_companies` | [YC company directory](https://www.ycombinator.com/companies) | search every YC company by keyword, batch, industry, status, team size |
-| `openrouter` | [OpenRouter rankings](https://openrouter.ai/rankings) | 15: top models and apps by real token usage, market share, benchmarks, spend by task, providers |
 | `vscode_marketplace` | [VS Code Marketplace](https://marketplace.visualstudio.com/vscode) | search extensions with install counts and ratings |
 | `bundlephobia` | [bundlephobia.com](https://bundlephobia.com) | 6: package size, tree-shaking check, size history, similar packages, per-export sizes |
-| `regex101` | [regex101.com](https://regex101.com) | 3: browse the community library, get a saved regex, list versions |
 
 Each one was made with `wrap`. A few needed small hand fixes afterwards (the VS Code request body, some parameter defaults); the tables below are honest about what `wrap` gets right on its own.
 
