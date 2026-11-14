@@ -287,7 +287,8 @@ def list_schemas():
             try:
                 data = json.loads(f.read_text(encoding="utf-8"))
                 src = data.get("source_url") or data.get("base_url", "")
-                click.echo(f"  {f.stem:<20} {len(data.get('tools', [])):>2} tools  {src}")
+                n = len(data.get('tools', []))
+                click.echo(f"  {f.stem:<20} {n:>2} {'tool ' if n == 1 else 'tools'}  {src}")
             except Exception:
                 click.echo(f"  {f.stem:<20} (unreadable)")
     click.echo()
