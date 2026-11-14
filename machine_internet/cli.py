@@ -224,7 +224,7 @@ async def _wrap(url, name, spec_url, filter_tags, force_traffic, no_condense, ou
             _fail("[FAIL] The LLM did not return usable tools. Run again, or narrow it with --tags.")
         if name:
             condensed.service_name = name
-        click.echo(f"  [OK] {len(condensed.tools)} tools:")
+        click.echo(f"  [OK] {len(condensed.tools)} {"tool" if len(condensed.tools) == 1 else "tools"}:")
         for t in condensed.tools:
             click.echo(f"       {t.name}: {textwrap.shorten(t.description, 78, placeholder=' ...')}")
         data = json.loads(condensed.model_dump_json())
@@ -264,7 +264,7 @@ def serve(schema, sse, host, port):
     path = _resolve_schema(schema)
     condensed = CondensedSchema(**json.loads(path.read_text(encoding="utf-8")))
     # stdout carries the MCP protocol in stdio mode, so all logging goes to stderr
-    click.echo(f"{condensed.service_name}: {len(condensed.tools)} tools from {path}", err=True)
+    click.echo(f"{condensed.service_name}: {len(condensed.tools)} {"tool" if len(condensed.tools) == 1 else "tools"} from {path}", err=True)
     if sse:
         click.echo(f"MCP endpoint: http://{host}:{port}/mcp", err=True)
         serve_sse(condensed, host=host, port=port)
