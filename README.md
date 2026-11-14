@@ -46,7 +46,7 @@ Restart your client and ask: *"Which YC companies from the last two batches are 
 | `vscode_marketplace` | [VS Code Marketplace](https://marketplace.visualstudio.com/vscode) | search extensions with install counts and ratings |
 | `bundlephobia` | [bundlephobia.com](https://bundlephobia.com) | 6: package size, tree-shaking check, size history, similar packages, per-export sizes |
 
-Each one was made with `wrap`. A few needed small hand fixes afterwards (the VS Code request body, some parameter defaults); the tables below are honest about what `wrap` gets right on its own.
+Each one was made with `wrap`, then tidied by hand: the VS Code request body, parameter defaults, and for Spotify and Substack merged or renamed tools, one broken tool removed and responses trimmed to the useful fields. The table under "What it works on" is honest about what `wrap` gets right on its own.
 
 You need [uv](https://docs.astral.sh/uv/) for `uvx`. Or install it once with `pip install machine-internet` (or straight from GitHub: `pip install git+https://github.com/chetanty/machine_internet`) and use `machine-internet` as the command.
 
