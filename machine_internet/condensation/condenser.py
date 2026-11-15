@@ -22,7 +22,7 @@ _SYSTEM = """You are an expert API designer specialising in making APIs accessib
 Given a raw API schema, collapse its endpoints into a minimal, high-quality set of agent tools.
 
 Principles:
-- 10–15 tools maximum. Fewer is better.
+- 10 to 15 tools maximum. Fewer is better.
 - Each tool represents a meaningful agent action, not an HTTP endpoint.
 - Collapse related CRUD into unified tools where sensible.
 - Name tools with verb_noun: get_customer, create_order, search_products.
