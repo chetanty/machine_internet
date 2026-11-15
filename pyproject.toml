@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "machine-internet"
-version = "0.1.3"
+version = "0.1.4"
 description = "Turn web apps with hidden APIs into MCP servers. No official API needed."
 readme = "README.md"
 license = "Apache-2.0"
