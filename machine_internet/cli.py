@@ -166,8 +166,8 @@ async def _wrap(url, name, spec_url, filter_tags, force_traffic, no_condense, ou
             _fail(f"[FAIL] Could not load {url}. Check the URL is correct and public.")
         except NoXHRCapturedError:
             _fail(
-                "[FAIL] The page made no API calls while loading.",
-                "  It is probably server-rendered, so there is no hidden API to find.",
+                "[FAIL] No hidden API: the page made no JSON calls to its own site while loading.",
+                "  It renders on the server, so there is nothing to wrap (no LLM call was made).",
                 "  If the site has search or filters, try a page that loads data as you use it:",
                 f"    machine-internet wrap \"{base}/search?q=test\"",
                 f"    machine-internet wrap {base}/items/1",

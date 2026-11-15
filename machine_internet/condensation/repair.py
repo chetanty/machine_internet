@@ -73,6 +73,10 @@ def repair_algolia(schema: CondensedSchema, raw: Optional[RawSchema] = None) -> 
             m.path = "/1/indexes/*/queries"
 
             index = m.static_params.get("requests[0].indexName")
+            template = m.static_params.get("requests")
+            if (not isinstance(index, str) or not index) and isinstance(template, list) and template \
+                    and isinstance(template[0], dict):
+                index = template[0].get("indexName")  # a whole requests template, dropped below
             if not isinstance(index, str) or not index:
                 index = path_index if path_index != "*" else observed_index
             # The page's own params string is a snapshot of one request (often a facet-count query
@@ -89,7 +93,10 @@ def repair_algolia(schema: CondensedSchema, raw: Optional[RawSchema] = None) -> 
                 for prefix in ("request_body.", "requestBody.", "body."):
                     if target.startswith(prefix):
                         target = target[len(prefix):]
-                if target == _PARAMS_PREFIX or target.startswith(_PARAMS_PREFIX):
+                whole_string = target == _PARAMS_PREFIX and "param" in pm.tool_param.lower()
+                if not whole_string and target.startswith(_PARAMS_PREFIX):
+                    # A named argument ("query") packed into the params string becomes its own field.
+                    # An argument that IS the params string ("algolia_params") is passed through as is.
                     field = target[len(_PARAMS_PREFIX):].lstrip(".") or _camel(pm.tool_param)
                     target = f"requests[0].{field}"
                 if target.startswith("requests[0]."):

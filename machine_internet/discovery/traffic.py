@@ -9,6 +9,9 @@ from urllib.parse import urlparse
 # Their responses are the site's own data, so they count as same-site (e.g. YC's company directory).
 _DATA_BACKENDS = {"algolia", "algolianet", "typesense"}
 
+# How long to wait for the page to settle before deciding it has no hidden API
+_FIRST_LOOK_SECONDS = 15
+
 _TRACKER_RE = re.compile(
     r"(google-analytics|googletagmanager|doubleclick|facebook\.net|"
     r"analytics|tracking|telemetry|segment\.io|mixpanel|amplitude|"
@@ -78,8 +81,8 @@ async def discover_via_traffic(url: str, timeout: int = 30) -> Optional[RawSchem
         trackers = stats["tracker_blocked"]
         brands = stats["brand_blocked"]
         base_brand = _brand(url)
-        if total == 0:
-            raise NoXHRCapturedError()
+        if total == 0 or (stats.get("non_json") and not brands):
+            raise NoXHRCapturedError()  # nothing, or only same-site HTML fragments: server-rendered
         if brands and not trackers:
             raise BrandFilteredError(base_brand, sorted(set(brands)))
         if trackers and not brands:
@@ -188,14 +191,15 @@ def _install_chromium() -> None:
 
 
 async def _capture_traffic(url: str, timeout: int) -> tuple[list[_TrafficEntry], dict]:
-    """Return (entries, stats). stats keys: total_xhr, tracker_blocked, brand_blocked (list of brands)."""
+    """Return (entries, stats). stats keys: total_xhr, tracker_blocked, brand_blocked (list of brands),
+    non_json (same-site calls that returned HTML or other non-JSON)."""
     try:
         from playwright.async_api import async_playwright
     except ImportError:
         raise PlaywrightNotInstalledError()
 
     entries: list[_TrafficEntry] = []
-    stats: dict = {"total_xhr": 0, "tracker_blocked": 0, "brand_blocked": []}
+    stats: dict = {"total_xhr": 0, "tracker_blocked": 0, "brand_blocked": [], "non_json": 0}
 
     async with async_playwright() as p:
         try:
@@ -235,6 +239,7 @@ async def _capture_traffic(url: str, timeout: int) -> tuple[list[_TrafficEntry],
                     stats["brand_blocked"].append(resp_brand)
                     return
                 if "json" not in ct:
+                    stats["non_json"] += 1
                     return
                 try:
                     body = (await response.body()).decode("utf-8", errors="ignore")[:4000]
@@ -259,15 +264,25 @@ async def _capture_traffic(url: str, timeout: int) -> tuple[list[_TrafficEntry],
 
         network_error: Optional[str] = None
         try:
-            await page.goto(url, wait_until="networkidle", timeout=timeout * 1000)
+            await page.goto(url, wait_until="domcontentloaded", timeout=timeout * 1000)
+            try:
+                # Pages that keep polling never go idle; give them a fixed window instead
+                await page.wait_for_load_state("networkidle", timeout=_FIRST_LOOK_SECONDS * 1000)
+            except Exception:
+                pass
             await asyncio.sleep(2)
             for _ in range(3):
                 await page.evaluate("window.scrollBy(0, window.innerHeight)")
                 await asyncio.sleep(0.8)
             await page.evaluate("window.scrollTo(0, 0)")
             await asyncio.sleep(1)
-            await _interact(page)
-            await asyncio.sleep(4)
+            if entries:
+                await _interact(page)
+                await asyncio.sleep(4)
+            else:
+                # Fail fast: a page that loaded and scrolled without one same-site JSON call is
+                # server-rendered, and clicking around for another minute rarely changes that
+                print("  [traffic] no same-site JSON calls while loading, stopping early", flush=True)
         except Exception as exc:
             err_str = str(exc)
             if any(k in err_str for k in ("ERR_NAME_NOT_RESOLVED", "ERR_CONNECTION_REFUSED", "ERR_CONNECTION_TIMED_OUT")):

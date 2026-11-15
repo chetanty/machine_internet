@@ -2,7 +2,7 @@
 
 <h1 align="center">Machine Internet</h1>
 
-**Turn any website into an MCP server. No API needed.**
+**Turn web apps with hidden APIs into MCP servers. No official API needed.**
 
 ```bash
 uvx machine-internet wrap https://www.ycombinator.com/companies
@@ -93,6 +93,8 @@ uvx machine-internet call yc search_companies query=robotics 'filters=batch:"Win
 
 The first run downloads headless Chromium automatically (one time, about 120 MB). Wrapping takes 1 to 3 minutes and costs a few cents of LLM usage, or nothing on Gemini's free tier. Serving afterwards needs no LLM at all.
 
+Gemini's free tier has a small daily quota per model, enough for roughly 20 wraps a day in our testing. When it runs out, Machine Internet falls back to Gemini Flash-Lite automatically; if that is out too, wait a day or add an Anthropic or OpenAI key.
+
 **Tips**
 - Pick a page that fetches data: a search results page or an item page works better than a static landing page.
 - If the site publishes an OpenAPI spec, it is used automatically and nothing is sniffed. Point at one directly with `--spec <url>`.
@@ -145,7 +147,7 @@ Results from pointing `wrap` at 51 sites, with each generated tool then called f
 | Blocked by bot protection | Devpost, LMArena, Printables, Product Hunt, lichess, packagephobia, Bandcamp, Kickstarter, Goodreads |
 | Unusable internal format | Google Fonts (Google's batchexecute RPC), dev.to (only a session-token call), Chrome Web Store (same Google format) |
 
-So about 1 in 3 arbitrary sites work fully. Developer tools, directories and search pages built as single-page apps do much better; big retail sites and Google products rarely work. When it fails, it says why: server-rendered, blocked, or data on another service.
+So about 1 in 3 arbitrary sites work fully. Developer tools, directories and search pages built as single-page apps do much better; big retail sites and Google products rarely work. When it fails, it says why: server-rendered, blocked, or data on another service. A server-rendered page is caught in about 15 seconds, before any LLM call, so a miss costs nothing.
 
 ## Limitations
 

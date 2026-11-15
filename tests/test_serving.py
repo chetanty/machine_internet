@@ -309,6 +309,18 @@ def test_algolia_repair_restores_index_and_splits_params():
     assert schema2.tools[0].endpoint_mappings[0].static_params["requests[0].indexName"] == "Seen_production"
 
 
+def test_algolia_repair_keeps_a_whole_params_string_argument():
+    from machine_internet.condensation.repair import repair_algolia
+    from machine_internet.discovery.schema import CondensedSchema, ParameterLocation, ParameterMapping
+    tool = AgentTool(name="search", description="d", parameters=[ToolParameter(name="algolia_params_string")],
+                     endpoint_mappings=[EndpointMapping(method="POST", path="/1/indexes/*/queries",
+                         parameter_mappings=[ParameterMapping(tool_param="algolia_params_string",
+                             endpoint_param="requests[0].params", location=ParameterLocation.BODY)],
+                         static_params={"requests[0].indexName": "Idx"})])
+    schema = CondensedSchema(service_name="s", base_url="https://abc-dsn.algolia.net", tools=[tool])
+    repair_algolia(schema)
+    assert schema.tools[0].endpoint_mappings[0].parameter_mappings[0].endpoint_param == "requests[0].params"
+
 def test_algolia_repair_ignores_other_hosts():
     from machine_internet.condensation.repair import repair_algolia
     from machine_internet.discovery.schema import CondensedSchema

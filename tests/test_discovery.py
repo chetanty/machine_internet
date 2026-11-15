@@ -169,3 +169,21 @@ def test_json_body_sent_as_form_content_type_is_detected_as_json():
                          {"content-type": "application/x-www-form-urlencoded"})
     assert _observed_body_format([algolia], "POST", "/1/indexes/*/queries") == "json"
     assert _observed_body_format([form], "POST", "/process/query.php") == "form"
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("stats", [
+    {"total_xhr": 0, "tracker_blocked": 0, "brand_blocked": [], "non_json": 0},
+    {"total_xhr": 4, "tracker_blocked": 2, "brand_blocked": [], "non_json": 2},
+])
+async def test_server_rendered_page_fails_fast_without_calling_the_llm(stats):
+    """No same-site JSON at all (or only same-site HTML fragments) is reported as server-rendered,
+    before any LLM call."""
+    from machine_internet.discovery import traffic
+    from machine_internet.discovery.errors import NoXHRCapturedError
+
+    with patch.object(traffic, "_capture_traffic", AsyncMock(return_value=([], stats))), \
+         patch.object(traffic, "_infer_schema", AsyncMock()) as infer:
+        with pytest.raises(NoXHRCapturedError):
+            await traffic.discover_via_traffic("https://example.com")
+    infer.assert_not_called()

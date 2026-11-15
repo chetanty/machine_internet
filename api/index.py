@@ -241,13 +241,13 @@ def _landing(base: str) -> bytes:
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Machine Internet</title>
 <link rel="icon" type="image/png" href="{LOGO}"><link rel="apple-touch-icon" href="{LOGO}">
-<meta name="description" content="Turn any website into an MCP server. No API needed.">
+<meta name="description" content="Turn web apps with hidden APIs into MCP servers. No official API needed.">
 <script>try{{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>
 <style>{_CSS}</style></head><body><main>
 <div class="top"><div class="brand"><img src="{LOGO}" alt="" width="32" height="32"><span>Machine Internet</span></div>
 <nav><a href="{REPO}">GitHub</a><button id="theme" type="button" aria-label="Toggle dark mode">Dark mode</button></nav></div>
-<h1>Turn any website into an MCP server.</h1>
-<p class="lede">No API needed. Machine Internet watches the hidden API calls a site makes and turns them
+<h1>Turn web apps with hidden APIs into MCP servers.</h1>
+<p class="lede">No official API needed. Machine Internet watches the hidden API calls a site makes and turns them
 into tools your agent can call. The examples below have no official public API for this data:
 the tools hit the same endpoints the site's own page uses. Try them right here, or connect your agent
 to the live MCP endpoints.</p>
