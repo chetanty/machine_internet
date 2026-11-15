@@ -91,7 +91,7 @@ Then try it straight from the terminal:
 uvx machine-internet call yc search_companies query=robotics 'filters=batch:"Winter 2025"'
 ```
 
-The first run downloads headless Chromium automatically (one time, about 150 MB). Wrapping takes 1 to 3 minutes and costs a few cents of LLM usage, or nothing on Gemini's free tier. Serving afterwards needs no LLM at all.
+The first run downloads headless Chromium automatically (one time, about 120 MB). Wrapping takes 1 to 3 minutes and costs a few cents of LLM usage, or nothing on Gemini's free tier. Serving afterwards needs no LLM at all.
 
 **Tips**
 - Pick a page that fetches data: a search results page or an item page works better than a static landing page.
@@ -131,23 +131,25 @@ Wrapped servers are saved to `~/.machine-internet/schemas/`.
 
 It works on sites whose pages load their data with API calls from the browser: most single-page apps, search pages, dashboards and developer tools. It does not work on sites that render pages on the server, or that block headless browsers.
 
-Results from pointing `wrap` at 41 sites, with each generated tool then called for real:
+Results from pointing `wrap` at 51 sites, with each generated tool then called for real:
 
 | Result | Sites |
 |---|---|
 | Works | YC company directory, Spotify Podcast Charts, Substack search, Fontshare, OpenRouter rankings, Luma, crates.io, deps.dev, Hugging Face, archive.org, HN Search, OSS Insight, bundlephobia, npm trends, regex101 |
 | Works after a hand fix | VS Code Marketplace (nested request body), caniuse (form-encoded body) |
-| Wrong data found | IKEA (only the category tree; search runs on another domain), Raycast Store and Rotten Tomatoes (only session or layout calls) |
+| Wrong data found | IKEA (only the category tree; search runs on another domain), Raycast Store and Rotten Tomatoes (only session or layout calls), Nike, Target and Coursera (only privacy, store-picker or cart calls, mostly locked) |
 | Search key locked to the site | Michelin Guide (its Algolia key only works from guide.michelin.com, so it is left alone) |
-| Partly works | Open Library (1 of 2 tools), ESPN (side data only; the scores are server-rendered) |
-| No data API found (server-rendered) | Docker Hub, IMDb, Reddit, GitHub Trending, npmjs.com, Metacritic, Resident Advisor, HowLongToBeat |
-| Blocked by bot protection | Devpost, LMArena, Printables, Product Hunt, lichess, packagephobia, Bandcamp, Kickstarter |
-| Unusable internal format | Google Fonts (Google's batchexecute RPC), dev.to (only a session-token call) |
+| Partly works | Open Library (1 of 2 tools), ESPN (side data only; the scores are server-rendered), Steam (search works but returns ready-made HTML) |
+| No data API found (server-rendered) | Docker Hub, IMDb, Reddit, GitHub Trending, npmjs.com, Metacritic, Resident Advisor, HowLongToBeat, JSR, Figma Community |
+| Data on another service | a16z portfolio (Google and LinkedIn embeds), Sequoia (served by Framer) |
+| Blocked by bot protection | Devpost, LMArena, Printables, Product Hunt, lichess, packagephobia, Bandcamp, Kickstarter, Goodreads |
+| Unusable internal format | Google Fonts (Google's batchexecute RPC), dev.to (only a session-token call), Chrome Web Store (same Google format) |
 
-So about 4 in 10 arbitrary sites work fully, and most single-page apps do. When it fails, it says why: server-rendered, blocked, or data on another service.
+So about 1 in 3 arbitrary sites work fully. Developer tools, directories and search pages built as single-page apps do much better; big retail sites and Google products rarely work. When it fails, it says why: server-rendered, blocked, or data on another service.
 
 ## Limitations
 
+- **Read-only by design.** `wrap` leaves out anything that would change data on the site (carts, logins, posting, tracking), even if the page made such a call while it was being sniffed.
 - **Internal APIs change without notice.** A wrapped site can break when it ships a new frontend. Re-run `wrap` to refresh it.
 - **It only sees what the page does while loading and being clicked.** Actions behind logins, multi-step forms or heavy anti-bot protection usually are not captured.
 - **LLM output varies.** If the tools look wrong, run `wrap` again or narrow the page you point it at.

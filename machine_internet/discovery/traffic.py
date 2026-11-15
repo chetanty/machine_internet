@@ -98,12 +98,38 @@ async def discover_via_traffic(url: str, timeout: int = 30) -> Optional[RawSchem
     return schema
 
 
+def _matching_entries(traffic: list["_TrafficEntry"], method: str, path_template: str) -> list["_TrafficEntry"]:
+    pattern = re.compile("^" + re.sub(r"\\{\w+\\}", "[^/]+", re.escape(path_template.split("?")[0])) + "$")
+    return [e for e in traffic
+            if e.method.upper() == method.upper() and pattern.search(urlparse(e.url).path)]
+
+
+def _observed_body(traffic: list["_TrafficEntry"], method: str, path_template: str) -> Optional[object]:
+    """The request body the page really sent to this endpoint, so later steps copy fixed values
+    (index names, filter structures) instead of guessing them."""
+    for e in _matching_entries(traffic, method, path_template):
+        if not e.request_body:
+            continue
+        try:
+            return _clip_strings(json.loads(e.request_body))
+        except (ValueError, TypeError):
+            return e.request_body[:600]
+    return None
+
+
+def _clip_strings(obj: object, limit: int = 600) -> object:
+    if isinstance(obj, dict):
+        return {k: _clip_strings(v, limit) for k, v in list(obj.items())[:30]}
+    if isinstance(obj, list):
+        return [_clip_strings(v, limit) for v in obj[:5]]
+    if isinstance(obj, str) and len(obj) > limit:
+        return obj[:limit] + "..."
+    return obj
+
+
 def _observed_body_format(traffic: list["_TrafficEntry"], method: str, path_template: str) -> str:
     """'form' if the page sent this endpoint a form-encoded body, else 'json'."""
-    pattern = re.compile("^" + re.sub(r"\\{\w+\\}", "[^/]+", re.escape(path_template.split("?")[0])) + "$")
-    for e in traffic:
-        if e.method.upper() != method.upper() or not pattern.search(urlparse(e.url).path):
-            continue
+    for e in _matching_entries(traffic, method, path_template):
         ct = {k.lower(): v for k, v in e.request_headers.items()}.get("content-type", "")
         if "x-www-form-urlencoded" in ct:
             # Some clients (Algolia's, to skip CORS preflights) send JSON with a form content-type
@@ -154,8 +180,9 @@ def _install_chromium() -> None:
     import subprocess
     import sys
 
-    print("  [setup] First run: downloading headless Chromium (one time, ~150 MB) ...", file=sys.stderr)
-    result = subprocess.run([sys.executable, "-m", "playwright", "install", "chromium"])
+    print("  [setup] First run: downloading headless Chromium (one time, about 120 MB) ...", file=sys.stderr)
+    # Only the headless shell: the full Chrome build is several times bigger and never used here
+    result = subprocess.run([sys.executable, "-m", "playwright", "install", "--only-shell", "chromium"])
     if result.returncode != 0:
         raise PlaywrightNotInstalledError()
 
@@ -373,8 +400,10 @@ Rules:
                 description=p.get("description", ""),
                 default=p.get("default") if p.get("default") not in ("", "null", "an observed value or null") else None,
             ))
+        observed = _observed_body(traffic, ep.get("method", "GET"), ep.get("path", ""))
         endpoints.append(Endpoint(
             body_format=_observed_body_format(traffic, ep.get("method", "GET"), ep.get("path", "")),
+            request_body_schema={"observed_example": observed} if observed is not None else None,
             path=ep.get("path", ""),
             method=ep.get("method", "GET"),
             summary=ep.get("summary", ""),

@@ -222,6 +222,16 @@ async def _wrap(url, name, spec_url, filter_tags, force_traffic, no_condense, ou
             _fail("[FAIL] LLM quota exhausted on every configured provider. Add another key or retry later.")
         except (LLMInvalidResponseError, LLMEmptySchemaError):
             _fail("[FAIL] The LLM did not return usable tools. Run again, or narrow it with --tags.")
+        from .condensation.repair import drop_write_tools, repair_algolia
+
+        if repair_algolia(condensed, raw):
+            click.echo("  [fix] rebuilt the Algolia search request from the recorded traffic")
+        dropped = drop_write_tools(condensed)
+        if dropped:
+            click.echo(f"  [skip] left out tools that would change data on the site: {', '.join(dropped)}")
+        if not condensed.tools:
+            _fail("[FAIL] The only calls found change data on the site (carts, logins, tracking), so there\n"
+                  "  is nothing safe to expose. Try a search or listing page instead.")
         if name:
             condensed.service_name = name
         click.echo(f"  [OK] {len(condensed.tools)} {'tool' if len(condensed.tools) == 1 else 'tools'}:")

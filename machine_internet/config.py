@@ -18,7 +18,8 @@ class Settings(BaseSettings):
     gemini_api_key: str = ""
     gemini_model: str = "gemini-2.5-flash"
     # Comma-separated extra Gemini models tried on the same key when the primary hits its quota
-    gemini_fallback_models: str = ""
+    # Free tier quotas are per model and per day, so a second model keeps wrap working when one runs out
+    gemini_fallback_models: str = "gemini-2.5-flash-lite"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 

@@ -85,7 +85,9 @@ async def _call_gemini(prompt: str, system: Optional[str], max_tokens: int, agen
     from google import genai
     from google.genai import types as genai_types
 
-    client = genai.Client(api_key=agent["api_key"])
+    # google-genai 3.x defaults to the v1 API, which rejects system instructions; v1beta accepts them
+    client = genai.Client(api_key=agent["api_key"],
+                          http_options=genai_types.HttpOptions(api_version="v1beta"))
     cfg_kwargs: dict = {"max_output_tokens": max_tokens}
     if system:
         cfg_kwargs["system_instruction"] = system

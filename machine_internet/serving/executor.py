@@ -362,6 +362,8 @@ def _project(result: Any, fields: list[str]) -> Any:
     out = None
     for field in fields:
         out = _merge(out, _pick(result, field.split(".")))
+    if out is _NOTHING:
+        return None
     if isinstance(out, list):
         out = [x for x in out if x not in (None, {})]
     return out

@@ -246,3 +246,96 @@ def test_response_fields_can_reach_inside_lists():
     data = {"items": [{"post": {"title": "a", "junk": 1}, "x": 2}, {"post": {"title": "b"}}], "more": True}
     assert _project(data, ["items[].post.title", "more"]) == {"items": [{"post": {"title": "a"}}, {"post": {"title": "b"}}], "more": True}
     assert _project({"a": 1, "b": 2}, ["a"]) == {"a": 1}
+
+
+@pytest.mark.asyncio
+async def test_failed_site_call_is_reported_as_an_mcp_error(monkeypatch):
+    import httpx
+    from mcp.shared.memory import create_connected_server_and_client_session
+    from machine_internet.discovery.schema import CondensedSchema
+    from machine_internet.serving.mcp_server import build_server
+
+    schema = CondensedSchema(service_name="s", service_description="d", base_url="https://x.test", tools=[
+        AgentTool(name="get_thing", description="d", endpoint_mappings=[EndpointMapping(method="GET", path="/thing")])])
+    transport = httpx.MockTransport(lambda req: httpx.Response(404, json={"message": "no"}))
+    real = httpx.AsyncClient
+    monkeypatch.setattr(httpx, "AsyncClient", lambda *a, **kw: real(*a, transport=transport, **kw))
+    async with create_connected_server_and_client_session(build_server(schema)) as client:
+        result = await client.call_tool("get_thing", {})
+    assert result.isError
+    assert "404" in result.content[0].text
+
+
+def test_condense_prompt_includes_the_observed_request_body():
+    from machine_internet.discovery.traffic import _observed_body, _TrafficEntry
+    entry = _TrafficEntry("POST", "https://abc-dsn.algolia.net/1/indexes/*/queries",
+                          '{"requests":[{"indexName":"Real_production","params":"query=x"}]}', "{}", 200,
+                          {"content-type": "application/x-www-form-urlencoded"})
+    body = _observed_body([entry], "POST", "/1/indexes/*/queries")
+    assert body["requests"][0]["indexName"] == "Real_production"
+
+
+def test_response_fields_that_match_nothing_fall_back_cleanly():
+    from machine_internet.serving.executor import _project
+    assert _project({"results": [1]}, ["hits[].name"]) is None
+
+
+def test_algolia_repair_restores_index_and_splits_params():
+    from machine_internet.condensation.repair import repair_algolia
+    from machine_internet.discovery.schema import (CondensedSchema, Endpoint, ParameterLocation,
+                                                   ParameterMapping, RawSchema)
+    tool = AgentTool(name="search", description="d",
+                     parameters=[ToolParameter(name="query"), ToolParameter(name="facet_filters", type="array")],
+                     endpoint_mappings=[EndpointMapping(method="POST", path="/1/indexes/Real_production/queries",
+                         parameter_mappings=[
+                             ParameterMapping(tool_param="query", endpoint_param="requests[0].params", location=ParameterLocation.BODY),
+                             ParameterMapping(tool_param="facet_filters", endpoint_param="requests[0].params", location=ParameterLocation.BODY)],
+                         static_params={"requests[0].params": "query=&hitsPerPage=1"})])
+    schema = CondensedSchema(service_name="s", base_url="https://abc-dsn.algolia.net", tools=[tool])
+    assert repair_algolia(schema) == 1
+    m = schema.tools[0].endpoint_mappings[0]
+    assert m.path == "/1/indexes/*/queries"
+    assert m.static_params == {"requests[0].indexName": "Real_production", "requests[0].hitsPerPage": 20}
+    assert [pm.endpoint_param for pm in m.parameter_mappings] == ["requests[0].query", "requests[0].facetFilters"]
+
+    # Index missing from the mapping entirely: taken from the request the page really sent
+    tool2 = AgentTool(name="search", description="d", parameters=[ToolParameter(name="query")],
+                      endpoint_mappings=[EndpointMapping(method="POST", path="/1/indexes/*/queries")])
+    raw = RawSchema(base_url="https://abc-dsn.algolia.net", endpoints=[Endpoint(
+        path="/1/indexes/*/queries", method="POST",
+        request_body_schema={"observed_example": {"requests": [{"indexName": "Seen_production"}]}})])
+    schema2 = CondensedSchema(service_name="s", base_url="https://abc-dsn.algolia.net", tools=[tool2])
+    repair_algolia(schema2, raw)
+    assert schema2.tools[0].endpoint_mappings[0].static_params["requests[0].indexName"] == "Seen_production"
+
+
+def test_algolia_repair_ignores_other_hosts():
+    from machine_internet.condensation.repair import repair_algolia
+    from machine_internet.discovery.schema import CondensedSchema
+    schema = CondensedSchema(service_name="s", base_url="https://api.example.com", tools=[])
+    assert repair_algolia(schema) == 0
+
+
+def test_algolia_repair_drops_snapshot_values_and_fixes_names():
+    from machine_internet.condensation.repair import repair_algolia
+    from machine_internet.discovery.schema import CondensedSchema, ParameterLocation, ParameterMapping
+    tool = AgentTool(name="search", description="d", parameters=[ToolParameter(name="filter")],
+                     endpoint_mappings=[EndpointMapping(method="POST", path="/1/indexes/*/queries",
+                         parameter_mappings=[ParameterMapping(tool_param="filter", endpoint_param="requests[0].filter",
+                                                              location=ParameterLocation.BODY)],
+                         static_params={"requests[0].indexName": "I", "requests[0].attributesToRetrieve": [],
+                                        "requests[0].hitsPerPage": 1, "x-algolia-api-key": "old"})])
+    schema = CondensedSchema(service_name="s", base_url="https://abc-dsn.algolia.net", tools=[tool])
+    repair_algolia(schema)
+    m = schema.tools[0].endpoint_mappings[0]
+    assert m.static_params == {"requests[0].indexName": "I", "requests[0].hitsPerPage": 20}
+    assert m.parameter_mappings[0].endpoint_param == "requests[0].filters"
+
+
+def test_write_tools_are_dropped():
+    from machine_internet.condensation.repair import drop_write_tools
+    from machine_internet.discovery.schema import CondensedSchema
+    schema = CondensedSchema(service_name="s", base_url="https://x.test", tools=[
+        AgentTool(name=n, description="d") for n in ("search_products", "update_shopping_cart", "get_cart", "add_to_cart")])
+    assert drop_write_tools(schema) == ["update_shopping_cart", "add_to_cart"]
+    assert [t.name for t in schema.tools] == ["search_products", "get_cart"]

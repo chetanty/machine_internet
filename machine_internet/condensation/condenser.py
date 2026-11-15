@@ -99,9 +99,12 @@ async def condense(raw: RawSchema, source_url: str = "") -> CondensedSchema:
                     "required": p.required,
                     "type": p.type,
                     "description": p.description,
+                    **({"observed_value": p.default} if p.default is not None else {}),
                 }
                 for p in ep.parameters
             ],
+            **({"observed_request_body": ep.request_body_schema["observed_example"]}
+               if ep.request_body_schema and "observed_example" in ep.request_body_schema else {}),
         }
         for ep in endpoints
     ]
@@ -139,6 +142,14 @@ Return condensed schema as JSON only:
     }}
   ]
 }}
+
+Only make tools that READ data (search, list, get, lookup). Leave out every endpoint that creates,
+updates or deletes anything, or that handles carts, checkout, logins, consent or tracking.
+
+Use each endpoint's path exactly as given. When an endpoint has an observed_request_body, it is
+what the site really sent: map tool parameters onto its fields with dotted paths
+(e.g. "requests[0].params") and copy its fixed values (index names, ids, structure) into
+static_params exactly as observed. Never invent index names, paths or ids.
 
 Return ONLY valid JSON. Maximum 15 tools."""
 

@@ -75,7 +75,8 @@ def build_server(schema: CondensedSchema, on_call=None) -> Server:
         if not tool:
             if on_call:
                 on_call(name, False, 0)
-            return [types.TextContent(type="text", text=json.dumps({"error": f"Unknown tool: {name}"}))]
+            # Raising makes the MCP SDK send the result with isError set, so agents see a failure
+            raise ValueError(f"Unknown tool: {name}")
         t0 = _time.monotonic()
         try:
             result = await executor.execute(tool, arguments or {})
@@ -87,6 +88,8 @@ def build_server(schema: CondensedSchema, on_call=None) -> Server:
         duration_ms = int((_time.monotonic() - t0) * 1000)
         if on_call:
             on_call(name, ok, duration_ms)
+        if not ok:
+            raise RuntimeError(text)
         return [types.TextContent(type="text", text=text)]
 
     return server
