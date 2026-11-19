@@ -243,6 +243,8 @@ def _landing(base: str) -> bytes:
 <link rel="icon" type="image/png" href="{LOGO}"><link rel="apple-touch-icon" href="{LOGO}">
 <meta name="description" content="Turn web apps with hidden APIs into MCP servers. No official API needed.">
 <script>try{{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}}catch(e){{}}</script>
+<script>window.va=window.va||function(){{(window.vaq=window.vaq||[]).push(arguments)}};</script>
+<script defer src="/_vercel/insights/script.js"></script>
 <style>{_CSS}</style></head><body><main>
 <div class="top"><div class="brand"><img src="{LOGO}" alt="" width="32" height="32"><span>Machine Internet</span></div>
 <nav><a href="{REPO}">GitHub</a><button id="theme" type="button" aria-label="Toggle dark mode">Dark mode</button></nav></div>
